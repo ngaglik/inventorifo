@@ -4,7 +4,14 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
-
+  <!--<ItemGroup>
+    <Reference Include="Libpg">
+      <HintPath>.\bin\Debug\netcoreapp3.1\Libpg.dll</HintPath> 
+    </Reference>
+  </ItemGroup>-->
+  <ItemGroup>
+    <ProjectReference Include="..\Inventorifo.Lib\Inventorifo.Lib.csproj" />
+  </ItemGroup>
   <ItemGroup>
     <None Remove="**\*.glade" />
     <EmbeddedResource Include="**\*.glade">
