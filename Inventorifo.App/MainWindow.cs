@@ -21,12 +21,14 @@ namespace Inventorifo.App
             builder.Autoconnect(this);
             MenuItem purchaseMenuItem = (MenuItem)builder.GetObject("PurchaseMenuItem");
             MenuItem productMenuItem = (MenuItem)builder.GetObject("ProductMenuItem");
+            MenuItem productGroupMenuItem = (MenuItem)builder.GetObject("ProductGroupMenuItem");
             MenuItem aboutMenuItem = (MenuItem)builder.GetObject("AboutMenuItem");
             mainBox = (Box)builder.GetObject("MainBox");
 
             DeleteEvent += Window_DeleteEvent;
             purchaseMenuItem.Activated += PurchaseMenuItem_Activated;
             productMenuItem.Activated += ProductMenuItem_Activated;
+            productGroupMenuItem.Activated += ProductGroupMenuItem_Activated;
             aboutMenuItem.Activated += AboutMenuItem_Activated;
             //_button1.Clicked += Button1_Clicked;            
             Maximize();
@@ -57,6 +59,17 @@ namespace Inventorifo.App
            // md.Run();
            // md.Destroy();
         }
+        private void ProductGroupMenuItem_Activated(object sender, EventArgs a)
+        {
+            ClearMainBox();
+            //TreeModelDemo refWidget = new TreeModelDemo();
+           // mainBox.PackStart(refWidget, false, false, 5);
+          //  refWidget.ShowAll();
+           // MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, "Product ");
+           // md.Run();
+           // md.Destroy();
+        }
+        
         private void AboutMenuItem_Activated(object sender, EventArgs a){
             AboutDialog d = new();
             d.TransientFor = this;
