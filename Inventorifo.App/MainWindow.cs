@@ -22,6 +22,8 @@ namespace Inventorifo.App
             MenuItem purchaseMenuItem = (MenuItem)builder.GetObject("PurchaseMenuItem");
             MenuItem productMenuItem = (MenuItem)builder.GetObject("ProductMenuItem");
             MenuItem productGroupMenuItem = (MenuItem)builder.GetObject("ProductGroupMenuItem");
+            MenuItem customerMenuItem = (MenuItem)builder.GetObject("CustomerMenuItem");
+
             MenuItem aboutMenuItem = (MenuItem)builder.GetObject("AboutMenuItem");
             mainBox = (Box)builder.GetObject("MainBox");
 
@@ -29,6 +31,7 @@ namespace Inventorifo.App
             purchaseMenuItem.Activated += PurchaseMenuItem_Activated;
             productMenuItem.Activated += ProductMenuItem_Activated;
             productGroupMenuItem.Activated += ProductGroupMenuItem_Activated;
+            customerMenuItem.Activated += CustomerMenuItem_Activated;
             aboutMenuItem.Activated += AboutMenuItem_Activated;
             //_button1.Clicked += Button1_Clicked;            
             Maximize();
@@ -51,26 +54,36 @@ namespace Inventorifo.App
         }
         private void ProductMenuItem_Activated(object sender, EventArgs a)
         {
+            Gtk.Application.Invoke(delegate
+            {
             ClearMainBox();
-            ReferenceWindow refWidget = new ReferenceWindow(this,1);
-            mainBox.PackStart(refWidget, false, false, 5);
+            ReferenceWindow refWidget = new ReferenceWindow();
+            mainBox.PackStart(refWidget, true, true, 5);
             refWidget.ShowAll();
-           // MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, "Product ");
-           // md.Run();
-           // md.Destroy();
+            });
         }
         private void ProductGroupMenuItem_Activated(object sender, EventArgs a)
         {
             ClearMainBox();
-            //TreeModelDemo refWidget = new TreeModelDemo();
-           // mainBox.PackStart(refWidget, false, false, 5);
-          //  refWidget.ShowAll();
+            //EditableCellsSection refWidget = new EditableCellsSection();
+            //mainBox.PackStart(refWidget, true, true, 5);
+            //refWidget.ShowAll();
            // MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, "Product ");
            // md.Run();
            // md.Destroy();
         }
-        
+        private void CustomerMenuItem_Activated(object sender, EventArgs a)
+        {
+            ClearMainBox();
+            //TreeViewSection refWidget = new TreeViewSection();
+            //mainBox.PackStart(refWidget, true, true, 5);
+            //refWidget.ShowAll();
+           // MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, "Product ");
+           // md.Run();
+           // md.Destroy();
+        }
         private void AboutMenuItem_Activated(object sender, EventArgs a){
+
             AboutDialog d = new();
             d.TransientFor = this;
             d.Authors = ["Ali Nugroho"];
@@ -81,8 +94,8 @@ namespace Inventorifo.App
 
             //if (Resources.GetTexture("logo.png") is Texture t)
             //    d.Logo = t;
-
             d.Show();
+
         }
         private void ClearMainBox(){
             foreach (Widget child in mainBox.Children)

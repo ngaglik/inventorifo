@@ -1,142 +1,442 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using Gtk;
-using Pango;
-using UI = Gtk.Builder.ObjectAttribute;
+using System.Data;
 
 namespace Inventorifo.App
 {
-    class ReferenceWindow : Gtk.Bin
+    //[Section(ContentType = typeof(EditableCellsSection), Category = Category.Widgets)]
+    class ReferenceWindow : Gtk.Box
     {
-        Inventorifo.Lib.LibDb DbCl = new Inventorifo.Lib.LibDb();
+        Inventorifo.Lib.LibDb DbCl = new Inventorifo.Lib.LibDb ();
+        private readonly TreeView _treeView;
+        private readonly ListStore _itemsModel;
+        private readonly Dictionary<CellRenderer, int> _cellColumnsRender;
+        private List<Item> _articles;
 
-        //[UI] private Label _label1 = null;
-        //[UI] private Button _button1 = null;
-
-        private int _counter;
-        private TreeView treeViewData;
-        private Gtk.ListStore lstItem;
-        private ArrayList stocks;
-        private Entry entFind;
+        private Entry entSearch;
         private Entry entBarcode;
 
-        public ReferenceWindow(MainWindow parent,int jnstrans) : this(new Builder("ReferenceWindow.glade")) { }
-
-        private ReferenceWindow(Builder builder) : base(builder.GetRawOwnedObject("ReferenceWindow"))
+        public ReferenceWindow() : base(Orientation.Vertical, 3)
         {
-            builder.Autoconnect(this);
-            treeViewData = (TreeView)builder.GetObject("TreeViewData");
-            entFind = (Entry)builder.GetObject("EntFind");
-            entBarcode = (Entry)builder.GetObject("EntBarcode");
-            Button BtnView = (Button)builder.GetObject("BtnView");
-            BtnView.Clicked += BtnView_Clicked;
-           
+            _cellColumnsRender = new Dictionary<CellRenderer, int>();
+            ListStore numbers_model;
 
-            //TreeVew product_id
-            Gtk.CellRendererText product_id_cell = new Gtk.CellRendererText();
-            Gtk.TreeViewColumn product_id_column = new Gtk.TreeViewColumn();
-            product_id_column.Title = "product_id";
-            product_id_column.PackStart(product_id_cell, true);
-
-
-            product_id_column.SetCellDataFunc(product_id_cell, new Gtk.TreeCellDataFunc(RenderProductId));
-
-
-            treeViewData.AppendColumn(product_id_column);
-
-            
-        }
-
-        private void RenderProductId(Gtk.TreeViewColumn column, Gtk.CellRenderer cell, Gtk.ITreeModel model, Gtk.TreeIter iter)
-        {
-            Stock sto = (Stock)model.GetValue(iter, 0);
-            (cell as Gtk.CellRendererText).Text = "Aaaaaaaaaaa";
-        }
-
-        public void populateTree(string strfind, string barcode)
-        {
-            string whrfind = "";
-            Gtk.Application.Invoke(delegate
+            ScrolledWindow sw = new ScrolledWindow
             {
-                stocks = new ArrayList();
-                if (strfind.Length > 0) {
-                        whrfind = "and (upper(prod.name) like upper('" + strfind + "%') or upper(prod.name) like upper('" + strfind + "%')) " ;
-                }else {
-                        whrfind = "";
-                }
-                    
+                ShadowType = ShadowType.EtchedIn
+            };
+            sw.SetPolicy(PolicyType.Automatic, PolicyType.Automatic);
+
+            this.PackStart(sw, true, true, 0);
+
+            /* create models */
+            _itemsModel = CreateItemsModel();
+            numbers_model = CreateNumbersModel();
+
+            /* create tree view */
+            _treeView = new TreeView(_itemsModel);
+            _treeView.Selection.Mode = SelectionMode.Single;
+
+            AddColumns(numbers_model);
+            _treeView.Columns[5].Visible = false;
+            _treeView.Columns[10].Visible = false;
+            _treeView.Columns[13].Visible = false;
+
+            sw.Add(_treeView);
+
+            /* some buttons */
+            Box hbox = new Box(Orientation.Horizontal, 4)
+            {
+                Homogeneous = true
+            };
+            this.PackStart(hbox, false, false, 0);
+
+            entSearch = new Entry();
+            entSearch.PlaceholderText = "Search";
+            hbox.PackStart(entSearch, true, true, 0);
+
+            entBarcode = new Entry();
+            entBarcode.PlaceholderText = "Barcode";
+            hbox.PackStart(entBarcode, true, true, 0);
+
+            Button button = new Button("Add item");
+            button.Clicked += AddItem;
+            hbox.PackStart(button, true, true, 0);
+
+        }
+
+        private class Item
+        { //
+            public Item(string product_id, string short_name, string product_name, string barcode, string quantity, string unit , string unit_name, string purchase_price , string price, string expired_date, string product_group_id, string product_group_name, string stock_id , string price_id ){
+                this.product_id = product_id;
+                this.short_name = short_name;
+                this.product_name = product_name;
+                this.barcode = barcode;
+                this.quantity = quantity;
+                this.unit = unit;
+                this.unit_name = unit_name;
+                this.purchase_price = purchase_price;
+                this.price = price;
+                this.expired_date = expired_date;
+                this.product_group_id = product_group_id;
+                this.product_group_name = product_group_name;
+                this.stock_id = stock_id;
+                this.price_id = price_id;
+            }
+            public string product_id;
+            public string short_name;
+            public string product_name;
+            public string barcode;
+            public string quantity;
+            public string unit;
+            public string unit_name;
+            public string purchase_price;
+            public string price;
+            public string expired_date;
+            public string product_group_id;
+            public string product_group_name;
+            public string stock_id;
+            public string  price_id;
+        }
+
+        private enum ColumnItem
+        { //
+            product_id,
+            short_name,
+            product_name,
+            barcode,
+            quantity,
+            unit,
+            unit_name,
+            purchase_price,
+            price,
+            expired_date,
+            product_group_id,
+            product_group_name,
+            stock_id,
+            price_id,
+            Num
+        };
+
+        private enum ColumnNumber
+        {
+            Text,
+            Num
+        };
+
+        private ListStore CreateItemsModel()
+        {
+            ListStore model;
+            TreeIter iter;
+
+            /* create array */
+            _articles = new List<Item>();
+
+            AddItems();
+
+            /* create list store */
+            //
+            model = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string),  typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string) );
+
+            /* add items */
+            for (int i = 0; i < _articles.Count; i++)
+            {
+                iter = model.Append();
+                model.SetValue(iter, (int)ColumnItem.product_id, _articles[i].product_id);
+                model.SetValue(iter, (int)ColumnItem.short_name, _articles[i].short_name);
+                model.SetValue(iter, (int)ColumnItem.product_name, _articles[i].product_name);
+                model.SetValue(iter, (int)ColumnItem.barcode, _articles[i].barcode);
+                model.SetValue(iter, (int)ColumnItem.quantity, _articles[i].quantity);
+                model.SetValue(iter, (int)ColumnItem.unit, _articles[i].unit);
+                model.SetValue(iter, (int)ColumnItem.unit_name, _articles[i].unit_name);
+                model.SetValue(iter, (int)ColumnItem.purchase_price, _articles[i].purchase_price);
+                model.SetValue(iter, (int)ColumnItem.price, _articles[i].price);
+                model.SetValue(iter, (int)ColumnItem.expired_date, _articles[i].expired_date);
+                model.SetValue(iter, (int)ColumnItem.product_group_id, _articles[i].product_group_id);
+                model.SetValue(iter, (int)ColumnItem.product_group_name, _articles[i].product_group_name);
+                model.SetValue(iter, (int)ColumnItem.stock_id, _articles[i].stock_id);
+                model.SetValue(iter, (int)ColumnItem.price_id, _articles[i].price_id);
+            }
+
+            return model;
+        }
+
+        private static ListStore CreateNumbersModel()
+        {
+            ListStore model;
+            TreeIter iter;
+
+            /* create list store */
+            model = new ListStore(typeof(string), typeof(int));
+
+            /* add numbers */
+            for (int i = 0; i < 10; i++)
+            {
+                iter = model.Append();
+                model.SetValue(iter, (int)ColumnNumber.Text, i.ToString());
+            }
+
+            return model;
+        }
+
+        private void AddItems()
+        {
+            //Gtk.Application.Invoke(delegate
+            //{
+                string whrfind = "";
+              
+                        
                 string sql ="";
-                if(barcode.Length>0){
-                        sql = "SELECT prod.id product_id, prod.short_name,  prod.name prod_name, prod.barcode,stock.quantity,stock.unit, unit.name unit_name, stock.purchase_price, price.price, stock.expired_date,  prodgr.id product_group_id, prodgr.name product_group_name, stock.id stock_id, price.id price_id "+
-                        "FROM product prod LEFT OUTER JOIN stock on prod.id = stock.product_id LEFT OUTER JOIN price on stock.id = price.stock_id left outer join unit on stock.unit = unit.id, product_group prodgr "+
-                        "WHERE prod.product_group = prodgr.id "+
-                        "and prod.barcode = '"+barcode+"' "+
-                        "ORDER by prod.name asc";
-                        Console.WriteLine(sql);
-                }else{
+               
                     sql = "SELECT prod.id product_id, prod.short_name, prod.name prod_name, prod.barcode,stock.quantity,stock.unit, unit.name unit_name, stock.purchase_price, price.price, stock.expired_date, prodgr.id product_group_id, prodgr.name product_group_name,stock.id stock_id, price.id price_id "+
                         "FROM product prod LEFT OUTER JOIN stock on prod.id = stock.product_id LEFT OUTER JOIN price on stock.id = price.stock_id left outer join unit on stock.unit = unit.id, product_group prodgr "+
                         "WHERE prod.product_group = prodgr.id "+ whrfind +
                         "ORDER by prod.name asc";
                         Console.WriteLine(sql);
-                }
+              
                 DataTable dttv = DbCl.fillDataTable(DbCl.getConn(), sql);
                 foreach (DataRow dr in dttv.Rows)
                 {                    
-                    double product_id=Convert.ToDouble(dr[0].ToString());
+                    string product_id=dr[0].ToString();
                     string short_name=dr[1].ToString();
                     string product_name= dr[2].ToString();
                     string barcode=dr[3].ToString();
-                    double quantity=0;
+                    string quantity="0";
                     if(dr[4].ToString()!=""){
-                        quantity = Convert.ToDouble(dr[4].ToString());
+                        quantity = dr[4].ToString();
                     }
-                    int unit=0;
+                    string unit="0";
                     if(dr[5].ToString()!=""){
-                        unit = Convert.ToInt32(dr[5].ToString());
+                        unit = dr[5].ToString();
                     }
                     string unit_name=dr[6].ToString();
-                    double purchase_price = 0;
+                    string purchase_price = "0";
                     if( dr[7].ToString()!=""){
-                        purchase_price=Convert.ToDouble( dr[7].ToString());
+                        purchase_price=dr[7].ToString();
                     }
-                    double price=0;
+                    string price="0";
                     if( dr[8].ToString()!=""){
-                        price=Convert.ToDouble( dr[8].ToString());
+                        price= dr[8].ToString();
                     }
                     string expired_date="";
                     if(dr[9].ToString()!=""){
                         DateTime d = Convert.ToDateTime(dr[9].ToString());
                         expired_date = d.ToString("yyyy-MM-dd");
                     }    
-                    int product_group_id=Convert.ToInt32( dr[10].ToString());
+                    string product_group_id= dr[10].ToString();
                     string product_group_name=dr[11].ToString();
-                    double stock_id=0; 
+                    string stock_id="0"; 
                     if(dr[12].ToString()!=""){
-                        stock_id=Convert.ToDouble( dr[12].ToString());
+                        stock_id=dr[12].ToString();
                     } 
-                    double price_id=0;
+                    string price_id="0";
                     if(dr[13].ToString()!=""){
-                        price_id=Convert.ToDouble( dr[13].ToString());
+                        price_id= dr[13].ToString();
                     } 
                                     
-                    stocks.Add(new Stock(product_id,short_name ,product_name,barcode , quantity, unit , unit_name,purchase_price , price,expired_date, product_group_id, product_group_name, stock_id , price_id ));
+                    _articles.Add(new Item(product_id, short_name, product_name, barcode, quantity, unit, unit_name, purchase_price, price, expired_date, product_group_id, product_group_name, stock_id, price_id ));
                 }
-                lstItem = new Gtk.ListStore(typeof(Stock));
-                foreach (Stock sto in stocks)
-                {
-                    lstItem.AppendValues(sto);
-                    Console.WriteLine(sto.product_name);
-                }
-                treeViewData.Model = lstItem;
-            });
+            //});
         }
 
-        private void BtnView_Clicked(object sender, EventArgs a)
+        private void AddColumns(ITreeModel numbersModel)
         {
-           populateTree(entFind.Text.Trim(),entBarcode.Text.Trim());
+            CellRendererText rendererText = new CellRendererText();
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.product_id);
+            _treeView.InsertColumn(-1, "Product ID", rendererText, "text", (int)ColumnItem.product_id);
+
+            rendererText = new CellRendererText
+            {
+                Editable = true
+            };
+            rendererText.Foreground = "green";
+            rendererText.Edited += CellEdited;
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.short_name);
+            _treeView.InsertColumn(-1, "Short name", rendererText, "text", (int)ColumnItem.short_name);
+
+            rendererText = new CellRendererText
+            {
+                Editable = true
+            };
+            rendererText.Foreground = "green";
+            rendererText.Edited += CellEdited;
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.product_name);
+            _treeView.InsertColumn(-1, "Product name", rendererText, "text", (int)ColumnItem.product_name);
+
+            rendererText = new CellRendererText
+            {
+                Editable = true
+            };
+            rendererText.Foreground = "green";
+            rendererText.Edited += CellEdited;
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.barcode);
+            _treeView.InsertColumn(-1, "Barcode", rendererText, "text", (int)ColumnItem.barcode);
+
+            rendererText = new CellRendererText();
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.quantity);
+            _treeView.InsertColumn(-1, "Quantity", rendererText, "text", (int)ColumnItem.quantity);
+
+            rendererText = new CellRendererText();
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.unit);
+            _treeView.InsertColumn(-1, "Unit id", rendererText, "text", (int)ColumnItem.unit);
+
+            rendererText = new CellRendererText();
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.unit_name);
+            _treeView.InsertColumn(-1, "Unit", rendererText, "text", (int)ColumnItem.unit_name);
+
+            rendererText = new CellRendererText();
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.purchase_price);
+            _treeView.InsertColumn(-1, "Purchase Price", rendererText, "text", (int)ColumnItem.purchase_price);
+
+            rendererText = new CellRendererText();
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.price);
+            _treeView.InsertColumn(-1, "Price", rendererText, "text", (int)ColumnItem.price);
+
+            rendererText = new CellRendererText
+            {
+                Editable = true
+            };
+            rendererText.Foreground = "green";
+            rendererText.Edited += CellEdited;
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.expired_date);
+            _treeView.InsertColumn(-1, "Expired date", rendererText, "text", (int)ColumnItem.expired_date);
+
+            rendererText = new CellRendererText();
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.product_group_id);
+            _treeView.InsertColumn(-1, "Product group id", rendererText, "text", (int)ColumnItem.product_group_id);
+
+            rendererText = new CellRendererText();
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.product_group_name);
+            _treeView.InsertColumn(-1, "Product group", rendererText, "text", (int)ColumnItem.product_group_name);
+
+            rendererText = new CellRendererText();
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.stock_id);
+            _treeView.InsertColumn(-1, "Stock id", rendererText, "text", (int)ColumnItem.stock_id);
+
+            rendererText = new CellRendererText();
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.price_id);
+            _treeView.InsertColumn(-1, "Price id", rendererText, "text", (int)ColumnItem.price_id);
+
+        }
+
+        private void AddItem(object sender, EventArgs e)
+        {
+            TreeIter iter;
+
+            if (_articles == null)
+            {
+                return;
+            }
+            string product_id="";
+            string short_name="";
+            string product_name= "";
+            string barcode="";
+            string quantity="0";           
+            string unit="0";
+            string unit_name="";
+            string purchase_price = "0";
+            string price="0";
+            string expired_date="";
+            string product_group_id= "";
+            string product_group_name="";
+            string stock_id="0";
+            string price_id="0";
+            _articles.Add(new Item(product_id, short_name, product_name, barcode, quantity, unit, unit_name, purchase_price, price, expired_date, product_group_id, product_group_name, stock_id, price_id ));
+
+            _treeView.GetCursor(out TreePath path, out _);
+            if (path != null)
+            {
+                _ = _itemsModel.GetIter(out TreeIter current, path);
+                iter = _itemsModel.InsertAfter(current);
+            }
+            else
+            {
+                iter = _itemsModel.Insert(-1);
+            }
+
+            _itemsModel.SetValue(iter, (int)ColumnItem.product_id, _articles[0].product_id);
+            _itemsModel.SetValue(iter, (int)ColumnItem.short_name, _articles[0].short_name);
+            _itemsModel.SetValue(iter, (int)ColumnItem.product_name, _articles[0].product_name);
+            _itemsModel.SetValue(iter, (int)ColumnItem.barcode, _articles[0].barcode);
+            _itemsModel.SetValue(iter, (int)ColumnItem.quantity, _articles[0].quantity);
+            _itemsModel.SetValue(iter, (int)ColumnItem.unit, _articles[0].unit);
+            _itemsModel.SetValue(iter, (int)ColumnItem.unit_name, _articles[0].unit_name);
+            _itemsModel.SetValue(iter, (int)ColumnItem.purchase_price, _articles[0].purchase_price);
+            _itemsModel.SetValue(iter, (int)ColumnItem.price, _articles[0].price);
+            _itemsModel.SetValue(iter, (int)ColumnItem.expired_date, _articles[0].expired_date);
+            _itemsModel.SetValue(iter, (int)ColumnItem.product_group_id, _articles[0].product_group_id);
+            _itemsModel.SetValue(iter, (int)ColumnItem.product_group_name, _articles[0].product_group_name);
+            _itemsModel.SetValue(iter, (int)ColumnItem.stock_id, _articles[0].stock_id);
+            _itemsModel.SetValue(iter, (int)ColumnItem.price_id, _articles[0].price_id);
+
+            path = _itemsModel.GetPath(iter);
+            TreeViewColumn column = _treeView.GetColumn(0);
+            _treeView.SetCursor(path, column, false);
+        }
+
+        private void RemoveItem(object sender, EventArgs e)
+        {
+            TreeSelection selection = _treeView.Selection;
+
+            if (selection.GetSelected(out TreeIter iter))
+            {
+                TreePath path = _itemsModel.GetPath(iter);
+                int i = path.Indices[0];
+                _itemsModel.Remove(ref iter);
+                _articles.RemoveAt(i);
+            }
+        }
+
+        private void CellEdited(object data, EditedArgs args)
+        {
+           TreePath path = new TreePath(args.Path);
+            int column = _cellColumnsRender[(CellRenderer)data];
+            _itemsModel.GetIter(out TreeIter iter, path);
+
+            switch (column)
+            {
+                case (int)ColumnItem.short_name:
+                    {
+                        int i = path.Indices[0];
+                        //_articles[i].short_name = int.Parse(args.NewText);
+                        _articles[i].short_name = args.NewText;
+                        _itemsModel.SetValue(iter, column, _articles[i].short_name);
+                    }
+                    break;
+
+                case (int)ColumnItem.product_name:
+                    {
+                        string oldText = (string)_itemsModel.GetValue(iter, column);
+                        int i = path.Indices[0];
+                        _articles[i].product_name = args.NewText;
+
+                        _itemsModel.SetValue(iter, column, _articles[i].product_name);
+                    }
+                    break;
+                case (int)ColumnItem.barcode:
+                    {
+                        string oldText = (string)_itemsModel.GetValue(iter, column);
+                        int i = path.Indices[0];
+                        _articles[i].barcode = args.NewText;
+
+                        _itemsModel.SetValue(iter, column, _articles[i].barcode);
+                    }
+                    break;
+            }
+        }
+
+        private void EditingStarted(object o, EditingStartedArgs args)
+        {
+           //((ComboBox)args.Editable).RowSeparatorFunc += SeparatorRow;
+        }
+
+        private bool SeparatorRow(ITreeModel model, TreeIter iter)
+        {
+            TreePath path = model.GetPath(iter);
+            int idx = path.Indices[0];
+
+            return idx == 5;
         }
     }
 }
