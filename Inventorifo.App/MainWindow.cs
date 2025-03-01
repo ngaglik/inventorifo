@@ -20,17 +20,22 @@ namespace Inventorifo.App
         {
             builder.Autoconnect(this);
             MenuItem purchaseMenuItem = (MenuItem)builder.GetObject("PurchaseMenuItem");
+            MenuItem stockMenuItem = (MenuItem)builder.GetObject("StockMenuItem");
             MenuItem productMenuItem = (MenuItem)builder.GetObject("ProductMenuItem");
             MenuItem productGroupMenuItem = (MenuItem)builder.GetObject("ProductGroupMenuItem");
+
             MenuItem customerMenuItem = (MenuItem)builder.GetObject("CustomerMenuItem");
+            MenuItem personMenuItem = (MenuItem)builder.GetObject("PersonMenuItem");
 
             MenuItem aboutMenuItem = (MenuItem)builder.GetObject("AboutMenuItem");
             mainBox = (Box)builder.GetObject("MainBox");
 
             DeleteEvent += Window_DeleteEvent;
             purchaseMenuItem.Activated += PurchaseMenuItem_Activated;
+            stockMenuItem.Activated += StockMenuItem_Activated;
             productMenuItem.Activated += ProductMenuItem_Activated;
             productGroupMenuItem.Activated += ProductGroupMenuItem_Activated;
+            personMenuItem.Activated += PersonMenuItem_Activated;
             customerMenuItem.Activated += CustomerMenuItem_Activated;
             aboutMenuItem.Activated += AboutMenuItem_Activated;
             //_button1.Clicked += Button1_Clicked;            
@@ -52,25 +57,45 @@ namespace Inventorifo.App
           //  md.Run();
           //  md.Destroy();
         }
-        private void ProductMenuItem_Activated(object sender, EventArgs a)
+        private void StockMenuItem_Activated(object sender, EventArgs a)
         {
             Gtk.Application.Invoke(delegate
             {
             ClearMainBox();
-            ReferenceWindow refWidget = new ReferenceWindow();
+            ReferenceStock refWidget = new ReferenceStock();
             mainBox.PackStart(refWidget, true, true, 5);
             refWidget.ShowAll();
             });
         }
+        private void ProductMenuItem_Activated(object sender, EventArgs a)
+        {
+            Gtk.Application.Invoke(delegate
+            {
+                ClearMainBox();
+                ReferenceProduct refWidget = new ReferenceProduct();
+                mainBox.PackStart(refWidget, true, true, 5);
+                refWidget.ShowAll();
+            });
+        }
         private void ProductGroupMenuItem_Activated(object sender, EventArgs a)
         {
-            ClearMainBox();
-            //EditableCellsSection refWidget = new EditableCellsSection();
-            //mainBox.PackStart(refWidget, true, true, 5);
-            //refWidget.ShowAll();
-           // MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, "Product ");
-           // md.Run();
-           // md.Destroy();
+            Gtk.Application.Invoke(delegate
+            {
+                ClearMainBox();
+                ReferenceProductGroup refWidget = new ReferenceProductGroup();
+                mainBox.PackStart(refWidget, true, true, 5);
+                refWidget.ShowAll();
+            });
+        }
+        private void PersonMenuItem_Activated(object sender, EventArgs a)
+        {
+            Gtk.Application.Invoke(delegate
+            {
+                ClearMainBox();
+                ReferencePerson refWidget = new ReferencePerson();
+                mainBox.PackStart(refWidget, true, true, 5);
+                refWidget.ShowAll();
+            });
         }
         private void CustomerMenuItem_Activated(object sender, EventArgs a)
         {

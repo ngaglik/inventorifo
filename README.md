@@ -17,3 +17,11 @@ CREATE TABLE "public"."unit" (
 
 ALTER TABLE "public"."stock" DROP COLUMN "unit";
 ALTER TABLE "public"."stock" ADD  "unit" INT NULL;
+
+1 Maret 2025
+ALTER TABLE "public"."stock" ADD  "price_id" BIGSERIAL ;
+ALTER TABLE "public"."price" DROP COLUMN "stock_id";
+ALTER TABLE "public"."personal" ADD  "national_id_number" VARCHAR(250) NULL;
+ALTER TABLE "public"."personal" ADD  "tax_id_number" VARCHAR(250) NULL;
+ALTER TABLE "public"."personal" ADD  "health_insurance_id_number" VARCHAR(250) NULL;
+ALTER TABLE "public"."personal" RENAME TO "person";
