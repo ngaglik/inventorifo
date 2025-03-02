@@ -41,7 +41,7 @@ namespace Inventorifo.App
             _treeView.Selection.Mode = SelectionMode.Single;
 
             AddColumns();
-            _treeView.Columns[4].Visible = false;
+            //_treeView.Columns[4].Visible = false;
             //_treeView.Columns[10].Visible = false;
             //_treeView.Columns[13].Visible = false;
 
@@ -73,29 +73,29 @@ namespace Inventorifo.App
 
         private class Item
         { //
-            public Item(string product_id, string short_name, string product_name, string barcode, string product_group_id, string product_group_name){
-                this.product_id = product_id;
+            public Item(string id, string short_name, string product_name, string barcode, string product_group, string product_group_name){
+                this.id = id;
                 this.short_name = short_name;
                 this.product_name = product_name;
                 this.barcode = barcode;
-                this.product_group_id = product_group_id;
+                this.product_group = product_group;
                 this.product_group_name = product_group_name;
             }
-            public string product_id;
+            public string id;
             public string short_name;
             public string product_name;
             public string barcode;
-            public string product_group_id;
+            public string product_group;
             public string product_group_name;
         }
 
         private enum ColumnItem
         { //
-            product_id,
+            id,
             short_name,
             product_name,
             barcode,           
-            product_group_id,
+            product_group,      
             product_group_name,
             Num
         };
@@ -108,7 +108,7 @@ namespace Inventorifo.App
         
         private void HandleEntSearchChanged(object sender, EventArgs e)
         {
-            CreateItemsModel(false,entSearch.Text.Trim(),"");
+            CreateItemsModel(true,entSearch.Text.Trim(),"");
         }
         private void HandleEntBarcodeChanged(object sender, EventArgs e)
         {
@@ -129,7 +129,7 @@ namespace Inventorifo.App
                 string whrbarcode = "";
                 if(strbarcode!="") whrbarcode = "and prod.barcode =  '" + strbarcode + "' ";
                         
-                string sql = "SELECT prod.id product_id, prod.short_name, prod.name prod_name, prod.barcode, prodgr.id product_group_id, prodgr.name product_group_name "+
+                string sql = "SELECT prod.id product_id, prod.short_name, prod.name prod_name, prod.barcode, prod.product_group, prodgr.name product_group_name "+
                         "FROM product prod, product_group prodgr "+
                         "WHERE prod.product_group = prodgr.id "+ whrfind + whrbarcode +
                         "ORDER by prod.name asc";
@@ -138,30 +138,30 @@ namespace Inventorifo.App
                 DataTable dttv = DbCl.fillDataTable(DbCl.getConn(), sql);
                 foreach (DataRow dr in dttv.Rows)
                 {                    
-                    string product_id=dr[0].ToString();
+                    string id=dr[0].ToString();
                     string short_name=dr[1].ToString();
                     string product_name= dr[2].ToString();
                     string barcode=dr[3].ToString();
-                    string product_group_id= dr[4].ToString();
-                    string product_group_name=dr[5].ToString();
+                    string product_group= dr[4].ToString();
+                    string product_group_name= dr[5].ToString();
                                     
-                    _articles.Add(new Item(product_id, short_name, product_name, barcode, product_group_id, product_group_name ));
+                    _articles.Add(new Item(id, short_name, product_name, barcode, product_group,product_group_name));
                 }
 
                 /* create list store */
                 //
-                _itemsModel = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string),  typeof(string), typeof(string) );
+                _itemsModel = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string),  typeof(string),  typeof(string));
 
                 /* add items */
                 for (int i = 0; i < _articles.Count; i++)
                 {
                     iter = _itemsModel.Append();
-                    _itemsModel.SetValue(iter, (int)ColumnItem.product_id, _articles[i].product_id);
+                    _itemsModel.SetValue(iter, (int)ColumnItem.id, _articles[i].id);
                     _itemsModel.SetValue(iter, (int)ColumnItem.short_name, _articles[i].short_name);
                     _itemsModel.SetValue(iter, (int)ColumnItem.product_name, _articles[i].product_name);
                     _itemsModel.SetValue(iter, (int)ColumnItem.barcode, _articles[i].barcode);
-                    _itemsModel.SetValue(iter, (int)ColumnItem.product_group_id, _articles[i].product_group_id);
-                    _itemsModel.SetValue(iter, (int)ColumnItem.product_group_name, _articles[i].product_group_name);
+                    _itemsModel.SetValue(iter, (int)ColumnItem.product_group, _articles[i].product_group);
+                    _itemsModel.SetValue(iter, (int)ColumnItem.product_group, _articles[i].product_group_name);
                 }
                 _treeView.Model = _itemsModel;                
             }
@@ -188,8 +188,8 @@ namespace Inventorifo.App
         private void AddColumns()
         {
             CellRendererText rendererText = new CellRendererText();
-            _cellColumnsRender.Add(rendererText, (int)ColumnItem.product_id);
-            _treeView.InsertColumn(-1, "Product ID", rendererText, "text", (int)ColumnItem.product_id);
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.id);
+            _treeView.InsertColumn(-1, "Product ID", rendererText, "text", (int)ColumnItem.id);
 
             rendererText = new CellRendererText
             {
@@ -218,20 +218,34 @@ namespace Inventorifo.App
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.barcode);
             _treeView.InsertColumn(-1, "Barcode", rendererText, "text", (int)ColumnItem.barcode);
 
-            rendererText = new CellRendererText();
-            _cellColumnsRender.Add(rendererText, (int)ColumnItem.product_group_id);
-            _treeView.InsertColumn(-1, "Product group id", rendererText, "text", (int)ColumnItem.product_group_id);
-
-            rendererText = new CellRendererText();
-            _cellColumnsRender.Add(rendererText, (int)ColumnItem.product_group_name);
-            _treeView.InsertColumn(-1, "Product group", rendererText, "text", (int)ColumnItem.product_group_name);
-
+            ListStore lstModelCombo = new ListStore(typeof(string), typeof(string));
+            String sql = "Select id,name from product_group order by name asc";
+            DataTable dt = DbCl.fillDataTable(DbCl.getConn(), sql);
+            foreach (DataRow dr in dt.Rows)
+            {
+                lstModelCombo.AppendValues(dr[0].ToString(), dr[0].ToString() + ").  " + dr[1].ToString());
+            }
+            CellRendererCombo rendererCombo = new CellRendererCombo
+            { 
+                Model = lstModelCombo,
+                TextColumn = 1,
+                HasEntry = false,
+                Editable = true
+            };
+            rendererCombo.Foreground = "green";
+            rendererCombo.Edited += CellEdited;
+            rendererCombo.EditingStarted += EditingStarted;           
+            _cellColumnsRender.Add(rendererCombo, (int)ColumnItem.product_group);
+            _treeView.InsertColumn(-1, "Product group", rendererCombo, "text", (int)ColumnItem.product_group);
 
         }
 
         private void AddItem(object sender, EventArgs e)
         {
-            
+            string sql = "insert into product (name,product_group) values ('',1) ";
+            Console.WriteLine (sql);
+            DbCl.ExecuteTrans(DbCl.getConn(), sql);
+            CreateItemsModel(true,entSearch.Text.Trim(),"");
         }
 
         private void RemoveItem(object sender, EventArgs e)
@@ -253,6 +267,9 @@ namespace Inventorifo.App
                         //_articles[i].short_name = int.Parse(args.NewText);
                         _articles[i].short_name = args.NewText;
                         _itemsModel.SetValue(iter, column, _articles[i].short_name);
+                        string sql = "update product set short_name = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
+                        Console.WriteLine (sql);
+                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
                     }
                     break;
 
@@ -261,8 +278,10 @@ namespace Inventorifo.App
                         string oldText = (string)_itemsModel.GetValue(iter, column);
                         int i = path.Indices[0];
                         _articles[i].product_name = args.NewText;
-
                         _itemsModel.SetValue(iter, column, _articles[i].product_name);
+                        string sql = "update product set name = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
+                        Console.WriteLine (sql);
+                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
                     }
                     break;
                 case (int)ColumnItem.barcode:
@@ -270,8 +289,26 @@ namespace Inventorifo.App
                         string oldText = (string)_itemsModel.GetValue(iter, column);
                         int i = path.Indices[0];
                         _articles[i].barcode = args.NewText;
-
                         _itemsModel.SetValue(iter, column, _articles[i].barcode);
+                        string sql = "update product set barcode = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
+                        Console.WriteLine (sql);
+                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                    }
+                    break;
+                case (int)ColumnItem.product_group:
+                    {
+                        string oldText = (string)_itemsModel.GetValue(iter, column);
+                        int i = path.Indices[0];                                              
+                        if (args.NewText.Contains(")."))
+                        {
+                            String[] arr = args.NewText.Split(").");
+                            _articles[i].product_group_name = arr[1].Trim();
+                            _itemsModel.SetValue(iter, column, _articles[i].product_group_name );  
+                            
+                            string sql = "update product set product_group = '"+arr[0].Trim()+"' where id='"+_articles[i].id+"' ";
+                            Console.WriteLine (sql);
+                            DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                        }
                     }
                     break;
             }

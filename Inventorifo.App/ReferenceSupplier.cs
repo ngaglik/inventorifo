@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Gtk;
+using Gdk;
 using System.Data;
 using Pango;
 
@@ -10,15 +11,17 @@ namespace Inventorifo.App
     class ReferenceSupplier : Gtk.Box
     {
         Inventorifo.Lib.LibDb DbCl = new Inventorifo.Lib.LibDb ();
+        Inventorifo.Lib.LibGui GuiCl = new Inventorifo.Lib.LibGui ();
+
         private TreeView _treeView;
         private ListStore _itemsModel;
         //private ListStore numbers_model;
         private Dictionary<CellRenderer, int> _cellColumnsRender;
         private List<Item> _articles;
-
+        private Popover popover ;
         private Entry entSearch;
 
-        public ReferenceSupplier(Window parent, string prm) : base(Orientation.Vertical, 3)
+        public ReferenceSupplier(object parent, string prm) : base(Orientation.Vertical, 3)
         {
             Label lbTitle = new Label();
             lbTitle.Text = "Supplier";
@@ -60,6 +63,8 @@ namespace Inventorifo.App
             Button button = new Button("Add");
             button.Clicked += AddItem;
             hbox.PackStart(button, true, true, 0);
+
+            popover = new Popover(button);  
 
             entSearch.Changed += HandleEntSearchChanged;
         }
@@ -283,12 +288,30 @@ namespace Inventorifo.App
 
         }
 
+        public void doChild(object o,string prm){
+            GLib.Timeout.Add(0, () =>
+            {
+                GuiCl.RemoveAllWidgets(popover);
+                Label popoverLabel = new Label((string)o);
+                popover.Add(popoverLabel);
+                popover.SetSizeRequest(400, 20);
+                popoverLabel.Show();
+                string sql = "insert into supplier (person_id) values ('"+prm+"') ";
+                Console.WriteLine (sql);
+                DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                CreateItemsModel(true,entSearch.Text.Trim());
+                return false;
+            });
+        }
+
         private void AddItem(object sender, EventArgs e)
         {
-            string sql = "insert into supplier (name) values ('') ";
-            Console.WriteLine (sql);
-           // DbCl.ExecuteTrans(DbCl.getConn(), sql);
-            CreateItemsModel(true,entSearch.Text.Trim());
+            GuiCl.RemoveAllWidgets(popover);        
+            ReferencePerson widgetPerson = new ReferencePerson(this,"dialog","supplier");
+            popover.Add(widgetPerson);
+            popover.SetSizeRequest(800, 400);
+            widgetPerson.Show();          
+            popover.ShowAll();
         }
 
         private void RemoveItem(object sender, EventArgs e)

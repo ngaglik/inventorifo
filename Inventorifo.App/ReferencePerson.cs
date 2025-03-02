@@ -19,10 +19,12 @@ namespace Inventorifo.App
         private Entry entSearch;
         Boolean isEditable;
         string textForground;
+        string prm;
 
         public ReferencePerson(object parent, string mode, string prm) : base(Orientation.Vertical, 3)
         {
             this.parent=parent;
+            this.prm = prm;
             Label lbTitle = new Label();
             lbTitle.Text = "Person";
             lbTitle.ModifyFont(FontDescription.FromString("Arial 18"));
@@ -293,8 +295,14 @@ namespace Inventorifo.App
             if(selection.GetSelected( out iter)){
                 Console.WriteLine("Selected Value:"+_itemsModel.GetValue (iter, 0).ToString()+_itemsModel.GetValue (iter, 1).ToString());
             }
-            ReferenceCustomer o = (ReferenceCustomer)this.parent;
-            o.doChild("Okay! "+ _itemsModel.GetValue (iter, 1).ToString() +" selected");
+            if(this.prm=="customer"){
+                ReferenceCustomer o = (ReferenceCustomer)this.parent;
+                o.doChild("Okay! "+ _itemsModel.GetValue (iter, 1).ToString() +" selected",_itemsModel.GetValue (iter, 0).ToString());
+            }else if(this.prm=="supplier"){
+                ReferenceSupplier o = (ReferenceSupplier)this.parent;
+                o.doChild("Okay! "+ _itemsModel.GetValue (iter, 1).ToString() +" selected, please continue filling out the form Organization",_itemsModel.GetValue (iter, 0).ToString());
+            }
+            
         }
 
         private void RemoveItem(object sender, EventArgs e)

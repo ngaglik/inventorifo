@@ -11,14 +11,14 @@ namespace Inventorifo.App
     class ReferenceCustomer : Gtk.Box
     {
         Inventorifo.Lib.LibDb DbCl = new Inventorifo.Lib.LibDb ();
+        Inventorifo.Lib.LibGui GuiCl = new Inventorifo.Lib.LibGui ();
+
         private TreeView _treeView;
         private ListStore _itemsModel;
         //private ListStore numbers_model;
         private Dictionary<CellRenderer, int> _cellColumnsRender;
         private List<Item> _articles;
-        public MainWindow parent;
         private Entry entSearch;
-
         private Popover popover ;
         
 
@@ -292,38 +292,32 @@ namespace Inventorifo.App
             _treeView.InsertColumn(-1, "Organization Tax ID Number", rendererText, "text", (int)ColumnItem.organization_tax_id_number);
         }
 
-        static void RemoveAllWidgets(Container container)
-        {
-            foreach (Widget child in container.Children)
-            {
-                container.Remove(child);
-                child.Destroy(); // Ensure the widget is completely removed
-            }
-        }
-        public void doChild(object o){
+        
+        public void doChild(object o,string prm){
             GLib.Timeout.Add(0, () =>
             {
-                RemoveAllWidgets(popover);
+                GuiCl.RemoveAllWidgets(popover);
                 Label popoverLabel = new Label((string)o);
                 popover.Add(popoverLabel);
                 popover.SetSizeRequest(200, 20);
                 popoverLabel.Show();
+                string sql = "insert into customer (person_id) values ('"+prm+"') ";
+                Console.WriteLine (sql);
+                DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                CreateItemsModel(true,entSearch.Text.Trim());
                 return false;
             });
         }
         
         private void AddItem(object sender, EventArgs e)
         {
-            RemoveAllWidgets(popover);        
-            ReferencePerson widgetPerson = new ReferencePerson(this,"dialog",null);
+            GuiCl.RemoveAllWidgets(popover);        
+            ReferencePerson widgetPerson = new ReferencePerson(this,"dialog","customer");
             popover.Add(widgetPerson);
             popover.SetSizeRequest(800, 400);
             widgetPerson.Show();          
             popover.ShowAll();
-           //  string sql = "insert into customer (name) values ('') ";
-           //  Console.WriteLine (sql);
-           //  DbCl.ExecuteTrans(DbCl.getConn(), sql);
-           //  CreateItemsModel(true,entSearch.Text.Trim());
+           
         }
 
         private void RemoveItem(object sender, EventArgs e)

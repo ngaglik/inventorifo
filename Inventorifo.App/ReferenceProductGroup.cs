@@ -174,7 +174,10 @@ namespace Inventorifo.App
 
         private void AddItem(object sender, EventArgs e)
         {
-            
+            string sql = "insert into product_group (name) values ('') ";
+            Console.WriteLine (sql);
+            DbCl.ExecuteTrans(DbCl.getConn(), sql);
+            CreateItemsModel(true,entSearch.Text.Trim());
         }
 
         private void RemoveItem(object sender, EventArgs e)
@@ -193,9 +196,11 @@ namespace Inventorifo.App
                 case (int)ColumnItem.name:
                     {
                         int i = path.Indices[0];
-                        //_articles[i].short_name = int.Parse(args.NewText);
                         _articles[i].name = args.NewText;
                         _itemsModel.SetValue(iter, column, _articles[i].name);
+                        string sql = "update product_group set name = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
+                        Console.WriteLine (sql);
+                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
                     }
                     break;
 
