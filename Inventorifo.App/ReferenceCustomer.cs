@@ -74,7 +74,7 @@ namespace Inventorifo.App
 
         private class Item
         { //
-            public Item(string id, string person_id,string person_name, string person_address,string person_phone_number, string organization_name, string organization_address, string organization_phone_number, string is_active, string organization_tax_id_number){
+            public Item(string id, string person_id,string person_name, string person_address,string person_phone_number, string customer_group, string customer_group_name,string is_active, string organization_name, string organization_address, string organization_phone_number,  string organization_tax_id_number){
                 this.id = id;
                 this.person_id = person_id;
                 this.person_name = person_name;
@@ -85,16 +85,20 @@ namespace Inventorifo.App
                 this.organization_phone_number = organization_phone_number;
                 this.is_active = is_active;
                 this.organization_tax_id_number = organization_tax_id_number;
+                this.customer_group = customer_group;
+                this.customer_group_name = customer_group_name;
             }
             public string id;
             public string person_id;
             public string person_name;
             public string person_address;
             public string person_phone_number;
+            public string is_active;
+            public string customer_group;
+            public string customer_group_name;
             public string organization_name;
             public string organization_address;
             public string organization_phone_number;
-            public string is_active;
             public string organization_tax_id_number;
         }
 
@@ -105,10 +109,12 @@ namespace Inventorifo.App
             person_name,
             person_address,
             person_phone_number,
+            customer_group,      
+            customer_group_name,
+            is_active,
             organization_name,
             organization_address,
             organization_phone_number,
-            is_active,
             organization_tax_id_number,
             Num
         };
@@ -137,9 +143,9 @@ namespace Inventorifo.App
                 string whrfind = "";
                 if(strfind!="") whrfind = "and (upper(pers.name) like upper('" + strfind + "%') OR upper(cust.organization_name) like upper('" + strfind + "%')   )";
 
-                string sql = "SELECT cust.id ,pers.id person_id, pers.name person_name, pers.address person_address,  pers.phone_number person_phone_number, cust.organization_name, cust.organization_address, cust.organization_phone_number, cust.is_active, cust.organization_tax_id_number "+
-                        "FROM customer cust left outer join person pers on cust.person_id=pers.id "+
-                        "WHERE 1=1 "+ whrfind +
+                string sql = "SELECT cust.id ,pers.id person_id, pers.name person_name, pers.address person_address,  pers.phone_number person_phone_number, cust.customer_group , custgr.name customer_group_name, cust.is_active, cust.organization_name, cust.organization_address, cust.organization_phone_number, cust.organization_tax_id_number "+
+                        "FROM customer cust left outer join person pers on cust.person_id=pers.id, customer_group custgr "+
+                        "WHERE cust.customer_group=custgr.id "+ whrfind +
                         "ORDER by pers.name asc";
                         Console.WriteLine(sql);
               
@@ -151,18 +157,20 @@ namespace Inventorifo.App
                     string person_name=dr[2].ToString();
                     string person_address=dr[3].ToString();
                     string person_phone_number=dr[4].ToString();
-                    string organization_name=dr[5].ToString();
-                    string organization_address=dr[6].ToString();
-                    string organization_phone_number=dr[7].ToString();
-                    string is_active=dr[8].ToString();
-                    string organization_tax_id_number=dr[9].ToString();
+                    string customer_group=dr[5].ToString();
+                    string customer_group_name=dr[6].ToString();
+                    string is_active=dr[7].ToString();
+                    string organization_name=dr[8].ToString();
+                    string organization_address=dr[9].ToString();
+                    string organization_phone_number=dr[10].ToString();
+                    string organization_tax_id_number=dr[11].ToString();
                                     
-                    _articles.Add(new Item(id, person_id, person_name, person_address,person_phone_number, organization_name, organization_address, organization_phone_number, is_active, organization_tax_id_number ));
+                    _articles.Add(new Item(id, person_id, person_name, person_address,person_phone_number, customer_group, customer_group_name,is_active,  organization_name, organization_address, organization_phone_number, organization_tax_id_number ));
                 }
 
                 /* create list store */
                 //
-                _itemsModel = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+                _itemsModel = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
 
                 /* add items */
                 for (int i = 0; i < _articles.Count; i++)
@@ -172,12 +180,14 @@ namespace Inventorifo.App
                     _itemsModel.SetValue(iter, (int)ColumnItem.person_id, _articles[i].person_id);
                     _itemsModel.SetValue(iter, (int)ColumnItem.person_name, _articles[i].person_name);
                     _itemsModel.SetValue(iter, (int)ColumnItem.person_address, _articles[i].person_address);
-                    _itemsModel.SetValue(iter, (int)ColumnItem.person_phone_number, _articles[i].person_phone_number);
+                    _itemsModel.SetValue(iter, (int)ColumnItem.person_phone_number, _articles[i].person_phone_number);                 
+                    _itemsModel.SetValue(iter, (int)ColumnItem.customer_group, _articles[i].customer_group);
+                    _itemsModel.SetValue(iter, (int)ColumnItem.customer_group_name, _articles[i].customer_group_name);            
+                    _itemsModel.SetValue(iter, (int)ColumnItem.is_active, _articles[i].is_active);
                     _itemsModel.SetValue(iter, (int)ColumnItem.organization_name, _articles[i].organization_name);
                     _itemsModel.SetValue(iter, (int)ColumnItem.organization_address, _articles[i].organization_address);
-                    _itemsModel.SetValue(iter, (int)ColumnItem.organization_phone_number, _articles[i].organization_phone_number);                    
-                    _itemsModel.SetValue(iter, (int)ColumnItem.is_active, _articles[i].is_active);
-                    _itemsModel.SetValue(iter, (int)ColumnItem.organization_tax_id_number, _articles[i].organization_tax_id_number);
+                    _itemsModel.SetValue(iter, (int)ColumnItem.organization_phone_number, _articles[i].organization_phone_number);        
+                    _itemsModel.SetValue(iter, (int)ColumnItem.organization_tax_id_number, _articles[i].organization_tax_id_number); 
                 }
                 _treeView.Model = _itemsModel;      
             }
@@ -238,6 +248,44 @@ namespace Inventorifo.App
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.person_phone_number);
             _treeView.InsertColumn(-1, "Person Phone Number", rendererText, "text", (int)ColumnItem.person_phone_number);
 
+            ListStore lstModelCombo = new ListStore(typeof(string), typeof(string));
+            String sql = "Select id,name from customer_group order by id asc";
+            DataTable dt = DbCl.fillDataTable(DbCl.getConn(), sql);
+            foreach (DataRow dr in dt.Rows)
+            {
+                lstModelCombo.AppendValues(dr[0].ToString(), dr[0].ToString() + ").  " + dr[1].ToString());
+            }
+            CellRendererCombo rendererCombo = new CellRendererCombo
+            { 
+                Model = lstModelCombo,
+                TextColumn = 1,
+                HasEntry = false,
+                Editable = true
+            };
+            rendererCombo.Foreground = "green";
+            rendererCombo.Edited += CellEdited;
+            rendererCombo.EditingStarted += EditingStarted;           
+            _cellColumnsRender.Add(rendererCombo, (int)ColumnItem.customer_group_name);
+            _treeView.InsertColumn(-1, "Customer group", rendererCombo, "text", (int)ColumnItem.customer_group_name);
+
+
+             lstModelCombo = new ListStore(typeof(string), typeof(string));
+            lstModelCombo.AppendValues("true","true");
+            lstModelCombo.AppendValues("false","false");
+             rendererCombo = new CellRendererCombo
+            { 
+                Model = lstModelCombo,
+                TextColumn = (int)ColumnNumber.Text,
+                HasEntry = false,
+                Editable = true
+            };
+            rendererCombo.Foreground = "green";
+            rendererCombo.Edited += CellEdited;
+            rendererCombo.EditingStarted += EditingStarted;
+            _cellColumnsRender.Add(rendererCombo, (int)ColumnItem.is_active);
+            _treeView.InsertColumn(-1, "Is Active", rendererCombo, "text", (int)ColumnItem.is_active);
+
+
             rendererText = new CellRendererText
             {
                 Editable = true
@@ -266,21 +314,7 @@ namespace Inventorifo.App
             _treeView.InsertColumn(-1, "Organization Phone Number", rendererText, "text", (int)ColumnItem.organization_phone_number);
         
 
-            ListStore lstModelCombo = new ListStore(typeof(string), typeof(string));
-            lstModelCombo.AppendValues("true","true");
-            lstModelCombo.AppendValues("false","false");
-            CellRendererCombo rendererCombo = new CellRendererCombo
-            { 
-                Model = lstModelCombo,
-                TextColumn = (int)ColumnNumber.Text,
-                HasEntry = false,
-                Editable = true
-            };
-            rendererCombo.Foreground = "green";
-            rendererCombo.Edited += CellEdited;
-            rendererCombo.EditingStarted += EditingStarted;
-            _cellColumnsRender.Add(rendererCombo, (int)ColumnItem.is_active);
-            _treeView.InsertColumn(-1, "Is Active", rendererCombo, "text", (int)ColumnItem.is_active);
+            
 
             rendererText = new CellRendererText
             {
@@ -290,6 +324,9 @@ namespace Inventorifo.App
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.organization_tax_id_number);
             _treeView.InsertColumn(-1, "Organization Tax ID Number", rendererText, "text", (int)ColumnItem.organization_tax_id_number);
+
+            
+
         }
 
         
@@ -413,13 +450,29 @@ namespace Inventorifo.App
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);
                     }
                     break;
+                case (int)ColumnItem.customer_group_name:
+                    {
+                        string oldText = (string)_itemsModel.GetValue(iter, column);
+                        int i = path.Indices[0];                                              
+                        if (args.NewText.Contains(")."))
+                        {
+                            String[] arr = args.NewText.Split(").");
+                            _articles[i].customer_group_name = arr[1].Trim();
+                            _itemsModel.SetValue(iter, column, _articles[i].customer_group_name );  
+                            
+                            string sql = "update customer set customer_group = '"+arr[0].Trim()+"' where id='"+_articles[i].id+"' ";
+                            Console.WriteLine (sql);
+                            DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                        }
+                    }
+                    break;
 
             }
         }
 
         private void EditingStarted(object o, EditingStartedArgs args)
         {
-           ((ComboBox)args.Editable).RowSeparatorFunc += SeparatorRow;
+           //((ComboBox)args.Editable).RowSeparatorFunc += SeparatorRow;
         }
 
         private bool SeparatorRow(ITreeModel model, TreeIter iter)

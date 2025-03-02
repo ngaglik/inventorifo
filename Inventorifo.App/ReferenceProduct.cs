@@ -12,7 +12,6 @@ namespace Inventorifo.App
         Inventorifo.Lib.LibDb DbCl = new Inventorifo.Lib.LibDb ();
         private TreeView _treeView;
         private ListStore _itemsModel;
-        //private ListStore numbers_model;
         private Dictionary<CellRenderer, int> _cellColumnsRender;
         private List<Item> _articles;
 
@@ -129,7 +128,7 @@ namespace Inventorifo.App
                 string whrbarcode = "";
                 if(strbarcode!="") whrbarcode = "and prod.barcode =  '" + strbarcode + "' ";
                         
-                string sql = "SELECT prod.id product_id, prod.short_name, prod.name prod_name, prod.barcode, prod.product_group, prodgr.name product_group_name "+
+                string sql = "SELECT prod.id, prod.short_name, prod.name prod_name, prod.barcode, prod.product_group, prodgr.name product_group_name "+
                         "FROM product prod, product_group prodgr "+
                         "WHERE prod.product_group = prodgr.id "+ whrfind + whrbarcode +
                         "ORDER by prod.name asc";
@@ -161,7 +160,7 @@ namespace Inventorifo.App
                     _itemsModel.SetValue(iter, (int)ColumnItem.product_name, _articles[i].product_name);
                     _itemsModel.SetValue(iter, (int)ColumnItem.barcode, _articles[i].barcode);
                     _itemsModel.SetValue(iter, (int)ColumnItem.product_group, _articles[i].product_group);
-                    _itemsModel.SetValue(iter, (int)ColumnItem.product_group, _articles[i].product_group_name);
+                    _itemsModel.SetValue(iter, (int)ColumnItem.product_group_name, _articles[i].product_group_name);
                 }
                 _treeView.Model = _itemsModel;                
             }
@@ -235,8 +234,8 @@ namespace Inventorifo.App
             rendererCombo.Foreground = "green";
             rendererCombo.Edited += CellEdited;
             rendererCombo.EditingStarted += EditingStarted;           
-            _cellColumnsRender.Add(rendererCombo, (int)ColumnItem.product_group);
-            _treeView.InsertColumn(-1, "Product group", rendererCombo, "text", (int)ColumnItem.product_group);
+            _cellColumnsRender.Add(rendererCombo, (int)ColumnItem.product_group_name);
+            _treeView.InsertColumn(-1, "Product group", rendererCombo, "text", (int)ColumnItem.product_group_name);
 
         }
 
@@ -295,7 +294,7 @@ namespace Inventorifo.App
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);
                     }
                     break;
-                case (int)ColumnItem.product_group:
+                case (int)ColumnItem.product_group_name:
                     {
                         string oldText = (string)_itemsModel.GetValue(iter, column);
                         int i = path.Indices[0];                                              

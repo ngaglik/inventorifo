@@ -7,9 +7,9 @@ namespace Inventorifo.Lib
     public class LibDb
     {
         
-        public String CONNSTR = "Server=localhost;Port=5432;User Id=postgres;Password=yourpass;Database=inventorifo;Pooling=true;MinPoolSize=1;MaxPoolSize=200;";
-        public String CONNSTR2 = "Server=localhost;Port=5432;User Id=postgres;Password=yourpass;Database=inventorifo;Pooling=true;MinPoolSize=1;MaxPoolSize=200;";
-        public String CONNSTR3 = "Server=localhost;Port=5432;User Id=postgres;Password=yourpass;Database=inventorifo;Pooling=true;MinPoolSize=1;MaxPoolSize=200;";
+        public String CONNSTR = "Server=localhost;Port=5432;User Id=postgres;Password=6dbad1f65d69313c39c75834b017716a;Database=inventorifo;Pooling=true;MinPoolSize=1;MaxPoolSize=200;";
+        public String CONNSTR2 = "Server=localhost;Port=5432;User Id=postgres;Password=6dbad1f65d69313c39c75834b017716a;Database=inventorifo;Pooling=true;MinPoolSize=1;MaxPoolSize=200;";
+        public String CONNSTR3 = "Server=localhost;Port=5432;User Id=postgres;Password=6dbad1f65d69313c39c75834b017716a;Database=inventorifo;Pooling=true;MinPoolSize=1;MaxPoolSize=200;";
         public LibDb()
         {
         }
