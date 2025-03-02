@@ -5,6 +5,7 @@
 
 # Node artifact files
 Inventorifo.Lib/
+Inventorifo.Db/
 .vs/
 # Compiled Java class files
 *.class
