@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Gtk;
 using System.Data;
+using Pango;
 
 namespace Inventorifo.App
 {
@@ -18,8 +19,13 @@ namespace Inventorifo.App
         private Entry entSearch;
         private Entry entBarcode;
 
-        public ReferenceStock() : base(Orientation.Vertical, 3)
+        public ReferenceStock(Window parent, string prm) : base(Orientation.Vertical, 3)
         {
+            Label lbTitle = new Label();
+            lbTitle.Text = "Stock";
+            lbTitle.ModifyFont(FontDescription.FromString("Arial 18"));
+            this.PackStart(lbTitle, false, true, 0);
+            
             _cellColumnsRender = new Dictionary<CellRenderer, int>();
 
             ScrolledWindow sw = new ScrolledWindow

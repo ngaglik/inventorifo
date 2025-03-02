@@ -12,8 +12,8 @@ namespace Inventorifo.App
        // [UI] private Window ReferenceWindow = null;
         //private int _counter;
         //private Window window;
-        private Box mainBox;
-
+        public Box mainBox;
+        public EventBox background;
         public MainWindow() : this(new Builder("MainWindow.glade")) { }
 
         private MainWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
@@ -25,9 +25,11 @@ namespace Inventorifo.App
             MenuItem productGroupMenuItem = (MenuItem)builder.GetObject("ProductGroupMenuItem");
 
             MenuItem customerMenuItem = (MenuItem)builder.GetObject("CustomerMenuItem");
+            MenuItem supplierMenuItem = (MenuItem)builder.GetObject("SupplierMenuItem");
             MenuItem personMenuItem = (MenuItem)builder.GetObject("PersonMenuItem");
 
             MenuItem aboutMenuItem = (MenuItem)builder.GetObject("AboutMenuItem");
+            
             mainBox = (Box)builder.GetObject("MainBox");
 
             DeleteEvent += Window_DeleteEvent;
@@ -36,7 +38,9 @@ namespace Inventorifo.App
             productMenuItem.Activated += ProductMenuItem_Activated;
             productGroupMenuItem.Activated += ProductGroupMenuItem_Activated;
             personMenuItem.Activated += PersonMenuItem_Activated;
+            supplierMenuItem.Activated += SupplierMenuItemActivated;
             customerMenuItem.Activated += CustomerMenuItem_Activated;
+
             aboutMenuItem.Activated += AboutMenuItem_Activated;
             //_button1.Clicked += Button1_Clicked;            
             Maximize();
@@ -62,7 +66,7 @@ namespace Inventorifo.App
             Gtk.Application.Invoke(delegate
             {
             ClearMainBox();
-            ReferenceStock refWidget = new ReferenceStock();
+            ReferenceStock refWidget = new ReferenceStock(this,null);
             mainBox.PackStart(refWidget, true, true, 5);
             refWidget.ShowAll();
             });
@@ -72,7 +76,7 @@ namespace Inventorifo.App
             Gtk.Application.Invoke(delegate
             {
                 ClearMainBox();
-                ReferenceProduct refWidget = new ReferenceProduct();
+                ReferenceProduct refWidget = new ReferenceProduct(this,null);
                 mainBox.PackStart(refWidget, true, true, 5);
                 refWidget.ShowAll();
             });
@@ -82,7 +86,7 @@ namespace Inventorifo.App
             Gtk.Application.Invoke(delegate
             {
                 ClearMainBox();
-                ReferenceProductGroup refWidget = new ReferenceProductGroup();
+                ReferenceProductGroup refWidget = new ReferenceProductGroup(this,null);
                 mainBox.PackStart(refWidget, true, true, 5);
                 refWidget.ShowAll();
             });
@@ -92,20 +96,30 @@ namespace Inventorifo.App
             Gtk.Application.Invoke(delegate
             {
                 ClearMainBox();
-                ReferencePerson refWidget = new ReferencePerson();
+                ReferencePerson refWidget = new ReferencePerson(this, "widget", null);
+                mainBox.PackStart(refWidget, true, true, 5);
+                refWidget.ShowAll();
+            });
+        }
+        private void SupplierMenuItemActivated(object sender, EventArgs a)
+        {
+            Gtk.Application.Invoke(delegate
+            {
+                ClearMainBox();
+                ReferenceSupplier refWidget = new ReferenceSupplier(this,null);
                 mainBox.PackStart(refWidget, true, true, 5);
                 refWidget.ShowAll();
             });
         }
         private void CustomerMenuItem_Activated(object sender, EventArgs a)
         {
-            ClearMainBox();
-            //TreeViewSection refWidget = new TreeViewSection();
-            //mainBox.PackStart(refWidget, true, true, 5);
-            //refWidget.ShowAll();
-           // MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, "Product ");
-           // md.Run();
-           // md.Destroy();
+            Gtk.Application.Invoke(delegate
+            {
+                ClearMainBox();
+                ReferenceCustomer refWidget = new ReferenceCustomer(this,null);
+                mainBox.PackStart(refWidget, true, true, 5);
+                refWidget.ShowAll();
+            });
         }
         private void AboutMenuItem_Activated(object sender, EventArgs a){
 
