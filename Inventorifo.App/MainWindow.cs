@@ -12,8 +12,7 @@ namespace Inventorifo.App
        // [UI] private Window ReferenceWindow = null;
         //private int _counter;
         //private Window window;
-        public Box mainBox;
-        public EventBox background;
+        public Box mainBox;        
         public MainWindow() : this(new Builder("MainWindow.glade")) { }
 
         private MainWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
@@ -53,7 +52,7 @@ namespace Inventorifo.App
         private void PurchaseMenuItem_Activated(object sender, EventArgs a)
         {
             ClearMainBox();
-            TransactionWindow transWidget = new TransactionWindow(this,1);
+            TransactionPurchase transWidget = new TransactionPurchase(this,null);
             mainBox.PackStart(transWidget, false, false, 5);
             transWidget.ShowAll();
 
