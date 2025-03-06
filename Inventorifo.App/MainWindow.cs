@@ -4,6 +4,7 @@ using UI = Gtk.Builder.ObjectAttribute;
 
 namespace Inventorifo.App
 {
+    
     class MainWindow : Window
     {
         //[UI] private Label _label1 = null;
@@ -14,10 +15,12 @@ namespace Inventorifo.App
         //private Window window;
         public Box mainBox;        
         public MainWindow() : this(new Builder("MainWindow.glade")) { }
+        public UserLogin user;
 
         private MainWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
         {
             builder.Autoconnect(this);
+
             MenuItem purchaseMenuItem = (MenuItem)builder.GetObject("PurchaseMenuItem");
             MenuItem stockMenuItem = (MenuItem)builder.GetObject("StockMenuItem");
             MenuItem productMenuItem = (MenuItem)builder.GetObject("ProductMenuItem");
@@ -43,6 +46,8 @@ namespace Inventorifo.App
             aboutMenuItem.Activated += AboutMenuItem_Activated;
             //_button1.Clicked += Button1_Clicked;            
             Maximize();
+            //( id,  person_id, person_name,  person_address, person_phone_number,  level, is_active
+            user = new UserLogin("1","1", "admin","addres","phone","1","true");
         }
 
         private void Window_DeleteEvent(object sender, DeleteEventArgs a)
@@ -53,7 +58,7 @@ namespace Inventorifo.App
         {
             ClearMainBox();
             TransactionPurchase transWidget = new TransactionPurchase(this,null);
-            mainBox.PackStart(transWidget, false, false, 5);
+            mainBox.PackStart(transWidget, false, true, 5);
             transWidget.ShowAll();
 
           //  MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, "Purchase ");
@@ -64,10 +69,10 @@ namespace Inventorifo.App
         {
             Gtk.Application.Invoke(delegate
             {
-            ClearMainBox();
-            ReferenceStock refWidget = new ReferenceStock(this,null);
-            mainBox.PackStart(refWidget, true, true, 5);
-            refWidget.ShowAll();
+                ClearMainBox();
+                ReferenceStock refWidget = new ReferenceStock(this,null);
+                mainBox.PackStart(refWidget, true, true, 5);
+                refWidget.ShowAll();
             });
         }
         private void ProductMenuItem_Activated(object sender, EventArgs a)
@@ -75,7 +80,7 @@ namespace Inventorifo.App
             Gtk.Application.Invoke(delegate
             {
                 ClearMainBox();
-                ReferenceProduct refWidget = new ReferenceProduct(this,null);
+                ReferenceProduct refWidget = new ReferenceProduct(this,"widget",null);
                 mainBox.PackStart(refWidget, true, true, 5);
                 refWidget.ShowAll();
             });
@@ -105,7 +110,7 @@ namespace Inventorifo.App
             Gtk.Application.Invoke(delegate
             {
                 ClearMainBox();
-                ReferenceSupplier refWidget = new ReferenceSupplier(this,null);
+                ReferenceSupplier refWidget = new ReferenceSupplier(this,"widget",null);
                 mainBox.PackStart(refWidget, true, true, 5);
                 refWidget.ShowAll();
             });
@@ -142,5 +147,24 @@ namespace Inventorifo.App
                 child.Destroy(); // Properly free memory
             }
         }
+    }
+    class UserLogin
+    { //
+        public UserLogin(string id, string person_id,string person_name, string person_address,string person_phone_number, string level,string is_active){
+        this.id = id;
+        this.person_id = person_id;
+        this.person_name = person_name;
+        this.person_address = person_address;
+        this.person_phone_number = person_phone_number;
+        this.level = level;
+        this.is_active = is_active;
+        }
+        public string id;
+        public string person_id;
+        public string person_name;
+        public string person_address;
+        public string person_phone_number;
+        public string level;
+        public string is_active;
     }
 }

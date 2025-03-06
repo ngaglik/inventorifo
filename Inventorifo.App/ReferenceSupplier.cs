@@ -21,13 +21,51 @@ namespace Inventorifo.App
         private Popover popover ;
         private Entry entSearch;
 
-        public ReferenceSupplier(object parent, string prm) : base(Orientation.Vertical, 3)
+        public object parent;
+        Boolean isEditable;
+        string textForground;
+        string prm;
+
+        public ReferenceSupplier(object parent, string mode,string prm) : base(Orientation.Vertical, 3)
         {
+            this.parent=parent;
+            this.prm = prm;
+
             Label lbTitle = new Label();
             lbTitle.Text = "Supplier";
             lbTitle.ModifyFont(FontDescription.FromString("Arial 18"));
             this.PackStart(lbTitle, false, true, 0);
-            
+             /* some buttons */
+            Box hbox = new Box(Orientation.Horizontal, 4)
+            {
+                Homogeneous = true
+            };   
+            entSearch = new Entry();
+            entSearch.PlaceholderText = "Search";
+            hbox.PackStart(entSearch, true, true, 0);
+                     
+            switch (mode)
+            {
+                case "dialog":
+                    {
+                        Button button = new Button("Select");
+                        button.Clicked += SelectItem;
+                        hbox.PackStart(button, true, true, 0);
+                        isEditable = false;
+                        textForground = "black";
+                    } 
+                    break;
+                case "widget":
+                    {
+                        Button button = new Button("Add");
+                        button.Clicked += AddItem;
+                        hbox.PackStart(button, true, true, 0);
+                        isEditable = true;
+                        textForground = "green";
+                        popover = new Popover(button);  
+                    } 
+                    break;
+            } 
             _cellColumnsRender = new Dictionary<CellRenderer, int>();
 
             ScrolledWindow sw = new ScrolledWindow
@@ -41,32 +79,17 @@ namespace Inventorifo.App
             /* create tree view */
             _treeView = new TreeView();
             _treeView.Selection.Mode = SelectionMode.Single;
-
+              
             AddColumns();
             _treeView.Columns[1].Visible = false;
 
             CreateItemsModel(true,"");
-            sw.Add(_treeView);
+            sw.Add(_treeView);            
 
-            /* some buttons */
-            Box hbox = new Box(Orientation.Horizontal, 4)
-            {
-                Homogeneous = true
-            };
             this.PackStart(hbox, false, false, 0);
 
-            entSearch = new Entry();
-            entSearch.PlaceholderText = "Search";
-            hbox.PackStart(entSearch, true, true, 0);
-
-
-            Button button = new Button("Add");
-            button.Clicked += AddItem;
-            hbox.PackStart(button, true, true, 0);
-
-            popover = new Popover(button);  
-
             entSearch.Changed += HandleEntSearchChanged;
+            entSearch.GrabFocus();
         }
 
         private class Item
@@ -210,54 +233,54 @@ namespace Inventorifo.App
 
             rendererText = new CellRendererText
             {
-                Editable = true
+                Editable = isEditable
             };
-            rendererText.Foreground = "green";
+            rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.person_name);
             _treeView.InsertColumn(-1, "Person Name", rendererText, "text", (int)ColumnItem.person_name);
 
             rendererText = new CellRendererText
             {
-                Editable = true
+                Editable = isEditable
             };
-            rendererText.Foreground = "green";
+            rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.person_address);
             _treeView.InsertColumn(-1, "Person Address", rendererText, "text", (int)ColumnItem.person_address);
 
             rendererText = new CellRendererText
             {
-                Editable = true
+                Editable = isEditable
             };
-            rendererText.Foreground = "green";
+            rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.person_phone_number);
             _treeView.InsertColumn(-1, "Person Phone Number", rendererText, "text", (int)ColumnItem.person_phone_number);
 
             rendererText = new CellRendererText
             {
-                Editable = true
+                Editable = isEditable
             };
-            rendererText.Foreground = "green";
+            rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.organization_name);
             _treeView.InsertColumn(-1, "Organization Name", rendererText, "text", (int)ColumnItem.organization_name);
 
             rendererText = new CellRendererText
             {
-                Editable = true
+                Editable = isEditable
             };
-            rendererText.Foreground = "green";
+            rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.organization_address);
             _treeView.InsertColumn(-1, "Organization Address", rendererText, "text", (int)ColumnItem.organization_address);
 
             rendererText = new CellRendererText
             {
-                Editable = true
+                Editable = isEditable
             };
-            rendererText.Foreground = "green";
+            rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.organization_phone_number);
             _treeView.InsertColumn(-1, "Organization Phone Number", rendererText, "text", (int)ColumnItem.organization_phone_number);
@@ -269,7 +292,7 @@ namespace Inventorifo.App
                 Model = lstModelCombo,
                 TextColumn = (int)ColumnNumber.Text,
                 HasEntry = false,
-                Editable = true
+                Editable = isEditable
             };
             rendererCombo.Foreground = "green";
             rendererCombo.Edited += CellEdited;
@@ -279,15 +302,24 @@ namespace Inventorifo.App
 
             rendererText = new CellRendererText
             {
-                Editable = true
+                Editable = isEditable
             };
-            rendererText.Foreground = "green";
+            rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.organization_tax_id_number);
             _treeView.InsertColumn(-1, "Organization Tax ID Number", rendererText, "text", (int)ColumnItem.organization_tax_id_number);
 
         }
-
+        private void SelectItem(object sender, EventArgs e)
+        {
+            TreeSelection selection = _treeView.Selection;
+            TreeIter iter;
+            if(selection.GetSelected( out iter)){
+                Console.WriteLine("Selected Value:"+_itemsModel.GetValue (iter, 0).ToString()+_itemsModel.GetValue (iter, 1).ToString());
+            }            
+            TransactionPurchase o = (TransactionPurchase)this.parent;
+            o.doChildSupplier("Yeay! "+ _itemsModel.GetValue (iter, 1).ToString() +" selected",_itemsModel.GetValue (iter, 0).ToString());
+        }
         public void doChild(object o,string prm){
             GLib.Timeout.Add(0, () =>
             {
@@ -296,6 +328,7 @@ namespace Inventorifo.App
                 popover.Add(popoverLabel);
                 popover.SetSizeRequest(400, 20);
                 popoverLabel.Show();
+
                 string sql = "insert into supplier (person_id) values ('"+prm+"') ";
                 Console.WriteLine (sql);
                 DbCl.ExecuteTrans(DbCl.getConn(), sql);

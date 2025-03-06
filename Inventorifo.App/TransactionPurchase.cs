@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Gtk;
+using Gdk;
 using System.Data;
 using Pango;
 using UI = Gtk.Builder.ObjectAttribute;
@@ -11,7 +12,13 @@ namespace Inventorifo.App
     class TransactionPurchase : Gtk.Box
     {
         Inventorifo.Lib.LibDb DbCl = new Inventorifo.Lib.LibDb ();
-        public TransactionPurchase(object parent, string prm) : this(new Builder("TransactionPurchase.glade")) { }
+        Inventorifo.Lib.LibGui GuiCl = new Inventorifo.Lib.LibGui ();
+        public object parent;
+        public string prm;
+        public TransactionPurchase(object parent, string prm) : this(new Builder("TransactionPurchase.glade")) { 
+            this.parent=parent;
+            this.prm = prm;
+        }
         private TreeView _treeView;
         private ListStore _transModel;
         private TreeView _treeViewItems;
@@ -22,6 +29,8 @@ namespace Inventorifo.App
 
         private Entry entSearch;
         private Entry entBarcode;
+        private Popover popoverSupplier ;
+        private Popover popoverProduct ;
 
         public TransactionPurchase(Builder builder) : base(builder.GetRawOwnedObject("TransactionPurchase"))
         {
@@ -30,10 +39,21 @@ namespace Inventorifo.App
             Label lbTitle = (Label)builder.GetObject("LbTitle");
             lbTitle.Text = "Purchase";
             lbTitle.ModifyFont(FontDescription.FromString("Arial 18"));
-            this.PackStart(lbTitle, false, true, 0);
+
+            Box  boxMiddle = (Box)builder.GetObject("BoxMiddle");
+            boxMiddle.SetSizeRequest(-1, -1); // Allow dynamic resizing
+            boxMiddle.Expand = true;
+
+            Button  btnProduct = (Button)builder.GetObject("BtnProduct");
+            popoverProduct = new Popover(btnProduct);    
+            btnProduct.Clicked += AddProduct;
+
+            Button  btnSupplier = (Button)builder.GetObject("BtnSupplier");
+            popoverSupplier = new Popover(btnSupplier);    
+            btnSupplier.Clicked += AddSupplier;
 
             Button  btnAdd = (Button)builder.GetObject("BtnAdd");
-
+            btnAdd.Clicked += AddItem;
             
         }
 
@@ -146,7 +166,8 @@ namespace Inventorifo.App
 
         private void AddItem(object sender, EventArgs e)
         {
-            string sql = "insert into product_group (name) values ('') ";
+
+            string sql = "insert into transaction (transaction_type) values ('') ";
             Console.WriteLine (sql);
             DbCl.ExecuteTrans(DbCl.getConn(), sql);
             CreateItemsModel(true,entSearch.Text.Trim());
@@ -177,6 +198,60 @@ namespace Inventorifo.App
                     break;
 
             }
+        }
+
+        public void doChildProduct(object o,string prm){
+            GLib.Timeout.Add(0, () =>
+            {
+                GuiCl.RemoveAllWidgets(popoverProduct);
+                Label popLabel = new Label((string)o);
+                popoverProduct.Add(popLabel);
+                popoverProduct.SetSizeRequest(200, 20);
+                popLabel.Show();
+                Console.WriteLine("Your'e select "+prm);
+                return false;
+            });
+        }
+        
+        private void AddProduct(object sender, EventArgs e)
+        {
+            //GuiCl.RemoveAllWidgets(popover);        
+            //                  
+            GuiCl.RemoveAllWidgets(popoverProduct);        
+            ReferenceProduct refWidget = new ReferenceProduct(this,"dialog","purchase");
+            popoverProduct.Add(refWidget);
+            popoverProduct.SetSizeRequest(800, 300);
+            refWidget.Show();          
+            popoverProduct.ShowAll();
+        }
+
+        public void doChildSupplier(object o,string prm){
+            GLib.Timeout.Add(0, () =>
+            {
+                GuiCl.RemoveAllWidgets(popoverSupplier);
+                Label popLabel = new Label((string)o);
+                popoverSupplier.Add(popLabel);
+                popoverSupplier.SetSizeRequest(200, 20);
+                popLabel.Show();
+                string sql = "update transaction set supplier_id='"+prm+"' where id= ";
+                Console.WriteLine (sql);
+                DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                
+                return false;
+            });
+           // CreateItemsModel(true,entSearch.Text.Trim());
+        }
+        
+        private void AddSupplier(object sender, EventArgs e)
+        {
+            //GuiCl.RemoveAllWidgets(popover);        
+            //                  
+            GuiCl.RemoveAllWidgets(popoverSupplier);        
+            ReferenceSupplier refWidget = new ReferenceSupplier(this,"dialog","purchase");
+            popoverSupplier.Add(refWidget);
+            popoverSupplier.SetSizeRequest(800, 300);
+            refWidget.Show();          
+            popoverSupplier.ShowAll();
         }
 
         private void EditingStarted(object o, EditingStartedArgs args)

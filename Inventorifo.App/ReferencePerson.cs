@@ -17,6 +17,7 @@ namespace Inventorifo.App
         private List<Item> _articles;
         public object parent;
         private Entry entSearch;
+        
         Boolean isEditable;
         string textForground;
         string prm;
@@ -36,6 +37,7 @@ namespace Inventorifo.App
             entSearch = new Entry();
             entSearch.PlaceholderText = "Search";
             hbox.PackStart(entSearch, true, true, 0);
+            
             switch (mode)
             {
                 case "dialog":
@@ -57,7 +59,7 @@ namespace Inventorifo.App
                     } 
                     break;
             }
-            Console.WriteLine("PackType changed to " + mode);
+            //Console.WriteLine("PackType changed to " + mode);
 
             
             _cellColumnsRender = new Dictionary<CellRenderer, int>();
@@ -78,16 +80,11 @@ namespace Inventorifo.App
             //_treeView.Columns[4].Visible = false;
 
             CreateItemsModel(true,"");
-            sw.Add(_treeView);
-
-            /* some buttons */
-            
+            sw.Add(_treeView); 
             this.PackStart(hbox, false, false, 0);
-
-            
-
-            
+                        
             entSearch.Changed += HandleEntSearchChanged;
+            entSearch.GrabFocus();
         }
 
         private class Item

@@ -9,7 +9,7 @@ namespace Inventorifo.Lib
 {
     public class LibGui
     {
-        public void RemoveAllWidgets(Container container)
+        public void RemoveAllWidgets(Popover container)
         {
             foreach (Widget child in container.Children)
             {

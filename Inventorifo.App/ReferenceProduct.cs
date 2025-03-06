@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Gtk;
+using Gdk;
 using System.Data;
 using Pango;
 
@@ -14,17 +15,59 @@ namespace Inventorifo.App
         private ListStore _itemsModel;
         private Dictionary<CellRenderer, int> _cellColumnsRender;
         private List<Item> _articles;
+        private Popover popover ;
 
         private Entry entSearch;
         private Entry entBarcode;
 
-        public ReferenceProduct(Window parent, string prm) : base(Orientation.Vertical, 3)
+        public object parent;
+        Boolean isEditable;
+        string textForground;
+        string prm;
+
+        public ReferenceProduct(object parent, string mode, string prm) : base(Orientation.Vertical, 3)
         {
+            this.parent=parent;
+            this.prm = prm;
+
             Label lbTitle = new Label();
             lbTitle.Text = "Product";
             lbTitle.ModifyFont(FontDescription.FromString("Arial 18"));
             this.PackStart(lbTitle, false, true, 0);
             
+             Box hbox = new Box(Orientation.Horizontal, 4)
+            {
+                Homogeneous = true
+            };
+            entSearch = new Entry();
+            entSearch.PlaceholderText = "Search";
+            entBarcode = new Entry();
+            entBarcode.PlaceholderText = "Barcode";        
+            hbox.PackStart(entBarcode, true, true, 0);   
+            hbox.PackStart(entSearch, true, true, 0);    
+           
+             switch (mode)
+            {
+                case "dialog":
+                    {
+                        Button button = new Button("Select");
+                        button.Clicked += SelectItem;
+                        hbox.PackStart(button, true, true, 0);
+                        isEditable = false;
+                        textForground = "black";
+                    } 
+                    break;
+                case "widget":
+                    {
+                        Button button = new Button("Add");
+                        button.Clicked += AddItem;
+                        hbox.PackStart(button, true, true, 0);
+                        isEditable = true;
+                        textForground = "green";
+                        popover = new Popover(button);  
+                    } 
+                    break;
+            }    
             _cellColumnsRender = new Dictionary<CellRenderer, int>();
 
             ScrolledWindow sw = new ScrolledWindow
@@ -43,31 +86,21 @@ namespace Inventorifo.App
             //_treeView.Columns[4].Visible = false;
             //_treeView.Columns[10].Visible = false;
             //_treeView.Columns[13].Visible = false;
-
+            /* some buttons */
+            
+            
             CreateItemsModel(true,"","");
             sw.Add(_treeView);
+            //_treeView.CanFocus = true;
+            //_treeView.KeyPressEvent += HandleTreeViewKeyPressEvent;
 
-            /* some buttons */
-            Box hbox = new Box(Orientation.Horizontal, 4)
-            {
-                Homogeneous = true
-            };
+            
+                    
             this.PackStart(hbox, false, false, 0);
-
-            entSearch = new Entry();
-            entSearch.PlaceholderText = "Search";
-            hbox.PackStart(entSearch, true, true, 0);
-
-            entBarcode = new Entry();
-            entBarcode.PlaceholderText = "Barcode";
-            hbox.PackStart(entBarcode, true, true, 0);
-
-            Button button = new Button("Add");
-            button.Clicked += AddItem;
-            hbox.PackStart(button, true, true, 0);
 
             entSearch.Changed += HandleEntSearchChanged;
             entBarcode.Changed += HandleEntBarcodeChanged;
+            entBarcode.GrabFocus();
         }
 
         private class Item
@@ -105,6 +138,7 @@ namespace Inventorifo.App
             Num
         };
         
+
         private void HandleEntSearchChanged(object sender, EventArgs e)
         {
             CreateItemsModel(true,entSearch.Text.Trim(),"");
@@ -192,27 +226,27 @@ namespace Inventorifo.App
 
             rendererText = new CellRendererText
             {
-                Editable = true
+                Editable = isEditable
             };
-            rendererText.Foreground = "green";
+            rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.short_name);
             _treeView.InsertColumn(-1, "Short name", rendererText, "text", (int)ColumnItem.short_name);
 
             rendererText = new CellRendererText
             {
-                Editable = true
+                Editable = isEditable
             };
-            rendererText.Foreground = "green";
+            rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.product_name);
             _treeView.InsertColumn(-1, "Product name", rendererText, "text", (int)ColumnItem.product_name);
 
             rendererText = new CellRendererText
             {
-                Editable = true
+                Editable = isEditable
             };
-            rendererText.Foreground = "green";
+            rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.barcode);
             _treeView.InsertColumn(-1, "Barcode", rendererText, "text", (int)ColumnItem.barcode);
@@ -229,16 +263,38 @@ namespace Inventorifo.App
                 Model = lstModelCombo,
                 TextColumn = 1,
                 HasEntry = false,
-                Editable = true
+                Editable = isEditable
             };
-            rendererCombo.Foreground = "green";
+            rendererCombo.Foreground = textForground;
             rendererCombo.Edited += CellEdited;
             rendererCombo.EditingStarted += EditingStarted;           
             _cellColumnsRender.Add(rendererCombo, (int)ColumnItem.product_group_name);
             _treeView.InsertColumn(-1, "Product group", rendererCombo, "text", (int)ColumnItem.product_group_name);
 
         }
-
+        private void SelectItem(object sender, EventArgs e)
+        {
+            TreeSelection selection = _treeView.Selection;
+            TreeIter iter;
+            if(selection.GetSelected( out iter)){
+                Console.WriteLine("Selected Value:"+_itemsModel.GetValue (iter, 0).ToString()+_itemsModel.GetValue (iter, 1).ToString());
+            }            
+            TransactionPurchase o = (TransactionPurchase)this.parent;
+            o.doChildProduct("Yeay! "+ _itemsModel.GetValue (iter, 1).ToString() +" selected",_itemsModel.GetValue (iter, 0).ToString());
+        }
+        private void HandleTreeViewKeyPressEvent(object sender, KeyPressEventArgs e)
+        {
+            if (e.Event.Key == Gdk.Key.Return || e.Event.Key == Gdk.Key.KP_Enter)  // Check if Enter key is pressed
+            {
+                TreeSelection selection = _treeView.Selection;
+                TreeIter iter;
+                if(selection.GetSelected( out iter)){
+                    Console.WriteLine("Selected Value:"+_itemsModel.GetValue (iter, 0).ToString()+_itemsModel.GetValue (iter, 1).ToString());
+                }            
+                TransactionPurchase o = (TransactionPurchase)this.parent;
+                o.doChildProduct("Yeay! "+ _itemsModel.GetValue (iter, 1).ToString() +" selected",_itemsModel.GetValue (iter, 0).ToString());
+            }
+        }
         private void AddItem(object sender, EventArgs e)
         {
             string sql = "insert into product (name,product_group) values ('',1) ";
