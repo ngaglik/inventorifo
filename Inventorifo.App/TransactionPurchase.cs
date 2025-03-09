@@ -13,11 +13,13 @@ namespace Inventorifo.App
     {
         Inventorifo.Lib.LibDb DbCl = new Inventorifo.Lib.LibDb ();
         Inventorifo.Lib.LibGui GuiCl = new Inventorifo.Lib.LibGui ();
-        public object parent;
+        public MainWindow parent;
         public string prm;
         public TransactionPurchase(object parent, string prm) : this(new Builder("TransactionPurchase.glade")) { 
-            this.parent=parent;
+            this.parent=(MainWindow)parent;
             this.prm = prm;
+            Console.WriteLine(this.parent.user.id + " "+ this.parent.user.person_name);
+            
         }
         private TreeView _treeView;
         private ListStore _transModel;
@@ -25,7 +27,7 @@ namespace Inventorifo.App
         private ListStore _itemsModel;
         //private ListStore numbers_model;
         private Dictionary<CellRenderer, int> _cellColumnsRender;
-        private List<Item> _articles;
+        private List<TransactionHistory> _articles;
 
         private Entry entSearch;
         private Entry entBarcode;
@@ -55,22 +57,34 @@ namespace Inventorifo.App
             Button  btnAdd = (Button)builder.GetObject("BtnAdd");
             btnAdd.Clicked += AddItem;
             
+            Entry entSearch = (Entry)builder.GetObject("EntSearch");
+            entSearch.Changed += HandleEntSearchChanged;
+
+            _treeView = (TreeView)builder.GetObject("TreeViewTrans");
+            _treeView.Selection.Mode = SelectionMode.Single;
+
+            _treeViewItems = (TreeView)builder.GetObject("TreeViewItem");
+            _treeViewItems.Selection.Mode = SelectionMode.Single;
+            _cellColumnsRender = new Dictionary<CellRenderer, int>();
+            AddColumns();
+
+            CreateItemsModel(true,entSearch.Text.Trim());
         }
 
-        private class Item
+        private class TransactionHistory
         { //
-            public Item(string id, string name){
+            public TransactionHistory(string id, string transaction_date){
                 this.id = id;
-                this.name = name;
+                this.transaction_date = transaction_date;
             }
             public string id;
-            public string name;
+            public string transaction_date;
         }
 
         private enum ColumnItem
         { //
             id,
-            name,
+            transaction_date,
             Num
         };
 
@@ -82,7 +96,11 @@ namespace Inventorifo.App
         
         private void HandleEntSearchChanged(object sender, EventArgs e)
         {
-            CreateItemsModel(false,entSearch.Text.Trim());
+            Entry entry = sender as Entry;
+            if (entry != null)
+            {
+                CreateItemsModel(true,entry.Text.Trim());
+            }
         }
         private void CreateItemsModel(Boolean showAll,string strfind)
         {      
@@ -93,25 +111,25 @@ namespace Inventorifo.App
                 _transModel = null;
                 TreeIter iter;
                 /* create array */
-                _articles = new List<Item>();
+                _articles = new List<TransactionHistory>();
 
                 string whrfind = "";
-                if(strfind!="") whrfind = "and upper(prodgr.name) like upper('" + strfind + "%')  ";
-
-                string sql = "SELECT prodgr.id , prodgr.name "+
-                        "FROM product_group prodgr "+
-                        "WHERE 1=1 "+ whrfind +
-                        "ORDER by prodgr.name asc";
-                        Console.WriteLine(sql);
+                if(strfind!="") whrfind = "and (upper(sup.organization_name) like upper('" + strfind + "%') or upper(pers.name) like upper('" + strfind + "%') )";
+                string sql = "select tr.id,TO_CHAR(tr.transaction_date,'yyyy-mm-dd') transaction_date,tr.state,tr.supplier_id,sup.organization_name,sup.organization_phone_number,pers.name person_name,pers.phone_number,tr.user_id,tr.application_id "+
+                "from transaction tr left outer join supplier sup on tr.supplier_id=sup.id "+
+                "left outer join person pers on sup.person_id=pers.id,(select usr.id, pers.name person_name, pers.phone_number from person pers,userlogin usr where usr.person_id=pers.id) uspers "+
+                "where tr.transaction_type=1 and tr.transaction_date = CURRENT_date and uspers.id=tr.user_id "+
+                "ORDER by tr.id desc";
+                Console.WriteLine(sql);
               
                 DataTable dttv = DbCl.fillDataTable(DbCl.getConn(), sql);
                 foreach (DataRow dr in dttv.Rows)
                 {                    
-                    string id=dr[0].ToString();
-                    string name=dr[1].ToString();
-                                    
-                    _articles.Add(new Item(id, name));
+                    string id=dr[0].ToString(); 
+                    string transaction_date=dr[1].ToString();                                    
+                    _articles.Add(new TransactionHistory(id, transaction_date));
                 }
+                //Console.WriteLine(_articles[0].transaction_date);
 
                 /* create list store */
                 //
@@ -122,7 +140,7 @@ namespace Inventorifo.App
                 {
                     iter = _transModel.Append();
                     _transModel.SetValue(iter, (int)ColumnItem.id, _articles[i].id);
-                    _transModel.SetValue(iter, (int)ColumnItem.name, _articles[i].name);
+                    _transModel.SetValue(iter, (int)ColumnItem.transaction_date, _articles[i].transaction_date);
                 }
                 _treeView.Model = _transModel;           
 
@@ -153,24 +171,20 @@ namespace Inventorifo.App
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.id);
             _treeView.InsertColumn(-1, "ID", rendererText, "text", (int)ColumnItem.id);
 
-            rendererText = new CellRendererText
-            {
-                Editable = true
-            };
-            rendererText.Foreground = "green";
-            rendererText.Edited += CellEdited;
-            _cellColumnsRender.Add(rendererText, (int)ColumnItem.name);
-            _treeView.InsertColumn(-1, "Name", rendererText, "text", (int)ColumnItem.name);            
+            rendererText = new CellRendererText();
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.transaction_date);
+            _treeView.InsertColumn(-1, "Name", rendererText, "text", (int)ColumnItem.transaction_date);            
 
         }
 
         private void AddItem(object sender, EventArgs e)
         {
 
-            string sql = "insert into transaction (transaction_type) values ('') ";
+            string sql = "insert into transaction (transaction_type,transaction_date,input_date,supplier_id,user_id,application_id) "+
+            "values (1,CURRENT_DATE,CURRENT_DATE,1,"+this.parent.user.id+",'"+this.parent.application_id+"') ";
             Console.WriteLine (sql);
             DbCl.ExecuteTrans(DbCl.getConn(), sql);
-            CreateItemsModel(true,entSearch.Text.Trim());
+           // CreateItemsModel(true,entSearch.Text.Trim());
         }
 
         private void RemoveItem(object sender, EventArgs e)
@@ -184,20 +198,6 @@ namespace Inventorifo.App
             int column = _cellColumnsRender[(CellRenderer)data];
             _transModel.GetIter(out TreeIter iter, path);
 
-            switch (column)
-            {
-                case (int)ColumnItem.name:
-                    {
-                        int i = path.Indices[0];
-                        _articles[i].name = args.NewText;
-                        _transModel.SetValue(iter, column, _articles[i].name);
-                        string sql = "update product_group set name = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
-                        Console.WriteLine (sql);
-                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                    }
-                    break;
-
-            }
         }
 
         public void doChildProduct(object o,string prm){

@@ -5,8 +5,10 @@ using UI = Gtk.Builder.ObjectAttribute;
 namespace Inventorifo.App
 {
     
+    
     class MainWindow : Window
-    {
+    {      
+        public string application_id = "Inventorifo.App";
         //[UI] private Label _label1 = null;
         //[UI] private Button _button1 = null;
        // [UI] private Window TransactionWindow  = null;
@@ -16,6 +18,7 @@ namespace Inventorifo.App
         public Box mainBox;        
         public MainWindow() : this(new Builder("MainWindow.glade")) { }
         public UserLogin user;
+        MenuItem profilMenuBar;
 
         private MainWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
         {
@@ -31,7 +34,7 @@ namespace Inventorifo.App
             MenuItem personMenuItem = (MenuItem)builder.GetObject("PersonMenuItem");
 
             MenuItem aboutMenuItem = (MenuItem)builder.GetObject("AboutMenuItem");
-            
+            profilMenuBar = (MenuItem)builder.GetObject("ProfilMenuBar");
             mainBox = (Box)builder.GetObject("MainBox");
 
             DeleteEvent += Window_DeleteEvent;
@@ -47,9 +50,13 @@ namespace Inventorifo.App
             //_button1.Clicked += Button1_Clicked;            
             Maximize();
             //( id,  person_id, person_name,  person_address, person_phone_number,  level, is_active
-            user = new UserLogin("1","1", "admin","addres","phone","1","true");
+            Login();
         }
 
+        private void Login(){
+            user = new UserLogin("1","1", "admin","addres","phone","1","admin","true","1","admin");
+            this.profilMenuBar.Label = this.user.person_name +"::"+this.user.level_name;
+        }
         private void Window_DeleteEvent(object sender, DeleteEventArgs a)
         {
             Application.Quit();
@@ -148,16 +155,20 @@ namespace Inventorifo.App
             }
         }
     }
+    
     class UserLogin
     { //
-        public UserLogin(string id, string person_id,string person_name, string person_address,string person_phone_number, string level,string is_active){
+        public UserLogin(string id, string person_id,string person_name, string person_address,string person_phone_number, string level,string level_name,string is_active,string application_id, string privilege){
         this.id = id;
         this.person_id = person_id;
         this.person_name = person_name;
         this.person_address = person_address;
         this.person_phone_number = person_phone_number;
         this.level = level;
+        this.level_name = level_name;
         this.is_active = is_active;
+        this.application_id = application_id;
+        this.privilege = privilege;
         }
         public string id;
         public string person_id;
@@ -165,6 +176,9 @@ namespace Inventorifo.App
         public string person_address;
         public string person_phone_number;
         public string level;
+        public string level_name;
         public string is_active;
+        public string application_id;
+        public string privilege;
     }
 }

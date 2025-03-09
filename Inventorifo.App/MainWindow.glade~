@@ -82,6 +82,11 @@
     <property name="can-focus">False</property>
     <property name="stock">gtk-missing-image</property>
   </object>
+  <object class="GtkImage" id="image24">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-missing-image</property>
+  </object>
   <object class="GtkImage" id="image3">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -389,6 +394,28 @@
               </object>
             </child>
             <child>
+              <object class="GtkMenuItem" id="SettingMenuBar">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Setting</property>
+                <child type="submenu">
+                  <object class="GtkMenu">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkImageMenuItem" id="CompanyProfileMenuItem">
+                        <property name="label" translatable="yes">Company Profile</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="image">image23</property>
+                        <property name="use-stock">False</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
               <object class="GtkMenuItem" id="AboutMenuBar">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -412,20 +439,21 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="SettingMenuBar">
+              <object class="GtkMenuItem" id="ProfilMenuBar">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Setting</property>
+                <property name="right-justified">True</property>
+                <property name="label" translatable="yes">Profil</property>
                 <child type="submenu">
                   <object class="GtkMenu">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkImageMenuItem" id="CompanyProfileMenuItem">
-                        <property name="label" translatable="yes">Company Profile</property>
+                      <object class="GtkImageMenuItem" id="LogoutMenuItem">
+                        <property name="label">Profil</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="image">image23</property>
+                        <property name="image">image24</property>
                         <property name="use-stock">False</property>
                       </object>
                     </child>
