@@ -19,12 +19,14 @@ namespace Inventorifo.App
         public MainWindow() : this(new Builder("MainWindow.glade")) { }
         public UserLogin user;
         MenuItem profilMenuBar;
-
+        public Overlay overlay;
         private MainWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
         {
             builder.Autoconnect(this);
 
             MenuItem purchaseMenuItem = (MenuItem)builder.GetObject("PurchaseMenuItem");
+            MenuItem saleMenuItem = (MenuItem)builder.GetObject("SaleMenuItem");
+
             MenuItem stockMenuItem = (MenuItem)builder.GetObject("StockMenuItem");
             MenuItem productMenuItem = (MenuItem)builder.GetObject("ProductMenuItem");
             MenuItem productGroupMenuItem = (MenuItem)builder.GetObject("ProductGroupMenuItem");
@@ -39,6 +41,8 @@ namespace Inventorifo.App
 
             DeleteEvent += Window_DeleteEvent;
             purchaseMenuItem.Activated += PurchaseMenuItem_Activated;
+            saleMenuItem.Activated += SaleMenuItem_Activated;
+
             stockMenuItem.Activated += StockMenuItem_Activated;
             productMenuItem.Activated += ProductMenuItem_Activated;
             productGroupMenuItem.Activated += ProductGroupMenuItem_Activated;
@@ -47,7 +51,8 @@ namespace Inventorifo.App
             customerMenuItem.Activated += CustomerMenuItem_Activated;
 
             aboutMenuItem.Activated += AboutMenuItem_Activated;
-            //_button1.Clicked += Button1_Clicked;            
+            //_button1.Clicked += Button1_Clicked;     
+                 
             Maximize();
             //( id,  person_id, person_name,  person_address, person_phone_number,  level, is_active
             Login();
@@ -65,6 +70,17 @@ namespace Inventorifo.App
         {
             ClearMainBox();
             TransactionPurchase transWidget = new TransactionPurchase(this,null);
+            mainBox.PackStart(transWidget, false, true, 5);
+            transWidget.ShowAll();
+
+          //  MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, "Purchase ");
+          //  md.Run();
+          //  md.Destroy();
+        }
+        private void SaleMenuItem_Activated(object sender, EventArgs a)
+        {
+            ClearMainBox();
+            TransactionSale transWidget = new TransactionSale(this,null);
             mainBox.PackStart(transWidget, false, true, 5);
             transWidget.ShowAll();
 

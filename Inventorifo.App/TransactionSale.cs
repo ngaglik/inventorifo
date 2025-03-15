@@ -9,13 +9,13 @@ using UI = Gtk.Builder.ObjectAttribute;
 namespace Inventorifo.App
 {
     //[Section(ContentType = typeof(EditableCellsSection), Category = Category.Widgets)]
-    class TransactionPurchase : Gtk.Box
+    class TransactionSale : Gtk.Box
     {
         Inventorifo.Lib.LibDb DbCl = new Inventorifo.Lib.LibDb ();
         Inventorifo.Lib.LibGui GuiCl = new Inventorifo.Lib.LibGui ();
         public MainWindow parent;
         public string prm;
-        public TransactionPurchase(object parent, string prm) : this(new Builder("TransactionPurchase.glade")) { 
+        public TransactionSale(object parent, string prm) : this(new Builder("TransactionSale.glade")) { 
             this.parent=(MainWindow)parent;
             this.prm = prm;
             Console.WriteLine(this.parent.user.id + " "+ this.parent.user.person_name);
@@ -33,9 +33,8 @@ namespace Inventorifo.App
         
         Box  boxMiddle;
         Box boxItem;
-        Box boxTransaction;
         SpinButton spnQty;
-        Button  btnNew;
+
         private Entry entSearch;
         private Entry entBarcode;
         private Popover popoverSupplier ;
@@ -46,25 +45,20 @@ namespace Inventorifo.App
         DataTable dtTransSelected;
         DataTable dtItemSelected;
 
-        public TransactionPurchase(Builder builder) : base(builder.GetRawOwnedObject("TransactionPurchase"))
+        public TransactionSale(Builder builder) : base(builder.GetRawOwnedObject("TransactionSale"))
         {
             builder.Autoconnect(this);
 
             Label lbTitle = (Label)builder.GetObject("LbTitle");
-            lbTitle.Text = "Purchase";
+            lbTitle.Text = "Sale";
             lbTitle.ModifyFont(FontDescription.FromString("Arial 18"));
 
             Box  boxMiddle = (Box)builder.GetObject("BoxMiddle");
             boxMiddle.SetSizeRequest(-1, -1); // Allow dynamic resizing
             boxMiddle.Expand = true;
             boxItem = (Box)builder.GetObject("BoxItem");
-            boxItem.ModifyBg(StateType.Normal, new Gdk.Color(237, 237, 222));
-            boxTransaction = (Box)builder.GetObject("BoxTransaction");
-            boxTransaction.ModifyBg(StateType.Normal, new Gdk.Color(224, 235, 235));
-
-            spnQty = (SpinButton)builder.GetObject("SpnQty");
-            spnQty.KeyPressEvent += OnSpnQtyKeyPressEvent;
             
+            spnQty = (SpinButton)builder.GetObject("SpnQty");
             
             Button btnProcessCheckout = (Button)builder.GetObject("BtnProcessCheckout");
             btnProcessCheckout.Clicked += DoCheckout;
@@ -77,12 +71,8 @@ namespace Inventorifo.App
             popoverSupplier = new Popover(btnSupplier);    
             btnSupplier.Clicked += ShowSupplierPopup;
 
-            
-
-            
-
-            btnNew = (Button)builder.GetObject("BtnNew");
-            btnNew.Clicked += NewTransaction;
+            Button  btnAdd = (Button)builder.GetObject("BtnAdd");
+            btnAdd.Clicked += AddTransaction;
             
             entSearch = (Entry)builder.GetObject("EntSearch");
             entSearch.Changed += HandleEntSearchChanged;
@@ -101,7 +91,7 @@ namespace Inventorifo.App
             textViewProduct = (TextView)builder.GetObject("TextViewProduct");
             textViewSupplier = (TextView)builder.GetObject("TextViewSupplier");
             SetTransactionModel(true,entSearch.Text.Trim());
-            TransactionReady();                   
+            GuiCl.SensitiveAllWidgets(boxItem,false);
         }
 
         private class TransactionHistory
@@ -154,20 +144,18 @@ namespace Inventorifo.App
             Num
         };
         private void TransactionReady(){
-            GuiCl.SensitiveAllWidgets(boxItem,false);
-            btnNew.Sensitive = true;      
+            GuiCl.SensitiveAllWidgets(boxItem,false);     
             textViewSupplier.Buffer.Text = "";
             textViewProduct.Buffer.Text = "";
             spnQty.Text = "1";
-            boxTransaction.Sensitive = true;
-            btnNew.Sensitive = true;
+
         }
         private void ItemTransactionReady(){
             GuiCl.SensitiveAllWidgets(boxItem,true);  
             //ShowProductPopup(new object(),new EventArgs());    
-            spnQty.Text = "1";        
+            spnQty.Text = "1";           
         }
-        private void OnTreeSelectionChanged(object sender, EventArgs e)
+       private void OnTreeSelectionChanged(object sender, EventArgs e)
         {
             if (!_treeView.Selection.GetSelected(out TreeIter it))
                  return;
@@ -208,15 +196,14 @@ namespace Inventorifo.App
                 SetTransactionModel(true,entry.Text.Trim());
             }
         }
-        private void NewTransaction(object sender, EventArgs e)
+        private void AddTransaction(object sender, EventArgs e)
         {
-            TransactionReady();
             string sql = "insert into transaction (transaction_type,transaction_date,input_date,supplier_id,user_id,application_id) "+
-            "values (1,CURRENT_DATE,CURRENT_DATE,1,"+this.parent.user.id+",'"+this.parent.application_id+"') ";
+            "values (2,CURRENT_DATE,CURRENT_DATE,1,"+this.parent.user.id+",'"+this.parent.application_id+"') ";
             Console.WriteLine (sql);
             DbCl.ExecuteTrans(DbCl.getConn(), sql);
             SetTransactionModel(true,entSearch.Text.Trim());            
-            ItemTransactionReady();
+            GuiCl.SensitiveAllWidgets(boxItem,true);
         }
         private void SetTransactionModel(Boolean showAll,string strfind)
         {      
@@ -305,29 +292,16 @@ namespace Inventorifo.App
             iter = textViewProduct.Buffer.GetIterAtLine (8);
             textViewProduct.Buffer.InsertWithTags (ref iter, dtItemSelected.Rows[0].ItemArray[5].ToString(), tag);
         }
-        public Int64 InsertStock(){
-            string sql = "insert into stock (product_id,quantity,input_date,expired_date,purchase_price, unit, condition, location)"+
-            "values ("+dtItemSelected.Rows[0].ItemArray[0].ToString()+ ","+spnQty.Text+",CURRENT_DATE,CURRENT_DATE,1,1,1)";
-            Console.WriteLine (sql);
-            return DbCl.ExecuteScalar(DbCl.getConn(), sql);
+        public void InsertStock(){
+            string sql = "insert into stock (product_id,quantity,input_date,expired_date,purchase_price, unit, condition, location, price_id)"+
+            "values ("+dtItemSelected.Rows[0].ItemArray[0].ToString()+ ","+spnQty.Text+",CURRENT_DATE,)";
         }
-        private void OnSpnQtyKeyPressEvent(object sender, KeyPressEventArgs e)
-        {           
-            MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, "Purchase ");
-            md.Run();
-            md.Destroy();
-            if (e.Event.Key == Gdk.Key.Return)
-            { 
-                md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, "Return ");
-                md.Run();
-                md.Destroy();
-                Int64 stock_id = InsertStock();
-                string sql = "insert into transaction_item (transaction_id,product_id,stock_id,purchase_price,state) "+
-                "values("+dtTransSelected.Rows[0].ItemArray[0].ToString()+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+ stock_id + ",0,1)" ;
-                Console.WriteLine (sql);
-                DbCl.ExecuteTrans(DbCl.getConn(), sql); 
-            }           
+        private void AddSelectedItem()
+        {
+            string sql = "insert into transaction_item (transaction_id,product_id,stock_id,purchase_price,state) "+
+            "values("+dtTransSelected.Rows[0].ItemArray[0].ToString()+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString()+ ")" ;
         }
+
 
         private static ListStore CreateNumbersModel()
         {
@@ -345,6 +319,7 @@ namespace Inventorifo.App
             }
             return model;
         }
+
        
         private void AddColumns()
         {
@@ -385,6 +360,8 @@ namespace Inventorifo.App
             _treeView.InsertColumn(-1, "Application ID", rendererText, "text", (int)ColumnItem.application_id);
 
         }
+
+        
 
         private void RemoveItem(object sender, EventArgs e)
         {

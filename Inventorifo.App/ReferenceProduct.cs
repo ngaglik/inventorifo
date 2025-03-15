@@ -277,10 +277,10 @@ namespace Inventorifo.App
             TreeSelection selection = _treeView.Selection;
             TreeIter iter;
             if(selection.GetSelected( out iter)){
-                Console.WriteLine("Selected Value:"+_itemsModel.GetValue (iter, 0).ToString()+_itemsModel.GetValue (iter, 1).ToString());
+                Console.WriteLine("Selected Value:"+_itemsModel.GetValue (iter, 0).ToString()+_itemsModel.GetValue (iter, 1).ToString());TransactionPurchase o = (TransactionPurchase)this.parent;
+                o.doChildProduct("Yeay! "+ _itemsModel.GetValue (iter, 1).ToString() +" selected",_itemsModel.GetValue (iter, 0).ToString());
             }            
-            TransactionPurchase o = (TransactionPurchase)this.parent;
-            o.doChildProduct("Yeay! "+ _itemsModel.GetValue (iter, 1).ToString() +" selected",_itemsModel.GetValue (iter, 0).ToString());
+            
         }
         private void HandleTreeViewKeyPressEvent(object sender, KeyPressEventArgs e)
         {
@@ -292,7 +292,7 @@ namespace Inventorifo.App
                     Console.WriteLine("Selected Value:"+_itemsModel.GetValue (iter, 0).ToString()+_itemsModel.GetValue (iter, 1).ToString());
                 }            
                 TransactionPurchase o = (TransactionPurchase)this.parent;
-                o.doChildProduct("Yeay! "+ _itemsModel.GetValue (iter, 1).ToString() +" selected",_itemsModel.GetValue (iter, 0).ToString());
+                o.doChildProduct("Yeay! "+ _itemsModel.GetValue (iter, 2).ToString() +" selected",_itemsModel.GetValue (iter, 0).ToString());
             }
         }
         private void AddItem(object sender, EventArgs e)

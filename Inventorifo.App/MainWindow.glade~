@@ -450,7 +450,7 @@
                     <property name="can-focus">False</property>
                     <child>
                       <object class="GtkImageMenuItem" id="LogoutMenuItem">
-                        <property name="label">Profil</property>
+                        <property name="label">Logout</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="image">image24</property>

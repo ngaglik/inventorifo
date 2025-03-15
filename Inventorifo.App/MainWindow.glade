@@ -167,7 +167,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="SalesMenuItem">
+                      <object class="GtkImageMenuItem" id="SaleMenuItem">
                         <property name="label" translatable="yes">Sales</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
@@ -176,7 +176,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="SalesReturnMenuItem">
+                      <object class="GtkImageMenuItem" id="SaleReturnMenuItem">
                         <property name="label" translatable="yes">Sales Return</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>

@@ -318,7 +318,7 @@ namespace Inventorifo.App
                 Console.WriteLine("Selected Value:"+_itemsModel.GetValue (iter, 0).ToString()+_itemsModel.GetValue (iter, 1).ToString());
             }            
             TransactionPurchase o = (TransactionPurchase)this.parent;
-            o.doChildSupplier("Yeay! "+ _itemsModel.GetValue (iter, 1).ToString() +" selected",_itemsModel.GetValue (iter, 0).ToString());
+            o.doChildSupplier("Yeay! "+ _itemsModel.GetValue (iter, 2).ToString() +" selected",_itemsModel.GetValue (iter, 0).ToString());
         }
         public void doChild(object o,string prm){
             GLib.Timeout.Add(0, () =>
