@@ -39,6 +39,8 @@ namespace Inventorifo.App
             profilMenuBar = (MenuItem)builder.GetObject("ProfilMenuBar");
             mainBox = (Box)builder.GetObject("MainBox");
 
+            
+            
             DeleteEvent += Window_DeleteEvent;
             purchaseMenuItem.Activated += PurchaseMenuItem_Activated;
             saleMenuItem.Activated += SaleMenuItem_Activated;
@@ -197,4 +199,41 @@ namespace Inventorifo.App
         public string application_id;
         public string privilege;
     }
+    
+    class clTransaction
+    {    
+        public string id { get; set; }
+        public string supplier_id { get; set; }
+        public string organization_name { get; set; }
+        public string organization_address { get; set; }
+        public string organization_phone_number { get; set; }
+        public string person_name { get; set; }
+        public string person_phone_number { get; set; }
+        public string transaction_date { get; set; }
+        public string state { get; set; }
+        public string user_id { get; set; }
+        public string application_id { get; set; }
+    }
+
+    class clTransItem
+    {                          
+        public string id { get; set; }
+        public string transaction_id { get; set; }
+        public string product_id { get; set; }
+        public string product_name { get; set; }
+        public string stock_id { get; set; }
+        public string quantity { get; set; }
+        public string unit { get; set; }
+        public string unit_name { get; set; }
+        public string purchase_price { get; set; }
+        public string price_id { get; set; }
+        public string price { get; set; }
+        public string tax { get; set; }
+        public string state { get; set; }
+        public string location { get; set; }
+        public string location_name { get; set; }
+        public string condition { get; set; }
+        public string condition_name { get; set; }
+    }
+        
 }
