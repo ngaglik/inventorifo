@@ -63,7 +63,8 @@
             </child>
             <child>
               <object class="GtkButton" id="BtnNew">
-                <property name="label" translatable="yes">New</property>
+                <property name="label" translatable="yes">New
+[F1]</property>
                 <property name="name">BtnNew</property>
                 <property name="width-request">100</property>
                 <property name="height-request">100</property>
@@ -250,7 +251,7 @@
             <property name="spacing">10</property>
             <child>
               <object class="GtkScrolledWindow">
-                <property name="height-request">150</property>
+                <property name="height-request">200</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="shadow-type">in</property>
@@ -280,6 +281,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="orientation">vertical</property>
+                    <property name="spacing">5</property>
                     <child>
                       <object class="GtkFrame">
                         <property name="width-request">200</property>
@@ -326,12 +328,14 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="BtnSupplier">
-                        <property name="label" translatable="yes">Supplier</property>
+                        <property name="label" translatable="yes">Supplier
+[F2]</property>
                         <property name="width-request">100</property>
                         <property name="height-request">100</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Show popup supplier</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
                       </object>
@@ -353,6 +357,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="orientation">vertical</property>
+                    <property name="spacing">5</property>
                     <child>
                       <object class="GtkFrame">
                         <property name="width-request">200</property>
@@ -397,12 +402,14 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="BtnProduct">
-                        <property name="label" translatable="yes">Product</property>
+                        <property name="label" translatable="yes">Product
+[F3]</property>
                         <property name="width-request">100</property>
                         <property name="height-request">100</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">False</property>
+                        <property name="tooltip-text" translatable="yes">Show popup product</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
                       </object>
@@ -424,6 +431,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="orientation">vertical</property>
+                    <property name="spacing">5</property>
                     <child>
                       <object class="GtkFrame">
                         <property name="visible">True</property>
@@ -492,6 +500,7 @@
                                 </child>
                                 <child>
                                   <object class="GtkLabel" id="LbTotalItem">
+                                    <property name="name">LbTotalItem</property>
                                     <property name="width-request">50</property>
                                     <property name="height-request">50</property>
                                     <property name="visible">True</property>
@@ -516,6 +525,7 @@
                                 </child>
                                 <child>
                                   <object class="GtkLabel" id="LbTotalPrice">
+                                    <property name="name">LbTotalPrice</property>
                                     <property name="width-request">200</property>
                                     <property name="height-request">50</property>
                                     <property name="visible">True</property>
@@ -588,6 +598,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="orientation">vertical</property>
+                    <property name="spacing">5</property>
                     <child>
                       <object class="GtkFrame">
                         <property name="visible">True</property>
@@ -633,7 +644,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkEntry" id="EntAmount">
+                                  <object class="GtkEntry" id="EntAmountPayment">
                                     <property name="width-request">200</property>
                                     <property name="height-request">50</property>
                                     <property name="visible">True</property>
@@ -657,24 +668,6 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkMenuButton" id="BtnPaymentMethod">
-                                    <property name="width-request">200</property>
-                                    <property name="height-request">50</property>
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
-                                    <property name="focus-on-click">False</property>
-                                    <property name="receives-default">True</property>
-                                    <property name="margin-end">5</property>
-                                    <child>
-                                      <placeholder/>
-                                    </child>
-                                  </object>
-                                  <packing>
-                                    <property name="left-attach">1</property>
-                                    <property name="top-attach">3</property>
-                                  </packing>
-                                </child>
-                                <child>
                                   <object class="GtkLabel">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
@@ -686,28 +679,22 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkEntry" id="EntTax">
+                                  <object class="GtkComboBoxText" id="CmbPaymentMethod">
                                     <property name="width-request">200</property>
                                     <property name="height-request">50</property>
                                     <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
-                                    <property name="margin-end">5</property>
+                                    <property name="can-focus">False</property>
                                   </object>
                                   <packing>
                                     <property name="left-attach">1</property>
-                                    <property name="top-attach">1</property>
+                                    <property name="top-attach">3</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="label" translatable="yes">Tax</property>
-                                  </object>
-                                  <packing>
-                                    <property name="left-attach">1</property>
-                                    <property name="top-attach">0</property>
-                                  </packing>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
                                 </child>
                                 <child>
                                   <placeholder/>
@@ -753,12 +740,14 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="BtnProcessCheckout">
-                        <property name="label" translatable="yes">Checkout</property>
+                        <property name="label" translatable="yes">Checkout
+[F4]</property>
                         <property name="width-request">100</property>
                         <property name="height-request">100</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Checkout this transaction</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
                       </object>

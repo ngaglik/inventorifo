@@ -86,9 +86,7 @@ namespace Inventorifo.App
             mainBox.PackStart(transWidget, false, true, 5);
             transWidget.ShowAll();
 
-          //  MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, "Purchase ");
-          //  md.Run();
-          //  md.Destroy();
+          
         }
         private void StockMenuItem_Activated(object sender, EventArgs a)
         {
@@ -203,6 +201,7 @@ namespace Inventorifo.App
     class clTransaction
     {    
         public string id { get; set; }
+        public string reference_id { get; set; }
         public string supplier_id { get; set; }
         public string organization_name { get; set; }
         public string organization_address { get; set; }

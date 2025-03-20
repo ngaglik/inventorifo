@@ -254,30 +254,15 @@ namespace Inventorifo.App
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.product_id);
             _treeView.InsertColumn(-1, "Product ID", rendererText, "text", (int)ColumnItem.product_id);
 
-            rendererText = new CellRendererText
-            {
-                Editable = true
-            };
-            rendererText.Foreground = "green";
-            rendererText.Edited += CellEdited;
+            rendererText = new CellRendererText();
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.short_name);
             _treeView.InsertColumn(-1, "Short name", rendererText, "text", (int)ColumnItem.short_name);
 
-            rendererText = new CellRendererText
-            {
-                Editable = true
-            };
-            rendererText.Foreground = "green";
-            rendererText.Edited += CellEdited;
+            rendererText = new CellRendererText();
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.product_name);
             _treeView.InsertColumn(-1, "Product name", rendererText, "text", (int)ColumnItem.product_name);
 
-            rendererText = new CellRendererText
-            {
-                Editable = true
-            };
-            rendererText.Foreground = "green";
-            rendererText.Edited += CellEdited;
+            rendererText = new CellRendererText();
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.barcode);
             _treeView.InsertColumn(-1, "Barcode", rendererText, "text", (int)ColumnItem.barcode);
 

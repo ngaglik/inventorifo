@@ -59,21 +59,10 @@ namespace Inventorifo.Lib
         public Int64 ExecuteScalar(NpgsqlConnection conn, String sql)
         { //Object res = query.ExecuteScalar();
             Int64 id = 0;
-            try
+            using (var cmd = new NpgsqlCommand(sql, conn))
             {
-                NpgsqlCommand cmd = new NpgsqlCommand(sql, conn);
-                id = (Int64) cmd.ExecuteScalar();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
-            finally
-            {
-                if (conn != null)
-                {
-                    conn.Close();
-                }
+                object result = cmd.ExecuteScalar(); // Execute the query
+                id = (result != null && result != DBNull.Value) ? Convert.ToInt64(result) : 0;
             }
             return id;
         }

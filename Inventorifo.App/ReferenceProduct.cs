@@ -24,11 +24,13 @@ namespace Inventorifo.App
         Boolean isEditable;
         string textForground;
         string prm;
+        string mode;
 
         public ReferenceProduct(object parent, string mode, string prm) : base(Orientation.Vertical, 3)
         {
             this.parent=parent;
             this.prm = prm;
+            this.mode = mode;
 
             Label lbTitle = new Label();
             lbTitle.Text = "Product";
@@ -92,7 +94,7 @@ namespace Inventorifo.App
             CreateItemsModel(true,"","");
             sw.Add(_treeView);
             //_treeView.CanFocus = true;
-            //_treeView.KeyPressEvent += HandleTreeViewKeyPressEvent;
+            _treeView.KeyPressEvent += HandleTreeViewKeyPressEvent;
 
             
                     
@@ -278,22 +280,26 @@ namespace Inventorifo.App
             TreeIter iter;
             if(selection.GetSelected( out iter)){
                 Console.WriteLine("Selected Value:"+_itemsModel.GetValue (iter, 0).ToString()+_itemsModel.GetValue (iter, 1).ToString());TransactionPurchase o = (TransactionPurchase)this.parent;
-                o.doChildProduct("Yeay! "+ _itemsModel.GetValue (iter, 1).ToString() +" selected",_itemsModel.GetValue (iter, 0).ToString());
+                o.doChildProduct("Product "+ _itemsModel.GetValue (iter, 1).ToString() +" selected",_itemsModel.GetValue (iter, 0).ToString());
             }            
             
         }
+
+        [GLib.ConnectBefore]
         private void HandleTreeViewKeyPressEvent(object sender, KeyPressEventArgs e)
         {
-            if (e.Event.Key == Gdk.Key.Return || e.Event.Key == Gdk.Key.KP_Enter)  // Check if Enter key is pressed
-            {
-                TreeSelection selection = _treeView.Selection;
-                TreeIter iter;
-                if(selection.GetSelected( out iter)){
-                    Console.WriteLine("Selected Value:"+_itemsModel.GetValue (iter, 0).ToString()+_itemsModel.GetValue (iter, 1).ToString());
-                }            
-                TransactionPurchase o = (TransactionPurchase)this.parent;
-                o.doChildProduct("Yeay! "+ _itemsModel.GetValue (iter, 2).ToString() +" selected",_itemsModel.GetValue (iter, 0).ToString());
-            }
+            if(this.mode == "dialog"){
+                if (e.Event.Key == Gdk.Key.Return || e.Event.Key == Gdk.Key.KP_Enter)  // Check if Enter key is pressed
+                {
+                    TreeSelection selection = _treeView.Selection;
+                    TreeIter iter;
+                    if(selection.GetSelected( out iter)){
+                        Console.WriteLine("Selected Value:"+_itemsModel.GetValue (iter, 0).ToString()+_itemsModel.GetValue (iter, 1).ToString());
+                    }            
+                    TransactionPurchase o = (TransactionPurchase)this.parent;
+                    o.doChildProduct("Product "+ _itemsModel.GetValue (iter, 2).ToString() +" selected",_itemsModel.GetValue (iter, 0).ToString());
+                }
+            }            
         }
         private void AddItem(object sender, EventArgs e)
         {
