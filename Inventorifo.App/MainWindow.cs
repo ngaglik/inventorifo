@@ -197,7 +197,15 @@ namespace Inventorifo.App
         public string application_id;
         public string privilege;
     }
-    
+    class clPayment
+    {    
+        public string id { get; set; }
+        public string transaction_id { get; set; }
+        public string payment_date { get; set; }
+        public string payment_amount { get; set; }
+        public string user_id { get; set; }
+        public string user_name { get; set; }
+    }
     class clTransaction
     {    
         public string id { get; set; }
@@ -208,9 +216,20 @@ namespace Inventorifo.App
         public string organization_phone_number { get; set; }
         public string person_name { get; set; }
         public string person_phone_number { get; set; }
+        public string transaction_type_id { get; set; }
+        public string transaction_type_name { get; set; }
         public string transaction_date { get; set; }
-        public string state { get; set; }
+        public string transaction_amount { get; set; }
+        public string return_amount { get; set; }
+        public string payment_group_id { get; set; }
+        public string payment_group_name { get; set; }
+        public string payment_amount { get; set; }
         public string user_id { get; set; }
+        public string user_name { get; set; }
+        public string state { get; set; }
+        public string state_name { get; set; }
+        public string state_fgcolor { get; set; }
+        public string state_bgcolor { get; set; }
         public string application_id { get; set; }
     }
 

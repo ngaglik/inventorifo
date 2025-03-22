@@ -5,6 +5,7 @@ using Gdk;
 using System.Data;
 using Pango;
 using UI = Gtk.Builder.ObjectAttribute;
+using System.Text.RegularExpressions;
 
 namespace Inventorifo.App
 {
@@ -34,13 +35,28 @@ namespace Inventorifo.App
         Box  boxMiddle;
         Box boxItem;
         Box boxTransaction;
+        Box boxSupplierDetail;
+        Box boxProductDetail;
+        Box boxTotalCalculation;
+        Box boxPayment;
+
         SpinButton spnQty;
         Button  btnNew;
+        Button  btnPreviousPayment;
+        Button btnProcessCheckout;
+        Button btnProduct;
+        Button btnSupplier;
+        Button btnDate;
+
         private Entry entSearch;
         private Entry entBarcode;
         private Entry entAmountPayment;
+        private Entry entTransactionAmount;
+
         private Popover popoverSupplier ;
         private Popover popoverProduct ;
+        private Popover popoverDate;
+        private Popover popoverPayment;
         private TextView textViewSupplier;
         private TextView textViewProduct;
 
@@ -49,16 +65,19 @@ namespace Inventorifo.App
 
         Label lbTransactionId;
         Label lbTotalItem;
-        Label lbTotalPrice;
+        Label lbPreviousPayment;
+        Label lbBillCalculated;
 
-        string textForground;
+        string textForeground;
+        string textBackground;
         Boolean isEditable;
 
         ComboBoxText cmbPaymentMethod;
         Dictionary<int, string> dictPaymentMethod = new Dictionary<int, string>();
         Gtk.ListStore lsPaymentMethod = new ListStore(typeof(string), typeof(string));
         CellRendererCombo cellComboPaymentMethod = new Gtk.CellRendererCombo();
-
+        
+        Calendar calendar = new Calendar();
         private enum ColumnTrans
         { 
             id,
@@ -69,9 +88,20 @@ namespace Inventorifo.App
             organization_phone_number,
             person_name,
             person_phone_number,
+            transaction_type_id,
+            transaction_type_name,
             transaction_date,
-            state,
+            transaction_amount,
+            return_amount,
+            payment_group_id,
+            payment_group_name,
+            payment_amount,
             user_id,
+            user_name,
+            state,
+            state_name,
+            state_fgcolor,
+            state_bgcolor,
             application_id,
             Num
         };
@@ -124,44 +154,70 @@ namespace Inventorifo.App
             boxMiddle.SetSizeRequest(-1, -1); // Allow dynamic resizing
             boxMiddle.Expand = true;
             boxItem = (Box)builder.GetObject("BoxItem");
-            boxItem.ModifyBg(StateType.Normal, new Gdk.Color(237, 237, 222));
+            //boxItem.ModifyBg(StateType.Normal, new Gdk.Color(237, 237, 222));
             boxTransaction = (Box)builder.GetObject("BoxTransaction");
-            boxTransaction.ModifyBg(StateType.Normal, new Gdk.Color(224, 235, 235));
+            //boxTransaction.ModifyBg(StateType.Normal, new Gdk.Color(224, 235, 235));
+            boxSupplierDetail = (Box)builder.GetObject("BoxSupplierDetail");
+            boxProductDetail = (Box)builder.GetObject("BoxProductDetail");
+            boxTotalCalculation = (Box)builder.GetObject("BoxTotalCalculation");
+            boxPayment = (Box)builder.GetObject("BoxPayment");
 
             spnQty = (SpinButton)builder.GetObject("SpnQty");
+            spnQty.Xalign = 0.5f; 
             spnQty.KeyPressEvent += OnSpnQtyKeyPressEvent;
+            spnQty.ModifyFont(FontDescription.FromString("Arial 14"));
             
             
-            Button btnProcessCheckout = (Button)builder.GetObject("BtnProcessCheckout");
+            btnProcessCheckout = (Button)builder.GetObject("BtnProcessCheckout");
             btnProcessCheckout.Clicked += DoCheckout;
 
-            Button  btnProduct = (Button)builder.GetObject("BtnProduct");
+            btnProduct = (Button)builder.GetObject("BtnProduct");
             popoverProduct = new Popover(btnProduct);    
             btnProduct.Clicked += ShowProductPopup;
 
-            Button  btnSupplier = (Button)builder.GetObject("BtnSupplier");
+            btnSupplier = (Button)builder.GetObject("BtnSupplier");
             popoverSupplier = new Popover(btnSupplier);    
             btnSupplier.Clicked += ShowSupplierPopup;
 
+            btnDate = (Button)builder.GetObject("BtnDate");
+            btnDate.Label = calendar.Date.ToString("yyyy-MM-dd");
+            popoverDate = new Popover(btnDate);    
+            btnDate.Clicked += ShowDatePopup;
+            
             
             btnNew = (Button)builder.GetObject("BtnNew");
             btnNew.Clicked += NewTransaction;
+            btnPreviousPayment = (Button)builder.GetObject("BtnPreviousPayment");
+            popoverPayment = new Popover(btnPreviousPayment); 
+            btnPreviousPayment.ModifyFont(FontDescription.FromString("Arial 14"));
+            btnPreviousPayment.Clicked += ShowPaymentPopup;
             
             entSearch = (Entry)builder.GetObject("EntSearch");
             entSearch.Changed += HandleEntSearchChanged;
 
             entAmountPayment = (Entry)builder.GetObject("EntAmountPayment");
+            entAmountPayment.Xalign = 0.5f; 
+            entAmountPayment.ModifyFont(FontDescription.FromString("Arial 14"));
+            entAmountPayment.Changed += HandleEntAmountPaymentChanged;
+            //entAmountPayment.ModifyBg(StateType.Normal, new Gdk.Color(255, 237, 222));
+            entTransactionAmount = (Entry)builder.GetObject("EntTransactionAmount");
+            entTransactionAmount.Xalign = 0.5f; 
+            entTransactionAmount.ModifyFont(FontDescription.FromString("Arial 14"));
+            //entTransactionAmount.ModifyBg(StateType.Normal, new Gdk.Color(255, 237, 222));
 
             _treeViewTrans = (TreeView)builder.GetObject("TreeViewTrans");
             _treeViewTrans.Selection.Mode = SelectionMode.Single;
-            textForground = "green";
+            textForeground = "green";
+            textBackground = "lightred";
             isEditable = true;
             AddColumnsTrans(); 
-            _treeViewTrans.Selection.Changed += SelectedTrans;
+            _treeViewTrans.Selection.Changed += HandleTreeVewSelectedTrans;
 
             _treeViewItems = (TreeView)builder.GetObject("TreeViewItem");
             _treeViewItems.Selection.Mode = SelectionMode.Single;
+            _treeViewItems.ModifyFont(FontDescription.FromString("Arial 14"));
              AddColumnsItems();     
+             _treeViewItems.KeyPressEvent += HandleTreeViewItemsKeyPressEvent;
             
             
             textViewProduct = (TextView)builder.GetObject("TextViewProduct");
@@ -174,12 +230,12 @@ namespace Inventorifo.App
             lbTransactionId.ModifyFont(FontDescription.FromString("Arial 14"));
             lbTotalItem = (Label)builder.GetObject("LbTotalItem");
             lbTotalItem.ModifyFont(FontDescription.FromString("Arial 14"));
-            lbTotalPrice = (Label)builder.GetObject("LbTotalPrice");
-            lbTotalPrice.ModifyFont(FontDescription.FromString("Arial 14"));
+            lbPreviousPayment = (Label)builder.GetObject("LbPreviousPayment");
+            lbBillCalculated = (Label)builder.GetObject("LbBillCalculated");
+            lbBillCalculated.ModifyFont(FontDescription.FromString("Arial 14"));
             this.KeyPressEvent += OnThisKeyPressEvent;
-
             
-            SetTransactionModel(true,entSearch.Text.Trim());
+            SetTransactionModel("",entSearch.Text.Trim());
             TransactionReady();       
         }        
 
@@ -219,6 +275,7 @@ namespace Inventorifo.App
                 cmbPaymentMethod.Active = 0;
             });
         }
+
         private void TransactionReady(){
             GuiCl.SensitiveAllWidgets(boxItem,false);      
             btnNew.Sensitive = true;      
@@ -228,7 +285,12 @@ namespace Inventorifo.App
             boxTransaction.Sensitive = true;
             btnNew.Sensitive = true; 
             entAmountPayment.Text = "0";               
+            entAmountPayment.ModifyBg(StateType.Normal, new Gdk.Color(255, 255, 255));
+            entAmountPayment.ModifyFg(StateType.Normal, new Gdk.Color(0, 0, 0));
+            entTransactionAmount.ModifyBg(StateType.Normal, new Gdk.Color(255, 255, 255));
+            entTransactionAmount.ModifyFg(StateType.Normal, new Gdk.Color(0, 0, 0));
         }
+
         public void SelectFirstRow(ListStore ts, TreeView tv){
             TreeIter iter;
             if (ts.GetIterFirst(out iter)) // Get the first row
@@ -237,49 +299,159 @@ namespace Inventorifo.App
             }
         }
         private void ItemTransactionReady(Boolean showpopup){
-            if(showpopup) ShowProductPopup(new object(),new EventArgs());
-            GuiCl.SensitiveAllWidgets(boxItem,true);                  
+            if(showpopup) ShowProductPopup(new object(),new EventArgs());                       
             spnQty.Text = "1";        
             textViewProduct.Buffer.Text = "";
-
         }
-        private void SelectedTrans(object sender, EventArgs e)
+        private void HandleTreeVewSelectedTrans(object sender, EventArgs e)
         {
             if (!_treeViewTrans.Selection.GetSelected(out TreeIter it))
                  return;
             TreePath path = _lsModelTrans.GetPath(it);
             var id = (string)_lsModelTrans.GetValue(it, (int)ColumnTrans.id);
-            var supplier_id = (string)_lsModelTrans.GetValue(it, (int)ColumnTrans.supplier_id);
-            var organization_name = (string)_lsModelTrans.GetValue(it, (int)ColumnTrans.organization_name);
-            var organization_address = (string)_lsModelTrans.GetValue(it, (int)ColumnTrans.organization_address);
-            var organization_phone_number = (string)_lsModelTrans.GetValue(it, (int)ColumnTrans.organization_phone_number);
-            var person_name = (string)_lsModelTrans.GetValue(it, (int)ColumnTrans.person_name);
-            var person_phone_number = (string)_lsModelTrans.GetValue(it, (int)ColumnTrans.person_phone_number);
+            SelectedTrans(id);
+        }
+        private void SelectedTrans(string transaction_id)
+        {
+            DataTable dtTransSelected = fillDtTransaction(transaction_id,"");
+            foreach (DataRow dr in dtTransSelected.Rows)
+            { 
+                var id = transaction_id;
+                var state = dr["state"].ToString();
+                var supplier_id = dr["supplier_id"].ToString();
+                var organization_name = dr["organization_name"].ToString();
+                var organization_address = dr["organization_address"].ToString();
+                var organization_phone_number = dr["organization_phone_number"].ToString();
+                var person_name = dr["person_name"].ToString();
+                var person_phone_number = dr["person_phone_number"].ToString();
+                var payment_group_id = dr["payment_group_id"].ToString();
+                var payment_group_name = dr["payment_group_name"].ToString();
+                var payment_amount = dr["payment_amount"].ToString();
+                var transaction_amount = dr["transaction_amount"].ToString();
+                var transaction_date = dr["transaction_date"].ToString();
 
-            var tag = new TextTag (null);
-            textViewSupplier.Buffer.TagTable.Add (tag);
-            tag.Weight = Pango.Weight.Bold;
+                setActivePaymentMethod(payment_group_id);
 
-            textViewSupplier.Buffer.Text = "\nOrganization name:\n\nOrganization address:\n\nPhone number:\n\nPerson name:\n\nPhone number:\n\n";
-            var iter = textViewSupplier.Buffer.GetIterAtLine (2);
-            textViewSupplier.Buffer.InsertWithTags (ref iter, organization_name, tag);
+                entAmountPayment.Text = "0";
+                btnPreviousPayment.Label = payment_amount;
+                entTransactionAmount.Text = transaction_amount;
+                lbBillCalculated.Text = (Convert.ToDouble(transaction_amount)-Convert.ToDouble(payment_amount)).ToString() ;
+                
+                var tag = new TextTag (null);
+                textViewSupplier.Buffer.TagTable.Add (tag);
+                tag.Weight = Pango.Weight.Bold;
 
-            iter = textViewSupplier.Buffer.GetIterAtLine (4);
-            textViewSupplier.Buffer.InsertWithTags (ref iter, organization_address, tag);
+                textViewSupplier.Buffer.Text = "\nOrganization name:\n\nOrganization address:\n\nPhone number:\n\nPerson name:\n\nPhone number:\n\n";
+                var iter = textViewSupplier.Buffer.GetIterAtLine (2);
+                textViewSupplier.Buffer.InsertWithTags (ref iter, organization_name, tag);
 
-            iter = textViewSupplier.Buffer.GetIterAtLine (6);
-            textViewSupplier.Buffer.InsertWithTags (ref iter, organization_phone_number, tag);
+                iter = textViewSupplier.Buffer.GetIterAtLine (4);
+                textViewSupplier.Buffer.InsertWithTags (ref iter, organization_address, tag);
 
-            iter = textViewSupplier.Buffer.GetIterAtLine (8);
-            textViewSupplier.Buffer.InsertWithTags (ref iter, person_name, tag);
+                iter = textViewSupplier.Buffer.GetIterAtLine (6);
+                textViewSupplier.Buffer.InsertWithTags (ref iter, organization_phone_number, tag);
 
-            iter = textViewSupplier.Buffer.GetIterAtLine (10);
-            textViewSupplier.Buffer.InsertWithTags (ref iter, person_phone_number, tag);
-            lbTransactionId.Text = id;
-            ItemTransactionReady(false);
-            SetItemModel(Convert.ToDouble(id));
-            lbTotalItem.Text =  GetTotalItem().ToString();
-            lbTotalPrice.Text = GetTotalPurchasePrice().ToString();
+                iter = textViewSupplier.Buffer.GetIterAtLine (8);
+                textViewSupplier.Buffer.InsertWithTags (ref iter, person_name, tag);
+
+                iter = textViewSupplier.Buffer.GetIterAtLine (10);
+                textViewSupplier.Buffer.InsertWithTags (ref iter, person_phone_number, tag);
+                lbTransactionId.Text = id;
+                CellRendererText retrievedRenderer = GetCellRendererText(_treeViewItems, 8);
+
+                if(Convert.ToInt32(state)==0){ 
+                    if(Convert.ToInt32(payment_group_id)>5 ){   
+                        if(Convert.ToDouble(transaction_amount)>Convert.ToDouble(payment_amount)){
+                            GuiCl.SensitiveAllWidgets(boxItem,true);                 
+                            retrievedRenderer.Editable = false;
+                            retrievedRenderer.Foreground = "black";
+                            btnSupplier.Sensitive = false;
+                            btnProduct.Sensitive = false;
+                            entTransactionAmount.Sensitive = false;
+                            spnQty.Sensitive=false;
+                            cmbPaymentMethod.Sensitive = false;
+                            //boxPayment.Sensitive = true;
+                            cmbPaymentMethod.Sensitive = false;
+                            entAmountPayment.Sensitive = true;
+                            btnProcessCheckout.Sensitive = true;
+
+                        } else{
+                           // GuiCl.SensitiveAllWidgets(boxItem,false); 
+                            retrievedRenderer.Editable = false;
+                            retrievedRenderer.Foreground = "black";
+                            btnSupplier.Sensitive = false;
+                            btnProduct.Sensitive = false;
+                            entTransactionAmount.Sensitive = false;
+                            spnQty.Sensitive=false;
+                            cmbPaymentMethod.Sensitive = false;
+                            //boxPayment.Sensitive = false;
+                            cmbPaymentMethod.Sensitive = false;
+                            entAmountPayment.Sensitive = false;
+                            btnProcessCheckout.Sensitive = false;
+                        }                        
+                    }else{
+                       // GuiCl.SensitiveAllWidgets(boxItem,false); 
+                            //_treeViewItems.Sensitive = true;
+                            retrievedRenderer.Editable = false;
+                            retrievedRenderer.Foreground = "black";
+                            btnSupplier.Sensitive = false;
+                            btnProduct.Sensitive = false;
+                            entTransactionAmount.Sensitive = false;
+                            spnQty.Sensitive=false;
+                            cmbPaymentMethod.Sensitive = false;
+                            //boxPayment.Sensitive = false;
+                            cmbPaymentMethod.Sensitive = false;
+                            entAmountPayment.Sensitive = false;
+                            btnProcessCheckout.Sensitive = false;
+                    }
+                }else{
+                 
+                    GuiCl.SensitiveAllWidgets(boxItem,true);     
+                     //_treeViewItems.Sensitive = true;
+                    retrievedRenderer.Editable = true;
+                    retrievedRenderer.Foreground = "green";
+                    btnSupplier.Sensitive = true;
+                    btnProduct.Sensitive = true;
+                    boxSupplierDetail.Sensitive = true;
+                    boxProductDetail.Sensitive = true;
+                    entTransactionAmount.Sensitive = true;
+                    spnQty.Sensitive=true;
+                    cmbPaymentMethod.Sensitive = true;
+                    entAmountPayment.Sensitive = true;
+                    btnProcessCheckout.Sensitive = true;
+                }
+                ItemTransactionReady(false);
+                SetItemModel(Convert.ToDouble(lbTransactionId.Text));  
+            }                              
+            
+        }
+        static CellRendererText GetCellRendererText(TreeView treeView, int columnIndex)
+        {
+            if (columnIndex < treeView.Columns.Length)
+            {
+                TreeViewColumn column = treeView.Columns[columnIndex];
+                foreach (var renderer in column.Cells)
+                {
+                    if (renderer is CellRendererText textRenderer)
+                    {
+                        return textRenderer;
+                    }
+                }
+            }
+            return null; // Return null if not found
+        }
+        public void setActivePaymentMethod(string pattern){
+            var store = (ListStore)cmbPaymentMethod.Model;
+                    int index = 0;
+                    foreach (object[] row in store)
+                    {
+                        if (pattern == row[0].ToString())
+                        {
+                            cmbPaymentMethod.Active = index;
+                            break;
+                        }
+                        index++;
+                    }
         }
         private int GetTotalItem(){
             int total = 0;
@@ -297,12 +469,37 @@ namespace Inventorifo.App
             } 
             return total;
         }
+
+        private void HandleEntAmountPaymentChanged(object sender, EventArgs e){
+            Entry entry = sender as Entry;
+            if (entry != null)
+            {
+                //number validation
+                if (!Regex.IsMatch(entry.Text, @"^\d*$")) // Only digits allowed
+                {
+                    entry.Text = Regex.Replace(entry.Text, @"\D", ""); // Remove non-numeric characters
+                }
+                //change background
+                if(entry.Text.Trim()!="" && entTransactionAmount.Text.Trim()!=""){
+                    if( Convert.ToInt32(cmbPaymentMethod.ActiveText) < 5 ){
+                        if(Convert.ToDouble(entry.Text) < Convert.ToDouble(entTransactionAmount.Text)){
+                            entAmountPayment.ModifyBg(StateType.Normal, new Gdk.Color(255, 237, 222));
+                            entAmountPayment.ModifyFg(StateType.Normal, new Gdk.Color(0, 0, 0));
+                        }else{
+                            entAmountPayment.ModifyBg(StateType.Normal, new Gdk.Color(237, 255, 222));
+                            entAmountPayment.ModifyFg(StateType.Normal, new Gdk.Color(0, 0, 0));
+                        }
+                    }
+                }                
+            }
+        }
+
         private void HandleEntSearchChanged(object sender, EventArgs e)
         {
             Entry entry = sender as Entry;
             if (entry != null)
             {
-                SetTransactionModel(true,entry.Text.Trim()); 
+                SetTransactionModel("",entry.Text.Trim()); 
             }
         }
         private void NewTransaction(object sender, EventArgs e)
@@ -312,31 +509,50 @@ namespace Inventorifo.App
             "values (1,CURRENT_DATE,CURRENT_DATE,1,"+this.parent.user.id+",'"+this.parent.application_id+"') ";
             Console.WriteLine (sql);
             DbCl.ExecuteTrans(DbCl.getConn(), sql);
-            SetTransactionModel(true,entSearch.Text.Trim());  
+            SetTransactionModel("",entSearch.Text.Trim());  
             SelectFirstRow(_lsModelTrans,_treeViewTrans);          
             ItemTransactionReady(false);
         }
-        private void SetTransactionModel(Boolean showAll,string strfind)
-        {      
-            if(strfind=="" && !showAll) {          
-                _treeViewTrans.Model = null;
-            }else{
-                
+        private void HandleCalendarDaySelected(object sender, EventArgs e){
+            btnDate.Label = calendar.Date.ToString("yyyy-MM-dd");
+            SetTransactionModel("",entSearch.Text.Trim()); 
+            SelectFirstRow(_lsModelTrans,_treeViewTrans);
+            popoverDate.Hide();
+        }
+        private DataTable fillDtTransaction(string transaction_id, string strfind){
+            string whrfind = "",whrid="";
+            if(transaction_id!="") whrid = "and tr.id="+transaction_id+ " ";
+            if(strfind!="") whrfind = "and (upper(sup.organization_name) like upper('" + strfind + "%') or upper(pers.name) like upper('" + strfind + "%') )";
+            
+            string sql = "select tr.id,tr.reference_id, "+
+                "tr.supplier_id,sup.organization_name,sup.organization_address,sup.organization_phone_number,pers.name person_name,pers.phone_number person_phone_number, "+
+                "tr.transaction_type transaction_type_id, ty.name transaction_type_name, TO_CHAR(tr.transaction_date,'yyyy-mm-dd') transaction_date, tr.transaction_amount, tr.return_amount, "+
+                "tr.payment_group_id, py.name payment_group_name, tr.payment_amount, "+
+                "tr.user_id, usr.name user_name,  "+
+                "tr.state, st.name state_name, st.fgcolor state_fgcolor, st.bgcolor state_bgcolor,  "+
+                "tr.application_id "+
+                "from transaction tr left outer join supplier sup on tr.supplier_id=sup.id "+
+                "left outer join payment_group py on tr.payment_group_id = py.id "+
+                "left outer join person pers on sup.person_id=pers.id, "+
+                "transaction_state st, transaction_type ty, "+
+                "(select usr.id, pers.name, pers.phone_number from person pers,userlogin usr where usr.person_id=pers.id) usr "+
+                "where tr.transaction_type=1 and tr.state=st.id and tr.transaction_type=ty.id "+
+                "and tr.transaction_date::date = '"+btnDate.Label+"'::date and usr.id=tr.user_id "+
+                whrid+ whrfind+ 
+                "ORDER by tr.id desc";
+                Console.WriteLine(sql);
+                return DbCl.fillDataTable(DbCl.getConn(), sql);
+        }
+        private void SetTransactionModel(string transaction_id, string strfind)
+        {                  
                 //ListStore model;
                 _lsModelTrans = null;
                 TreeIter iter;
                 /* create array */
                 _clsTrans = new List<clTransaction>();
-                string whrfind = "";
-                if(strfind!="") whrfind = "and (upper(sup.organization_name) like upper('" + strfind + "%') or upper(pers.name) like upper('" + strfind + "%') )";
-                string sql = "select tr.id,tr.reference_id, tr.supplier_id,sup.organization_name,sup.organization_address,sup.organization_phone_number,pers.name person_name,pers.phone_number,TO_CHAR(tr.transaction_date,'yyyy-mm-dd') transaction_date,tr.state,tr.user_id,tr.application_id "+
-                "from transaction tr left outer join supplier sup on tr.supplier_id=sup.id "+
-                "left outer join person pers on sup.person_id=pers.id,(select usr.id, pers.name person_name, pers.phone_number from person pers,userlogin usr where usr.person_id=pers.id) uspers "+
-                "where tr.transaction_type=1 and tr.transaction_date = CURRENT_date and uspers.id=tr.user_id "+
-                "ORDER by tr.id desc";
-                Console.WriteLine(sql);
+               
                 clTransaction tran;
-                dtTransSelected =  DbCl.fillDataTable(DbCl.getConn(), sql);
+                dtTransSelected =  fillDtTransaction(transaction_id, strfind);
                 foreach (DataRow dr in dtTransSelected.Rows)
                 {              
                     tran = new clTransaction{    
@@ -347,16 +563,27 @@ namespace Inventorifo.App
                         organization_address=dr["organization_address"].ToString(), 
                         organization_phone_number=dr["organization_phone_number"].ToString(),
                         person_name=dr["person_name"].ToString(),
-                        person_phone_number=dr["phone_number"].ToString(),
+                        person_phone_number=dr["person_phone_number"].ToString(),
+                        transaction_type_id=dr["transaction_type_id"].ToString(), 
+                        transaction_type_name=dr["transaction_type_name"].ToString(), 
                         transaction_date=dr["transaction_date"].ToString(),  
-                        state=dr["state"].ToString(),
+                        transaction_amount=dr["transaction_amount"].ToString(),  
+                        return_amount=dr["return_amount"].ToString(),  
+                        payment_group_id=dr["payment_group_id"].ToString(),  
+                        payment_group_name=dr["payment_group_name"].ToString(),
+                        payment_amount=dr["payment_amount"].ToString(),
                         user_id=dr["user_id"].ToString(),
-                        application_id=dr["application_id"].ToString()
+                        user_name=dr["user_name"].ToString(),
+                        state=dr["state"].ToString(),
+                        state_name=dr["state_name"].ToString(),
+                        state_fgcolor=dr["state_fgcolor"].ToString(),
+                        state_bgcolor=dr["state_bgcolor"].ToString(),
+                        application_id=dr["application_id"].ToString(),
                     } ;                                 
                     _clsTrans.Add(tran);
                 } 
 
-                _lsModelTrans = new ListStore(typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string));
+                _lsModelTrans = new ListStore(typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string));
 
                 /* add items */
                 for (int i = 0; i < _clsTrans.Count; i++)
@@ -370,15 +597,26 @@ namespace Inventorifo.App
                     _lsModelTrans.SetValue(iter, (int)ColumnTrans.organization_phone_number, _clsTrans[i].organization_phone_number);
                     _lsModelTrans.SetValue(iter, (int)ColumnTrans.person_name, _clsTrans[i].person_name);
                     _lsModelTrans.SetValue(iter, (int)ColumnTrans.person_phone_number, _clsTrans[i].person_phone_number);
+                    _lsModelTrans.SetValue(iter, (int)ColumnTrans.transaction_type_id, _clsTrans[i].transaction_type_id);
+                    _lsModelTrans.SetValue(iter, (int)ColumnTrans.transaction_type_name, _clsTrans[i].transaction_type_name);
                     _lsModelTrans.SetValue(iter, (int)ColumnTrans.transaction_date, _clsTrans[i].transaction_date);
-                    _lsModelTrans.SetValue(iter, (int)ColumnTrans.state, _clsTrans[i].state);
+                    _lsModelTrans.SetValue(iter, (int)ColumnTrans.transaction_amount, _clsTrans[i].transaction_amount);
+                    _lsModelTrans.SetValue(iter, (int)ColumnTrans.return_amount, _clsTrans[i].return_amount);
+                    _lsModelTrans.SetValue(iter, (int)ColumnTrans.payment_group_id, _clsTrans[i].payment_group_id);
+                    _lsModelTrans.SetValue(iter, (int)ColumnTrans.payment_group_name, _clsTrans[i].payment_group_name);
+                    _lsModelTrans.SetValue(iter, (int)ColumnTrans.payment_amount, _clsTrans[i].payment_amount);
                     _lsModelTrans.SetValue(iter, (int)ColumnTrans.user_id, _clsTrans[i].user_id);
+                    _lsModelTrans.SetValue(iter, (int)ColumnTrans.user_name, _clsTrans[i].user_name);
+                    _lsModelTrans.SetValue(iter, (int)ColumnTrans.state, _clsTrans[i].state);
+                    _lsModelTrans.SetValue(iter, (int)ColumnTrans.state_name, _clsTrans[i].state_name);
+                    _lsModelTrans.SetValue(iter, (int)ColumnTrans.state_fgcolor, _clsTrans[i].state_fgcolor);
+                    _lsModelTrans.SetValue(iter, (int)ColumnTrans.state_bgcolor, _clsTrans[i].state_bgcolor);
                     _lsModelTrans.SetValue(iter, (int)ColumnTrans.application_id, _clsTrans[i].application_id);
                 }
-                _treeViewTrans.Model = _lsModelTrans;    
-                     
-            }
+                _treeViewTrans.Model = _lsModelTrans;
         }
+       
+       
         private void SetItemModel(Double transaction_id)
         {          
             //ListStore model;
@@ -446,8 +684,38 @@ namespace Inventorifo.App
             }
             _treeViewItems.Model = _lsModelItems;   
               
-            
+            lbTotalItem.Text =  GetTotalItem().ToString(); 
+            entTransactionAmount.Text = GetTotalPurchasePrice().ToString();
         }
+
+        
+        [GLib.ConnectBefore]
+        private void HandleTreeViewItemsKeyPressEvent(object sender, KeyPressEventArgs e)
+        {
+            if (e.Event.Key == Gdk.Key.Delete || e.Event.Key == Gdk.Key.KP_Delete)  // Check if Enter key is pressed
+            {
+                TreeSelection selection = _treeViewItems.Selection;
+                TreeIter iter;
+                if(selection.GetSelected( out iter)){
+                    Console.WriteLine("Selected Value:"+_lsModelItems.GetValue (iter, 0).ToString()+_lsModelItems.GetValue (iter, 1).ToString());
+                }            
+                string sql = "delete from stock where id="+_lsModelItems.GetValue (iter, 4).ToString();
+                Console.WriteLine(sql);
+                DbCl.ExecuteScalar(DbCl.getConn(), sql);
+                sql = "delete from transaction_item where id="+_lsModelItems.GetValue (iter, 0).ToString();
+                Console.WriteLine(sql);
+                DbCl.ExecuteScalar(DbCl.getConn(), sql);
+                SetItemModel(Convert.ToDouble(lbTransactionId.Text));
+                if(GetTotalItem()==0) {
+                    sql = "update transaction set state=1 where id="+lbTransactionId.Text;
+                    Console.WriteLine (sql);
+                    DbCl.ExecuteTrans(DbCl.getConn(), sql);                     
+                }
+                ItemTransactionReady(true);
+            }
+                      
+        }
+
         private void SelectedItem(string prm)
         {                          
             dtItemSelected = new DataTable();
@@ -474,6 +742,7 @@ namespace Inventorifo.App
             iter = textViewProduct.Buffer.GetIterAtLine (8);
             textViewProduct.Buffer.InsertWithTags (ref iter, dtItemSelected.Rows[0].ItemArray[5].ToString(), tag);
         }
+
         public Int64 InsertStock(){
             string sql = "insert into stock (product_id,quantity,input_date,expired_date,purchase_price, unit, condition, location)"+
             "values ("+dtItemSelected.Rows[0].ItemArray[0].ToString()+ ","+spnQty.Text+",CURRENT_DATE,CURRENT_DATE,0,1,1,1) returning id";
@@ -492,6 +761,9 @@ namespace Inventorifo.App
                   //  tekan kene
                     string sql = "insert into transaction_item (transaction_id,product_id,stock_id,purchase_price,state) "+
                     "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+ stock_id.ToString() + ",0,1)" ;
+                    Console.WriteLine (sql);
+                    DbCl.ExecuteTrans(DbCl.getConn(), sql); 
+                    sql = "update transaction set state=2 where id="+lbTransactionId.Text;
                     Console.WriteLine (sql);
                     DbCl.ExecuteTrans(DbCl.getConn(), sql); 
                     SetItemModel(Convert.ToDouble(lbTransactionId.Text));
@@ -520,48 +792,99 @@ namespace Inventorifo.App
         {
             _cellColumnsRender = new Dictionary<CellRenderer, int>();
 
-            CellRendererText rendererText = new CellRendererText();
+            CellRendererText rendererText = new CellRendererText(); // 0
+            //rendererText.Foreground = _lsModelTrans.GetValue((int)ColumnTrans.state_fgcolor) ;
+            //rendererText.Background = ColumnTrans.state_bgcolor;
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.id);
             _treeViewTrans.InsertColumn(-1, "ID", rendererText, "text", (int)ColumnTrans.id);
             
-            rendererText = new CellRendererText
+            rendererText = new CellRendererText //1
             {
                 Editable = isEditable
             };
-            rendererText.Foreground = textForground;
+            rendererText.Foreground = textForeground;
+            rendererText.Background = textBackground;
             rendererText.Edited += CellEditedTrans;
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.reference_id);
             _treeViewTrans.InsertColumn(-1, "Reference ID", rendererText, "text", (int)ColumnTrans.reference_id);            
 
-            rendererText = new CellRendererText();
+            rendererText = new CellRendererText(); //2
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.supplier_id);
             _treeViewTrans.InsertColumn(-1, "Supplier ID", rendererText, "text", (int)ColumnTrans.supplier_id);            
 
-            rendererText = new CellRendererText();
+            rendererText = new CellRendererText(); //3
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.organization_name);
-            _treeViewTrans.InsertColumn(-1, "Organization Name", rendererText, "text", (int)ColumnTrans.organization_name); 
+            _treeViewTrans.InsertColumn(-1, "Organization name", rendererText, "text", (int)ColumnTrans.organization_name); 
 
-            rendererText = new CellRendererText();
+            rendererText = new CellRendererText(); //4
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.organization_phone_number);
-            _treeViewTrans.InsertColumn(-1, "Organization Phone Number", rendererText, "text", (int)ColumnTrans.organization_phone_number);
+            _treeViewTrans.InsertColumn(-1, "Organization phone number", rendererText, "text", (int)ColumnTrans.organization_phone_number);
 
-            rendererText = new CellRendererText();
+            rendererText = new CellRendererText(); //5
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.person_name);
-            _treeViewTrans.InsertColumn(-1, "Person Name", rendererText, "text", (int)ColumnTrans.person_name);
+            _treeViewTrans.InsertColumn(-1, "Person name", rendererText, "text", (int)ColumnTrans.person_name);
 
-            rendererText = new CellRendererText();
+            rendererText = new CellRendererText(); //5
+            _cellColumnsRender.Add(rendererText, (int)ColumnTrans.person_phone_number);
+            _treeViewTrans.InsertColumn(-1, "Person phone number", rendererText, "text", (int)ColumnTrans.person_phone_number);
+
+            rendererText = new CellRendererText(); //6
+            _cellColumnsRender.Add(rendererText, (int)ColumnTrans.transaction_type_id);
+            _treeViewTrans.InsertColumn(-1, "Transaction type", rendererText, "text", (int)ColumnTrans.transaction_type_id);
+
+            rendererText = new CellRendererText(); //6
+            _cellColumnsRender.Add(rendererText, (int)ColumnTrans.transaction_type_name);
+            _treeViewTrans.InsertColumn(-1, "Transaction type name", rendererText, "text", (int)ColumnTrans.transaction_type_name);
+
+            rendererText = new CellRendererText(); //6
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.transaction_date);
-            _treeViewTrans.InsertColumn(-1, "Transaction Date", rendererText, "text", (int)ColumnTrans.transaction_date);
+            _treeViewTrans.InsertColumn(-1, "Transaction date", rendererText, "text", (int)ColumnTrans.transaction_date);
 
-            rendererText = new CellRendererText();
-            _cellColumnsRender.Add(rendererText, (int)ColumnTrans.state);
-            _treeViewTrans.InsertColumn(-1, "State", rendererText, "text", (int)ColumnTrans.state);
+            rendererText = new CellRendererText();//13
+            _cellColumnsRender.Add(rendererText, (int)ColumnTrans.transaction_amount);
+            _treeViewTrans.InsertColumn(-1, "Transaction amount", rendererText, "text", (int)ColumnTrans.transaction_amount);
 
-            rendererText = new CellRendererText();
+            rendererText = new CellRendererText();//13
+            _cellColumnsRender.Add(rendererText, (int)ColumnTrans.return_amount);
+            _treeViewTrans.InsertColumn(-1, "Transaction amount", rendererText, "text", (int)ColumnTrans.return_amount);
+
+             rendererText = new CellRendererText(); //10
+            _cellColumnsRender.Add(rendererText, (int)ColumnTrans.payment_group_id);
+            _treeViewTrans.InsertColumn(-1, "Payment group id", rendererText, "text", (int)ColumnTrans.payment_group_id);
+
+            rendererText = new CellRendererText();//11
+            _cellColumnsRender.Add(rendererText, (int)ColumnTrans.payment_group_name);
+            _treeViewTrans.InsertColumn(-1, "Payment group name", rendererText, "text", (int)ColumnTrans.payment_group_name);
+
+            rendererText = new CellRendererText();//12
+            _cellColumnsRender.Add(rendererText, (int)ColumnTrans.payment_amount);
+            _treeViewTrans.InsertColumn(-1, "Payment amount", rendererText, "text", (int)ColumnTrans.payment_amount);
+
+            rendererText = new CellRendererText(); //8
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.user_id);
             _treeViewTrans.InsertColumn(-1, "User ID", rendererText, "text", (int)ColumnTrans.user_id);
 
-            rendererText = new CellRendererText();
+            rendererText = new CellRendererText(); //8
+            _cellColumnsRender.Add(rendererText, (int)ColumnTrans.user_name);
+            _treeViewTrans.InsertColumn(-1, "User name", rendererText, "text", (int)ColumnTrans.user_name);
+
+            rendererText = new CellRendererText(); //7
+            _cellColumnsRender.Add(rendererText, (int)ColumnTrans.state);
+            _treeViewTrans.InsertColumn(-1, "State", rendererText, "text", (int)ColumnTrans.state);
+
+            rendererText = new CellRendererText(); //7
+            _cellColumnsRender.Add(rendererText, (int)ColumnTrans.state_name);
+            _treeViewTrans.InsertColumn(-1, "State name", rendererText, "text", (int)ColumnTrans.state_name);
+
+            rendererText = new CellRendererText();//15
+            _cellColumnsRender.Add(rendererText, (int)ColumnTrans.state_fgcolor);
+            _treeViewTrans.InsertColumn(-1, "State fgcolor", rendererText, "text", (int)ColumnTrans.state_fgcolor);
+
+            rendererText = new CellRendererText();//16
+            _cellColumnsRender.Add(rendererText, (int)ColumnTrans.state_bgcolor);            
+            _treeViewTrans.InsertColumn(-1, "State bgcolor", rendererText, "text", (int)ColumnTrans.state_bgcolor);
+
+            rendererText = new CellRendererText(); //9
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.application_id);
             _treeViewTrans.InsertColumn(-1, "Application ID", rendererText, "text", (int)ColumnTrans.application_id);
 
@@ -664,7 +987,7 @@ namespace Inventorifo.App
                     sql = "update stock set purchase_price = '"+args.NewText+"' where id='"+_clsItems[i].stock_id+"' ";
                     Console.WriteLine (sql);
                     DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                    lbTotalPrice.Text = GetTotalPurchasePrice().ToString();
+                    entTransactionAmount.Text = GetTotalPurchasePrice().ToString();
                 }
                 break;
             }
@@ -715,7 +1038,7 @@ namespace Inventorifo.App
                 GuiCl.RemoveAllWidgets(popoverProduct);        
                 ReferenceProduct refWidget = new ReferenceProduct(this,"dialog","purchase");
                 popoverProduct.Add(refWidget);
-                popoverProduct.SetSizeRequest(500, 300);
+                popoverProduct.SetSizeRequest(600, 300);
                 refWidget.Show();          
                 popoverProduct.ShowAll();
                 return false;
@@ -730,40 +1053,113 @@ namespace Inventorifo.App
                 popoverSupplier.Add(popLabel);
                 popoverSupplier.SetSizeRequest(200, 20);
                 popLabel.Show();
-                string sql = "update transaction set supplier_id='"+prm+"' where id= ";
+                string sql = "update transaction set supplier_id="+prm+" where id= "+lbTransactionId.Text;
                 Console.WriteLine (sql);
                 DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                
+                SetTransactionModel("",entSearch.Text.Trim());
+                SelectedTrans(lbTransactionId.Text);
+                ItemTransactionReady(false);
                 return false;
             });
            // SetTransactionModel(true,entSearch.Text.Trim());
         }
-        
+        private void ShowDatePopup(object sender, EventArgs e)
+        {   
+            GLib.Timeout.Add(0, () =>
+            { 
+                GuiCl.RemoveAllWidgets(popoverDate);
+                calendar = new Calendar();
+                calendar.DaySelected += HandleCalendarDaySelected;
+                popoverDate.Add(calendar);
+                popoverDate.SetSizeRequest(300, 150);
+               // calendar.Show();          
+                popoverDate.ShowAll();
+                return false;
+            });
+        }
         private void ShowSupplierPopup(object sender, EventArgs e)
         {
-            //GuiCl.RemoveAllWidgets(popover);        
-            //                  
-            GuiCl.RemoveAllWidgets(popoverSupplier);        
-            ReferenceSupplier refWidget = new ReferenceSupplier(this,"dialog","purchase");
-            popoverSupplier.Add(refWidget);
-            popoverSupplier.SetSizeRequest(400, 300);
-            refWidget.Show();          
-            popoverSupplier.ShowAll();
+            GLib.Timeout.Add(0, () =>
+            {                   
+                GuiCl.RemoveAllWidgets(popoverSupplier);        
+                ReferenceSupplier refWidget = new ReferenceSupplier(this,"dialog","purchase");
+                popoverSupplier.Add(refWidget);
+                popoverSupplier.SetSizeRequest(200, 400);
+                refWidget.Show();          
+                popoverSupplier.ShowAll();
+                return false;
+            });
+        }
+        private void ShowPaymentPopup(object sender, EventArgs e)
+        {
+            GLib.Timeout.Add(0, () =>
+            {                
+                GuiCl.RemoveAllWidgets(popoverPayment);        
+                InstallmentsPaid refWidget = new InstallmentsPaid(this,lbTransactionId.Text);
+                popoverPayment.Add(refWidget);
+                popoverPayment.SetSizeRequest(400, 300);
+                refWidget.Show();          
+                popoverPayment.ShowAll();
+                return false;
+            });
         }
         private void DoCheckout(object sender, EventArgs e)
         {
+            Boolean valid = false;
+            TreeSelection selection = _treeViewTrans.Selection;
+            TreeIter iter;
+            if(selection.GetSelected( out iter)){
+                Console.WriteLine("Selected Value:"+_lsModelTrans.GetValue (iter, 0).ToString()+_lsModelTrans.GetValue (iter, 1).ToString());
+            }  
+
             if( Convert.ToInt32(cmbPaymentMethod.ActiveText) < 5){
-                if(Convert.ToInt32(entAmountPayment.Text) < GetTotalPurchasePrice()){
+                if(Convert.ToInt32(entAmountPayment.Text) < Convert.ToInt32(entTransactionAmount.Text)){
                     string message = "Oh sorry, payment amount less than total purchase price";
                     MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, message);
                     md.Run();
                     md.Destroy();
+                    valid=false;
                 }else{
-
+                    valid = true;
                 }
+            }else{
+                valid=true;
             }
-            
-           // TransactionReady();
+            if(valid){
+                string sql = "select * from transaction_item where transaction_id="+_lsModelTrans.GetValue (iter, 0).ToString();
+                Console.WriteLine(sql);
+                DataTable dt =  DbCl.fillDataTable(DbCl.getConn(), sql);
+                foreach (DataRow dr in dt.Rows)
+                { 
+                    sql = "update stock set state=0 where id="+dr["stock_id"].ToString();
+                    Console.WriteLine(sql);
+                    DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                }
+                sql = "update transaction_item set state=0 where transaction_id="+_lsModelTrans.GetValue (iter, 0).ToString();
+                Console.WriteLine(sql);
+                DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                sql = "insert into payment (transaction_id,payment_date,amount,user_id) values ("+_lsModelTrans.GetValue (iter, 0).ToString()+",CURRENT_TIMESTAMP,"+entAmountPayment.Text.Trim()+","+this.parent.user.id+")";
+                Console.WriteLine(sql);
+                DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                sql = "update transaction set transaction_amount="+entTransactionAmount.Text.Trim()+", payment_amount="+GetPaymentAmount(_lsModelTrans.GetValue (iter, 0).ToString()).ToString()+", payment_group_id="+cmbPaymentMethod.ActiveText+", state=0 where id="+_lsModelTrans.GetValue (iter, 0).ToString();
+                Console.WriteLine(sql);
+                DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                SetTransactionModel("",entSearch.Text.Trim());  
+                SelectedTrans(lbTransactionId.Text);
+                SetItemModel(Convert.ToDouble(lbTransactionId.Text));
+                //ItemTransactionReady(false);
+                TransactionReady();
+            }  
+        }
+        private double GetPaymentAmount(string transaction_id){
+            double total = 0;
+            string sql = "select * from payment where transaction_id="+transaction_id;
+            DataTable dt =  DbCl.fillDataTable(DbCl.getConn(), sql);
+            foreach (DataRow dr in dt.Rows)
+            { 
+                total+= Convert.ToDouble(dr["amount"].ToString());
+            }
+            return total;
         }
         private void EditingStarted(object o, EditingStartedArgs args)
         {
