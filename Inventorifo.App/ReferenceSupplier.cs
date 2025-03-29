@@ -12,6 +12,7 @@ namespace Inventorifo.App
     {
         Inventorifo.Lib.LibDb DbCl = new Inventorifo.Lib.LibDb ();
         Inventorifo.Lib.LibGui GuiCl = new Inventorifo.Lib.LibGui ();
+        Inventorifo.Lib.LibCore CoreCl = new Inventorifo.Lib.LibCore ();
 
         private TreeView _treeView;
         private ListStore _itemsModel;

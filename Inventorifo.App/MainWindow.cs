@@ -4,10 +4,13 @@ using UI = Gtk.Builder.ObjectAttribute;
 
 namespace Inventorifo.App
 {
-    
-    
+        
     class MainWindow : Window
     {      
+        Inventorifo.Lib.LibDb DbCl = new Inventorifo.Lib.LibDb ();
+        Inventorifo.Lib.LibGui GuiCl = new Inventorifo.Lib.LibGui ();
+        Inventorifo.Lib.LibCore CoreCl = new Inventorifo.Lib.LibCore ();
+        
         public string application_id = "Inventorifo.App";
         //[UI] private Label _label1 = null;
         //[UI] private Button _button1 = null;
@@ -85,7 +88,7 @@ namespace Inventorifo.App
             TransactionSale transWidget = new TransactionSale(this,null);
             mainBox.PackStart(transWidget, false, true, 5);
             transWidget.ShowAll();
-
+            
           
         }
         private void StockMenuItem_Activated(object sender, EventArgs a)
@@ -103,7 +106,7 @@ namespace Inventorifo.App
             Gtk.Application.Invoke(delegate
             {
                 ClearMainBox();
-                ReferenceProduct refWidget = new ReferenceProduct(this,"widget",null);
+                ReferenceProduct refWidget = new ReferenceProduct(this,"widget",0);
                 mainBox.PackStart(refWidget, true, true, 5);
                 refWidget.ShowAll();
             });
@@ -143,7 +146,7 @@ namespace Inventorifo.App
             Gtk.Application.Invoke(delegate
             {
                 ClearMainBox();
-                ReferenceCustomer refWidget = new ReferenceCustomer(this,null);
+                ReferenceCustomer refWidget = new ReferenceCustomer(this,"widget",null);
                 mainBox.PackStart(refWidget, true, true, 5);
                 refWidget.ShowAll();
             });
@@ -152,11 +155,11 @@ namespace Inventorifo.App
 
             AboutDialog d = new();
             d.TransientFor = this;
-            d.Authors = ["Ali Nugroho"];
+            d.Authors = ["Ali Nugroho, S.Kom  <metunonton@outlook.com>"];
             d.ProgramName = "Inventorifo";
             d.Version = "0.1.0";
-            d.Comments = " Inventory FIFO";
-            d.Copyright = "© 2025 Salatiga Indonesia";
+            d.Comments = "Presented by efisiensi.org\nThe platform that becomes the real deal when your organization hits the efficiency button";
+            d.Copyright = "© 2025 Indonesia";
 
             //if (Resources.GetTexture("logo.png") is Texture t)
             //    d.Logo = t;
@@ -172,86 +175,6 @@ namespace Inventorifo.App
         }
     }
     
-    class UserLogin
-    { //
-        public UserLogin(string id, string person_id,string person_name, string person_address,string person_phone_number, string level,string level_name,string is_active,string application_id, string privilege){
-        this.id = id;
-        this.person_id = person_id;
-        this.person_name = person_name;
-        this.person_address = person_address;
-        this.person_phone_number = person_phone_number;
-        this.level = level;
-        this.level_name = level_name;
-        this.is_active = is_active;
-        this.application_id = application_id;
-        this.privilege = privilege;
-        }
-        public string id;
-        public string person_id;
-        public string person_name;
-        public string person_address;
-        public string person_phone_number;
-        public string level;
-        public string level_name;
-        public string is_active;
-        public string application_id;
-        public string privilege;
-    }
-    class clPayment
-    {    
-        public string id { get; set; }
-        public string transaction_id { get; set; }
-        public string payment_date { get; set; }
-        public string payment_amount { get; set; }
-        public string user_id { get; set; }
-        public string user_name { get; set; }
-    }
-    class clTransaction
-    {    
-        public string id { get; set; }
-        public string reference_id { get; set; }
-        public string supplier_id { get; set; }
-        public string organization_name { get; set; }
-        public string organization_address { get; set; }
-        public string organization_phone_number { get; set; }
-        public string person_name { get; set; }
-        public string person_phone_number { get; set; }
-        public string transaction_type_id { get; set; }
-        public string transaction_type_name { get; set; }
-        public string transaction_date { get; set; }
-        public string transaction_amount { get; set; }
-        public string return_amount { get; set; }
-        public string payment_group_id { get; set; }
-        public string payment_group_name { get; set; }
-        public string payment_amount { get; set; }
-        public string user_id { get; set; }
-        public string user_name { get; set; }
-        public string state { get; set; }
-        public string state_name { get; set; }
-        public string state_fgcolor { get; set; }
-        public string state_bgcolor { get; set; }
-        public string application_id { get; set; }
-    }
-
-    class clTransItem
-    {                          
-        public string id { get; set; }
-        public string transaction_id { get; set; }
-        public string product_id { get; set; }
-        public string product_name { get; set; }
-        public string stock_id { get; set; }
-        public string quantity { get; set; }
-        public string unit { get; set; }
-        public string unit_name { get; set; }
-        public string purchase_price { get; set; }
-        public string price_id { get; set; }
-        public string price { get; set; }
-        public string tax { get; set; }
-        public string state { get; set; }
-        public string location { get; set; }
-        public string location_name { get; set; }
-        public string condition { get; set; }
-        public string condition_name { get; set; }
-    }
+    
         
 }

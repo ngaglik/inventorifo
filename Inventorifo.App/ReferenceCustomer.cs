@@ -12,6 +12,7 @@ namespace Inventorifo.App
     {
         Inventorifo.Lib.LibDb DbCl = new Inventorifo.Lib.LibDb ();
         Inventorifo.Lib.LibGui GuiCl = new Inventorifo.Lib.LibGui ();
+        Inventorifo.Lib.LibCore CoreCl = new Inventorifo.Lib.LibCore ();
 
         private TreeView _treeView;
         private ListStore _itemsModel;
@@ -21,9 +22,16 @@ namespace Inventorifo.App
         private Entry entSearch;
         private Popover popover ;
         
+        public object parent;
+        Boolean isEditable;
+        string textForground;
+        string prm;
 
-        public ReferenceCustomer(object parent, string prm) : base(Orientation.Vertical, 6)
+        public ReferenceCustomer(object parent, string mode,string prm) : base(Orientation.Vertical, 6)
         {
+            this.parent=parent;
+            this.prm = prm;
+
             //this.parent = parent;
             Label lbTitle = new Label();
             lbTitle.Text = "Customer";
@@ -61,15 +69,33 @@ namespace Inventorifo.App
             entSearch.PlaceholderText = "Search";
             hbox.PackStart(entSearch, true, true, 0);
 
-
-            Button button = new Button("Add");
-            button.Clicked += AddItem;
-            hbox.PackStart(button, true, true, 0);
-
-            popover = new Popover(button);    
+            switch (mode)
+            {
+                case "dialog":
+                    {
+                        Button button = new Button("Select");
+                        button.Clicked += SelectItem;
+                        hbox.PackStart(button, true, true, 0);
+                        isEditable = false;
+                        textForground = "black";
+                    } 
+                    break;
+                case "widget":
+                    {
+                        Button button = new Button("Add");
+                        button.Clicked += AddItem;
+                        hbox.PackStart(button, true, true, 0);
+                        isEditable = true;
+                        textForground = "green";
+                        popover = new Popover(button);  
+                    } 
+                    break;
+            }  
             
 
+            
             entSearch.Changed += HandleEntSearchChanged;
+            entSearch.GrabFocus();
         }
 
         private class Item
@@ -129,6 +155,18 @@ namespace Inventorifo.App
         {
             CreateItemsModel(false,entSearch.Text.Trim());
         }
+
+        private void SelectItem(object sender, EventArgs e)
+        {
+            TreeSelection selection = _treeView.Selection;
+            TreeIter iter;
+            if(selection.GetSelected( out iter)){
+                Console.WriteLine("Selected Value:"+_itemsModel.GetValue (iter, 0).ToString()+_itemsModel.GetValue (iter, 1).ToString());
+            }            
+            TransactionSale o = (TransactionSale)this.parent;
+            o.doChildCustomer("Yeay! "+ _itemsModel.GetValue (iter, 2).ToString() +" selected",_itemsModel.GetValue (iter, 0).ToString());
+        }
+
         private void CreateItemsModel(Boolean showAll,string strfind)
         {      
             if(strfind=="" && !showAll) {          
@@ -223,27 +261,27 @@ namespace Inventorifo.App
 
             rendererText = new CellRendererText
             {
-                Editable = true
+                Editable = isEditable
             };
-            rendererText.Foreground = "green";
+            rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.person_name);
             _treeView.InsertColumn(-1, "Person Name", rendererText, "text", (int)ColumnItem.person_name);
 
             rendererText = new CellRendererText
             {
-                Editable = true
+                Editable = isEditable
             };
-            rendererText.Foreground = "green";
+            rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.person_address);
             _treeView.InsertColumn(-1, "Person Address", rendererText, "text", (int)ColumnItem.person_address);
 
             rendererText = new CellRendererText
             {
-                Editable = true
+                Editable = isEditable
             };
-            rendererText.Foreground = "green";
+            rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.person_phone_number);
             _treeView.InsertColumn(-1, "Person Phone Number", rendererText, "text", (int)ColumnItem.person_phone_number);
@@ -260,9 +298,9 @@ namespace Inventorifo.App
                 Model = lstModelCombo,
                 TextColumn = 1,
                 HasEntry = false,
-                Editable = true
+                Editable = isEditable
             };
-            rendererCombo.Foreground = "green";
+            rendererCombo.Foreground = textForground;
             rendererCombo.Edited += CellEdited;
             rendererCombo.EditingStarted += EditingStarted;           
             _cellColumnsRender.Add(rendererCombo, (int)ColumnItem.customer_group_name);
@@ -277,9 +315,9 @@ namespace Inventorifo.App
                 Model = lstModelCombo,
                 TextColumn = (int)ColumnNumber.Text,
                 HasEntry = false,
-                Editable = true
+                Editable = isEditable
             };
-            rendererCombo.Foreground = "green";
+            rendererCombo.Foreground = textForground;
             rendererCombo.Edited += CellEdited;
             rendererCombo.EditingStarted += EditingStarted;
             _cellColumnsRender.Add(rendererCombo, (int)ColumnItem.is_active);
@@ -288,27 +326,27 @@ namespace Inventorifo.App
 
             rendererText = new CellRendererText
             {
-                Editable = true
+                Editable = isEditable
             };
-            rendererText.Foreground = "green";
+            rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.organization_name);
             _treeView.InsertColumn(-1, "Organization Name", rendererText, "text", (int)ColumnItem.organization_name);
 
             rendererText = new CellRendererText
             {
-                Editable = true
+                Editable = isEditable
             };
-            rendererText.Foreground = "green";
+            rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.organization_address);
             _treeView.InsertColumn(-1, "Organization Address", rendererText, "text", (int)ColumnItem.organization_address);
 
             rendererText = new CellRendererText
             {
-                Editable = true
+                Editable = isEditable
             };
-            rendererText.Foreground = "green";
+            rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.organization_phone_number);
             _treeView.InsertColumn(-1, "Organization Phone Number", rendererText, "text", (int)ColumnItem.organization_phone_number);
@@ -318,9 +356,9 @@ namespace Inventorifo.App
 
             rendererText = new CellRendererText
             {
-                Editable = true
+                Editable = isEditable
             };
-            rendererText.Foreground = "green";
+            rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.organization_tax_id_number);
             _treeView.InsertColumn(-1, "Organization Tax ID Number", rendererText, "text", (int)ColumnItem.organization_tax_id_number);
