@@ -54,6 +54,7 @@ namespace Inventorifo.App
         private Entry entBarcode;
         private Entry entAmountPayment;
         private Entry entTransactionAmount;
+        private Entry entTaxAmount;
 
         private Popover popoverCustomer ;
         private Popover popoverProduct ;
@@ -80,6 +81,8 @@ namespace Inventorifo.App
         CellRendererCombo cellComboPaymentMethod = new Gtk.CellRendererCombo();
         
         Calendar calendar = new Calendar();
+        CheckButton chkTax;
+
         private enum ColumnTrans
         { 
             id,
@@ -105,6 +108,8 @@ namespace Inventorifo.App
             state_fgcolor,
             state_bgcolor,
             application_id,
+            tax_amount,
+            is_tax,
             Num
         };
 
@@ -203,11 +208,16 @@ namespace Inventorifo.App
             entAmountPayment.Xalign = 0.5f; 
             entAmountPayment.ModifyFont(FontDescription.FromString("Arial 14"));
             entAmountPayment.Changed += HandleEntAmountPaymentChanged;
+            entAmountPayment.KeyPressEvent += OnEntAmountPaymentKeyPressEvent;
+            
             //entAmountPayment.ModifyBg(StateType.Normal, new Gdk.Color(255, 237, 222));
             entTransactionAmount = (Entry)builder.GetObject("EntTransactionAmount");
             entTransactionAmount.Xalign = 0.5f; 
             entTransactionAmount.ModifyFont(FontDescription.FromString("Arial 14"));
             //entTransactionAmount.ModifyBg(StateType.Normal, new Gdk.Color(255, 237, 222));
+            entTaxAmount = (Entry)builder.GetObject("EntTaxAmount");
+            entTaxAmount.Xalign = 0.5f; 
+            entTaxAmount.ModifyFont(FontDescription.FromString("Arial 14"));
 
             _treeViewTrans = (TreeView)builder.GetObject("TreeViewTrans");
             _treeViewTrans.Selection.Mode = SelectionMode.Single;
@@ -245,6 +255,9 @@ namespace Inventorifo.App
             lbBillCalculated.ModifyFont(FontDescription.FromString("Arial 14"));
             this.KeyPressEvent += OnThisKeyPressEvent;
             
+            chkTax = (CheckButton)builder.GetObject("ChkTax");
+            chkTax.Toggled += HandlechkTaxChanged;
+
             SetTransactionModel("",entSearch.Text.Trim());
             TransactionReady();       
         }        
@@ -339,13 +352,17 @@ namespace Inventorifo.App
                 var payment_amount = dr["payment_amount"].ToString();
                 var transaction_amount = dr["transaction_amount"].ToString();
                 var transaction_date = dr["transaction_date"].ToString();
+                var tax_amount = dr["tax_amount"].ToString();
+                bool is_tax;
+                bool succes = bool.TryParse(dr["is_tax"].ToString(), out is_tax);
 
                 setActivePaymentMethod(payment_group_id);
 
                 entAmountPayment.Text = "0";
                 btnPreviousPayment.Label = payment_amount;
+                entTaxAmount.Text = tax_amount;
                 entTransactionAmount.Text = transaction_amount;
-                lbBillCalculated.Text = (Convert.ToDouble(transaction_amount)-Convert.ToDouble(payment_amount)).ToString() ;
+                lbBillCalculated.Text = (Convert.ToDouble(transaction_amount)+Convert.ToDouble(tax_amount)-Convert.ToDouble(payment_amount)).ToString() ;
                 
                 var tag = new TextTag (null);
                 textViewCustomer.Buffer.TagTable.Add (tag);
@@ -428,6 +445,7 @@ namespace Inventorifo.App
                 }
                 ItemTransactionReady(false);
                 SetItemModel(Convert.ToDouble(lbTransactionId.Text));  
+                chkTax.Active = is_tax;
             }                              
             
         }
@@ -488,6 +506,21 @@ namespace Inventorifo.App
             }
         }
 
+        private void HandlechkTaxChanged(object sender, EventArgs e)
+        {
+            if(chkTax.Active){
+                entTaxAmount.Text = CalculateTax(GetTotalSalePrice()).ToString();
+                entTransactionAmount.Text = (GetTotalSalePrice()+CalculateTax(GetTotalSalePrice())).ToString();
+            }else{
+                entTaxAmount.Text = "0";
+                entTransactionAmount.Text = (GetTotalSalePrice()).ToString();
+            }
+        }
+        private double CalculateTax(double amount){
+            if(chkTax.Active) return amount*Convert.ToDouble(this.parent.conf.tax)/100;
+            else return 0;
+        }
+
         private void HandleEntSearchChanged(object sender, EventArgs e)
         {
             Entry entry = sender as Entry;
@@ -524,7 +557,7 @@ namespace Inventorifo.App
                 "tr.payment_group_id, py.name payment_group_name, tr.payment_amount, "+
                 "tr.user_id, usr.name user_name,  "+
                 "tr.state, st.name state_name, st.fgcolor state_fgcolor, st.bgcolor state_bgcolor,  "+
-                "tr.application_id "+
+                "tr.application_id, tr.tax_amount, tr.is_tax "+
                 "from transaction tr left outer join customer sup on tr.customer_id=sup.id "+
                 "left outer join payment_group py on tr.payment_group_id = py.id "+
                 "left outer join person pers on sup.person_id=pers.id, "+
@@ -674,7 +707,9 @@ namespace Inventorifo.App
             _treeViewItems.Model = _lsModelItems;   
               
             lbTotalItem.Text =  GetTotalItem().ToString(); 
-            entTransactionAmount.Text = GetTotalSalePrice().ToString();
+            entTaxAmount.Text = CalculateTax(GetTotalSalePrice()).ToString();
+            entTransactionAmount.Text = (GetTotalSalePrice()+CalculateTax(GetTotalSalePrice())).ToString();
+
         }
 
         
@@ -739,7 +774,7 @@ namespace Inventorifo.App
             double store_quantity = 0;
             double global_quantity = 0;
             //check available product
-            DataTable dts = CoreCl.fillDtProduct(dtItemSelected.Rows[0].ItemArray[0].ToString(),"","","");
+            DataTable dts = CoreCl.fillDtProduct("true",dtItemSelected.Rows[0].ItemArray[0].ToString(),"","","");
             foreach(DataRow drs in dts.Rows){
                 store_quantity =  Convert.ToDouble(drs["store_quantity"].ToString()); 
                 global_quantity = Convert.ToDouble(drs["global_quantity"].ToString());
@@ -1016,7 +1051,8 @@ namespace Inventorifo.App
                     string sql = "update stock set quantity = '"+args.NewText+"' where id='"+_clsItems[i].stock_id+"' ";
                     Console.WriteLine (sql);
                     DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                    entTransactionAmount.Text = GetTotalSalePrice().ToString();
+                    entTaxAmount.Text = CalculateTax(GetTotalSalePrice()).ToString();
+                    entTransactionAmount.Text = (GetTotalSalePrice()+CalculateTax(GetTotalSalePrice())).ToString();
                 }
                 break;
                 case (int)ColumnItems.price:
@@ -1030,7 +1066,8 @@ namespace Inventorifo.App
                     sql = "update price set price = '"+args.NewText+"' where id='"+_clsItems[i].price_id+"' ";
                     Console.WriteLine (sql);
                     DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                    entTransactionAmount.Text = GetTotalSalePrice().ToString();
+                    entTaxAmount.Text = CalculateTax(GetTotalSalePrice()).ToString();
+                    entTransactionAmount.Text = (GetTotalSalePrice()+CalculateTax(GetTotalSalePrice())).ToString();
                 }
                 break;
                 case (int)ColumnItems.location_name:
@@ -1193,6 +1230,18 @@ namespace Inventorifo.App
                 popoverPayment.ShowAll();
                 return false;
             });
+        }
+        [GLib.ConnectBefore]
+        private void OnEntAmountPaymentKeyPressEvent(object sender, KeyPressEventArgs e)
+        {
+            //if(dtItemSelected is not null){
+               // Console.WriteLine(e.Event.Key);
+                if (e.Event.Key == Gdk.Key.Return)
+                {      
+                    Console.WriteLine("aaaaaaaaaalllllllllllllllla");           
+                    DoCheckout(sender,e);                    
+                } 
+            //}         
         }
         private void DoCheckout(object sender, EventArgs e)
         {

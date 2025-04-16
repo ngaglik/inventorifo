@@ -47,27 +47,15 @@ namespace Inventorifo.App
             sw.SetPolicy(PolicyType.Automatic, PolicyType.Automatic);
 
             this.PackStart(sw, true, true, 0);
-
-            /* create tree view */
-            _treeView = new TreeView();
-            _treeView.Selection.Mode = SelectionMode.Single;
-
-            AddColumns();
-            _treeView.Columns[1].Visible = false;
-
-            CreateItemsModel(true,"");
-            sw.Add(_treeView);
-
             /* some buttons */
             Box hbox = new Box(Orientation.Horizontal, 4)
             {
                 Homogeneous = true
             };
-            this.PackStart(hbox, false, false, 0);
-
-            entSearch = new Entry();
-            entSearch.PlaceholderText = "Search";
-            hbox.PackStart(entSearch, true, true, 0);
+            
+            /* create tree view */
+            _treeView = new TreeView();
+            _treeView.Selection.Mode = SelectionMode.Single;
 
             switch (mode)
             {
@@ -91,6 +79,21 @@ namespace Inventorifo.App
                     } 
                     break;
             }  
+
+            AddColumns();
+            _treeView.Columns[1].Visible = false;
+
+            CreateItemsModel(true,"");
+            sw.Add(_treeView);
+
+            
+            this.PackStart(hbox, false, false, 0);
+
+            entSearch = new Entry();
+            entSearch.PlaceholderText = "Search";
+            hbox.PackStart(entSearch, true, true, 0);
+
+            
             
 
             

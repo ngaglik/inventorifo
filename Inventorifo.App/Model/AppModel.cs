@@ -1,5 +1,14 @@
 namespace Inventorifo.App
 {
+    public class clsConfig
+    {
+        public string id { get; set; }
+        public string app_id { get; set; }
+        public string app_version { get; set; }
+        public string country_code { get; set; }
+        public string currency { get; set; }
+        public string tax { get; set; }
+    }
 	public class Response
 	{
 		public string code { get; set; }
@@ -98,6 +107,8 @@ namespace Inventorifo.App
         public string state_fgcolor { get; set; }
         public string state_bgcolor { get; set; }
         public string application_id { get; set; }
+        public string tax_amount { get; set; }
+        public string is_tax { get; set; }
     }
 
     class clTransItem

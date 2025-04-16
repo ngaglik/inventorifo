@@ -16,6 +16,7 @@ namespace Inventorifo.App
 
         private TreeView _treeView;
         private ListStore _lsModelProduct;
+        private ListStore _lsModelIsActive;
         private Dictionary<CellRenderer, int> _cellColumnsRender;
         private List<clsProduct> _clsProduct;
         private Popover popover ;
@@ -29,6 +30,7 @@ namespace Inventorifo.App
         int prm;
         string mode;
         private Boolean showAll;
+        ComboBoxText CmbIsActive;
 
         public ReferenceProduct(object parent, string mode, int prm) : base(Orientation.Vertical, 3)
         {
@@ -48,10 +50,21 @@ namespace Inventorifo.App
             entSearch = new Entry();
             entSearch.PlaceholderText = "Search";
             entBarcode = new Entry();
-            entBarcode.PlaceholderText = "Barcode";        
+            entBarcode.PlaceholderText = "Barcode"; 
+
+            CmbIsActive = new ComboBoxText();
+            _lsModelIsActive = new ListStore(typeof(string));
+            // Tambahkan beberapa item ke ListStore
+            _lsModelIsActive.AppendValues("Show All");
+            _lsModelIsActive.AppendValues("Active");
+            _lsModelIsActive.AppendValues("Inactive");
+            CmbIsActive.Model = _lsModelIsActive;
+            Gtk.CellRendererText cellRendererText = new Gtk.CellRendererText();
+            CmbIsActive.PackStart(cellRendererText, true);
+
+            hbox.PackStart(CmbIsActive, true, true, 0);  
             hbox.PackStart(entBarcode, true, true, 0);   
             hbox.PackStart(entSearch, true, true, 0);    
-           
             switch (mode)
             {
                 case "dialog":
@@ -62,6 +75,8 @@ namespace Inventorifo.App
                         isEditable = false;
                         textForground = "black";
                         showAll = false;
+                        if(prm==1) CmbIsActive.Active = 0;
+                        else CmbIsActive.Active = 1;
                     } 
                     break;
                 case "widget":
@@ -73,6 +88,7 @@ namespace Inventorifo.App
                         textForground = "green";
                         popover = new Popover(button);  
                         showAll = true;
+                        CmbIsActive.Active = 0;
                     } 
                     break;
             }    
@@ -148,7 +164,7 @@ namespace Inventorifo.App
                 /* create array */
                 _clsProduct = new List<clsProduct>();
                 clsProduct prod;
-                DataTable dttv = CoreCl.fillDtProduct("",strbarcode,strfind,prm.ToString());
+                DataTable dttv = CoreCl.fillDtProduct(CmbIsActive.ActiveText, "",strbarcode,strfind,prm.ToString());
                 foreach (DataRow dr in dttv.Rows)
                 {            
                     prod = new clsProduct{        

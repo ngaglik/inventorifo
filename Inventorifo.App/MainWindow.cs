@@ -21,11 +21,21 @@ namespace Inventorifo.App
         public Box mainBox;        
         public MainWindow() : this(new Builder("MainWindow.glade")) { }
         public UserLogin user;
+        public clsConfig conf;
         MenuItem profilMenuBar;
         public Overlay overlay;
         private MainWindow(Builder builder) : base(builder.GetRawOwnedObject("MainWindow"))
         {
             builder.Autoconnect(this);
+            
+            conf = new clsConfig{
+                id="1", 
+                app_id="1", 
+                app_version="0.1.0",
+                country_code="ID",
+                currency="Rp",
+                tax="12"
+            };
 
             MenuItem purchaseMenuItem = (MenuItem)builder.GetObject("PurchaseMenuItem");
             MenuItem saleMenuItem = (MenuItem)builder.GetObject("SaleMenuItem");
