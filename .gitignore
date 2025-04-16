@@ -4,8 +4,8 @@
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
 # Node artifact files
-Inventorifo.Lib/
-Inventorifo.Db/
+#Inventorifo.Lib/
+#Inventorifo.Db/
 .vs/
 # Compiled Java class files
 *.class
