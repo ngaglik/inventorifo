@@ -21,13 +21,18 @@ namespace Inventorifo.Lib
                 else if(is_active=="2") whractive = "and prod.is_active =  false ";
                 
                 if(strbarcode!="") whrbarcode = "and prod.barcode =  '" + strbarcode + "' ";
-                if(product_id!="") whrid = " and prod.id= "+product_id;
+
                 if(transaction_type=="2") whrtype = " and store_quantity>0 ";
-                if(strfind!="" && strfind.Length>=2) {
-                    whrfind = "and (upper(prod.name) like upper('" + strfind + "%') or upper(prod.short_name) like upper('" + strfind + "%')) ";
+                if(product_id!="" ){
+                    whrid = " and prod.id= "+product_id;
                 }else{
-                    return new DataTable();
+                    if( strfind!="" && strfind.Length>=2) {
+                        whrfind = "and (upper(prod.name) like upper('" + strfind + "%') or upper(prod.short_name) like upper('" + strfind + "%')) ";
+                    }else{
+                        return new DataTable();
+                    }
                 }
+                
                 string sql = "SELECT prod.id, prod.short_name, prod.name product_name, prod.barcode, "+
                 "case when store_quantity is null then 0 else store_quantity end store_quantity, "+
                 "case when global_quantity is null then 0 else global_quantity end global_quantity, "+
@@ -35,7 +40,7 @@ namespace Inventorifo.Lib
                 "FROM product_group prodgr, product prod "+
                 "left outer join (select sum(quantity) store_quantity,product_id,location_group from stock,location loc,location_group locgr where state=0 and stock.location=loc.id and loc.location_group=locgr.id and locgr.id=2 group by product_id,loc.id) prstore on prstore.product_id=prod.id "+
                 "left outer join (select sum(quantity) global_quantity,product_id from stock where state=0 group by product_id) prglobal  on prglobal.product_id=prod.id "+
-                "WHERE prod.product_group = prodgr.id "+ whrfind + whrbarcode + whrtype +
+                "WHERE prod.product_group = prodgr.id "+ whrfind + whrbarcode + whrtype +whrid+
                 "ORDER by prod.name asc";
                 Console.WriteLine(sql);
                 return DbCl.fillDataTable(DbCl.getConn(), sql);
@@ -72,7 +77,7 @@ namespace Inventorifo.Lib
 
             string sql = "select ti.id, ti.transaction_id, ti.product_id, pr.short_name product_short_name, pr.name product_name,ti.stock_id, "+
             "case when ti.tax is null then 0 else ti.tax end tax, ti.state, state.name state_name, "+
-            "st.quantity, st.unit,un.name unit_name, "+
+            "ti.quantity, st.unit,un.name unit_name, "+
             "price.id price_id, case when price.purchase_price is null then 0 else price.purchase_price end purchase_price, case when price.price is null then 0 else price.price end price, "+
             "st.location, lo.name location_name, st.condition, co.name condition_name "+
             "from transaction_item_state state, transaction_item ti, product pr, stock st "+

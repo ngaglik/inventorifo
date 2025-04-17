@@ -768,6 +768,7 @@ namespace Inventorifo.App
         }
        
         public Response AddItem(){
+            Console.WriteLine("==============1===="+ dtItemSelected.Rows[0].ItemArray[0].ToString()); 
             string sql="";
             Response resp = new Response();
             Boolean valid=false; 
@@ -776,6 +777,7 @@ namespace Inventorifo.App
             //check available product
             DataTable dts = CoreCl.fillDtProduct("true",dtItemSelected.Rows[0].ItemArray[0].ToString(),"","","");
             foreach(DataRow drs in dts.Rows){
+                Console.WriteLine(drs["short_name"].ToString()+"======2======== "+drs["store_quantity"].ToString()+"===="); 
                 store_quantity =  Convert.ToDouble(drs["store_quantity"].ToString()); 
                 global_quantity = Convert.ToDouble(drs["global_quantity"].ToString());
                 if(Convert.ToDouble(spnQty.Text) > store_quantity  && Convert.ToDouble(spnQty.Text) < global_quantity ){
@@ -787,19 +789,23 @@ namespace Inventorifo.App
                     valid = true;
                 }
             } 
+
+            Console.WriteLine("==============3====" + valid.ToString()); 
+
             
             if(valid){
                 //FIFO show all stock in store location
                 sql = "select stock.id stock_id,stock.quantity,stock.product_id,stock.price_id,stock.location "+
                 "from stock,location loc,location_group locgr "+
-                "where state=0 and locgr.id=2 and product_id="+ dtItemSelected.Rows[0].ItemArray[0].ToString() + " "+
+                "where stock.quantity>0 and state=0 and locgr.id=2 and product_id="+ dtItemSelected.Rows[0].ItemArray[0].ToString() + " "+
                 "and stock.location=loc.id and loc.location_group=locgr.id "+
                 "order by stock.id asc";
                 Console.WriteLine(sql);   
                 double balance = 0;
-                dts = DbCl.fillDataTable(DbCl.getConn(), sql);  
-                foreach(DataRow drs in dts.Rows){
-                    if(Convert.ToDouble(spnQty.Text) > Convert.ToDouble(drs["quantity"].ToString()) ){
+                dts = DbCl.fillDataTable(DbCl.getConn(), sql);
+                balance = Convert.ToDouble(spnQty.Text);  
+                foreach(DataRow drs in dts.Rows){                    
+                    if(Convert.ToDouble(balance) > Convert.ToDouble(drs["quantity"].ToString()) ){
                         sql = "update stock set quantity=0 where id="+drs["stock_id"].ToString() ;
                         Console.WriteLine (sql);
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);
@@ -807,7 +813,7 @@ namespace Inventorifo.App
                         "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+drs["quantity"].ToString()+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1)" ;
                         Console.WriteLine (sql); 
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);  
-                        balance = Convert.ToDouble(spnQty.Text)-Convert.ToDouble(drs["quantity"].ToString());
+                        balance = balance-Convert.ToDouble(drs["quantity"].ToString());
                     }else{
                         sql = "update stock set quantity=quantity-"+balance.ToString()+" where id="+drs["stock_id"].ToString() ;
                         Console.WriteLine (sql);
@@ -836,9 +842,17 @@ namespace Inventorifo.App
                // Console.WriteLine(e.Event.Key);
                 if (e.Event.Key == Gdk.Key.Return)
                 {    
-                    AddItem();
-                    SetItemModel(Convert.ToDouble(lbTransactionId.Text));
-                    ItemTransactionReady(true);
+                    Response resp = AddItem();
+                    if(resp.code=="20"){
+                        SetItemModel(Convert.ToDouble(lbTransactionId.Text));
+                        ItemTransactionReady(true);
+                    }else{
+                        string message = resp.description;
+                        MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, message);
+                        md.Run();
+                        md.Destroy();
+                    }
+                    
                        
                 } 
             }         
@@ -1049,6 +1063,9 @@ namespace Inventorifo.App
                     _clsItems[i].quantity = args.NewText;
                     _lsModelItems.SetValue(iter, column, _clsItems[i].quantity);
                     string sql = "update stock set quantity = '"+args.NewText+"' where id='"+_clsItems[i].stock_id+"' ";
+                    Console.WriteLine (sql);
+                    DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                    sql = "update transaction_item set quantity = '"+args.NewText+"' where id='"+_clsItems[i].id+"' ";
                     Console.WriteLine (sql);
                     DbCl.ExecuteTrans(DbCl.getConn(), sql);
                     entTaxAmount.Text = CalculateTax(GetTotalSalePrice()).ToString();

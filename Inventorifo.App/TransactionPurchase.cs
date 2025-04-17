@@ -794,8 +794,8 @@ namespace Inventorifo.App
                     Int64 price_id = InsertPrice();
                     Int64 stock_id = InsertStock(price_id.ToString());
                   //  tekan kene
-                    string sql = "insert into transaction_item (transaction_id,product_id,stock_id,price_id,state) "+
-                    "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+ stock_id.ToString() + ","+price_id.ToString()+",1)" ;
+                    string sql = "insert into transaction_item (transaction_id,product_id,quantity,stock_id,price_id,state) "+
+                    "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+spnQty.Text+","+ stock_id.ToString() + ","+price_id.ToString()+",1)" ;
                     Console.WriteLine (sql);
                     DbCl.ExecuteTrans(DbCl.getConn(), sql); 
                     sql = "update transaction set state=2 where id="+lbTransactionId.Text;
@@ -1066,6 +1066,9 @@ namespace Inventorifo.App
                     _clsItems[i].quantity = args.NewText;
                     _lsModelItems.SetValue(iter, column, _clsItems[i].quantity);
                     string sql = "update stock set quantity = '"+args.NewText+"' where id='"+_clsItems[i].stock_id+"' ";
+                    Console.WriteLine (sql);
+                    DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                    sql = "update transaction_item set quantity = '"+args.NewText+"' where id='"+_clsItems[i].id+"' ";
                     Console.WriteLine (sql);
                     DbCl.ExecuteTrans(DbCl.getConn(), sql);
                     entTaxAmount.Text = CalculateTax(GetTotalPurchasePrice()).ToString();
