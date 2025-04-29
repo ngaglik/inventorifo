@@ -10,6 +10,28 @@ namespace Inventorifo.Lib
 {
     public class LibGui
     {
+        LibDb DbCl = new LibDb ();
+
+        public void FillComboBoxText(Gtk.ComboBoxText sender, string sql, int selectedId)
+        {
+            Gtk.Application.Invoke(delegate
+            {
+                Gtk.ListStore ls = new ListStore(typeof(string), typeof(string));
+                Console.WriteLine(sql);
+                DataTable dt = DbCl.fillDataTable(DbCl.getConn(), sql);
+                foreach (DataRow dr in dt.Rows)
+                {
+                    ls.AppendValues(dr[0].ToString(), dr[1].ToString());
+                }
+                sender.Clear();
+                Gtk.CellRendererText text = new Gtk.CellRendererText();
+                sender.Model = ls;
+                sender.PackStart(text, false);
+                sender.AddAttribute(text, "text", 1);
+                sender.Active = selectedId;
+            });
+        }
+
         public void RemoveAllWidgets(Gtk.Popover container)
         {
             foreach (Widget child in container.Children)

@@ -1,6 +1,7 @@
 using System;
 using Gtk;
 using UI = Gtk.Builder.ObjectAttribute;
+using Inventorifo.Lib.Model;
 
 namespace Inventorifo.App
 {
@@ -34,11 +35,15 @@ namespace Inventorifo.App
                 app_version="0.1.0",
                 country_code="ID",
                 currency="Rp",
-                tax="12"
+                tax="12",
+                person_id="1",
+                organization_id="1",
             };
 
             MenuItem purchaseMenuItem = (MenuItem)builder.GetObject("PurchaseMenuItem");
             MenuItem saleMenuItem = (MenuItem)builder.GetObject("SaleMenuItem");
+
+            MenuItem transferMenuItem = (MenuItem)builder.GetObject("TransferMenuItem");
 
             MenuItem stockMenuItem = (MenuItem)builder.GetObject("StockMenuItem");
             MenuItem productMenuItem = (MenuItem)builder.GetObject("ProductMenuItem");
@@ -47,6 +52,7 @@ namespace Inventorifo.App
             MenuItem customerMenuItem = (MenuItem)builder.GetObject("CustomerMenuItem");
             MenuItem supplierMenuItem = (MenuItem)builder.GetObject("SupplierMenuItem");
             MenuItem personMenuItem = (MenuItem)builder.GetObject("PersonMenuItem");
+            MenuItem organizationMenuItem = (MenuItem)builder.GetObject("OrganizationMenuItem");
 
             MenuItem aboutMenuItem = (MenuItem)builder.GetObject("AboutMenuItem");
             profilMenuBar = (MenuItem)builder.GetObject("ProfilMenuBar");
@@ -57,11 +63,12 @@ namespace Inventorifo.App
             DeleteEvent += Window_DeleteEvent;
             purchaseMenuItem.Activated += PurchaseMenuItem_Activated;
             saleMenuItem.Activated += SaleMenuItem_Activated;
-
+            transferMenuItem.Activated += TransferMenuItem_Activated;
             stockMenuItem.Activated += StockMenuItem_Activated;
             productMenuItem.Activated += ProductMenuItem_Activated;
             productGroupMenuItem.Activated += ProductGroupMenuItem_Activated;
             personMenuItem.Activated += PersonMenuItem_Activated;
+            organizationMenuItem.Activated += OrganizationMenuItem_Activated;
             supplierMenuItem.Activated += SupplierMenuItemActivated;
             customerMenuItem.Activated += CustomerMenuItem_Activated;
 
@@ -97,8 +104,15 @@ namespace Inventorifo.App
             ClearMainBox();
             TransactionSale transWidget = new TransactionSale(this,null);
             mainBox.PackStart(transWidget, false, true, 5);
-            transWidget.ShowAll();
-            
+            transWidget.ShowAll();            
+          
+        }
+        private void TransferMenuItem_Activated(object sender, EventArgs a)
+        {
+            ClearMainBox();
+            WarehouseTransfer transWidget = new WarehouseTransfer(this,null);
+            mainBox.PackStart(transWidget, false, true, 5);
+            transWidget.ShowAll();            
           
         }
         private void StockMenuItem_Activated(object sender, EventArgs a)
@@ -116,7 +130,7 @@ namespace Inventorifo.App
             Gtk.Application.Invoke(delegate
             {
                 ClearMainBox();
-                ReferenceProduct refWidget = new ReferenceProduct(this,"widget",0);
+                ReferenceProduct refWidget = new ReferenceProduct(this,"widget",0, new clStock{});
                 mainBox.PackStart(refWidget, true, true, 5);
                 refWidget.ShowAll();
             });
@@ -137,6 +151,16 @@ namespace Inventorifo.App
             {
                 ClearMainBox();
                 ReferencePerson refWidget = new ReferencePerson(this, "widget", null);
+                mainBox.PackStart(refWidget, true, true, 5);
+                refWidget.ShowAll();
+            });
+        }
+        private void OrganizationMenuItem_Activated(object sender, EventArgs a)
+        {
+            Gtk.Application.Invoke(delegate
+            {
+                ClearMainBox();
+                ReferenceOrganization refWidget = new ReferenceOrganization(this, "widget", null);
                 mainBox.PackStart(refWidget, true, true, 5);
                 refWidget.ShowAll();
             });

@@ -4,6 +4,7 @@ using Gtk;
 using Gdk;
 using System.Data;
 using Pango;
+using Inventorifo.Lib.Model;
 
 namespace Inventorifo.App
 {
@@ -27,16 +28,18 @@ namespace Inventorifo.App
         public object parent;
         Boolean isEditable;
         string textForground;
-        int prm;
+        int transaction_type;
         string mode;
+        clStock filter;
         private Boolean showAll;
         ComboBoxText CmbIsActive;
 
-        public ReferenceProduct(object parent, string mode, int prm) : base(Orientation.Vertical, 3)
+        public ReferenceProduct(object parent, string mode, int transaction_type, clStock filter) : base(Orientation.Vertical, 3)
         {
             this.parent=parent;
-            this.prm = prm;
+            this.transaction_type = transaction_type;
             this.mode = mode;
+            this.filter = filter;
 
             Label lbTitle = new Label();
             lbTitle.Text = "Product";
@@ -75,7 +78,7 @@ namespace Inventorifo.App
                         isEditable = false;
                         textForground = "black";
                         showAll = false;
-                        if(prm==1) CmbIsActive.Active = 0;
+                        if(transaction_type==1) CmbIsActive.Active = 0;
                         else CmbIsActive.Active = 1;
                     } 
                     break;
@@ -113,7 +116,7 @@ namespace Inventorifo.App
             /* some buttons */
             
             
-            CreateItemsModel(true,"","");
+            CreateItemsModel(true,filter);
             sw.Add(_treeView);
             //_treeView.CanFocus = true;
             _treeView.KeyPressEvent += HandleTreeViewKeyPressEvent;
@@ -148,15 +151,20 @@ namespace Inventorifo.App
         
         private void HandleEntSearchChanged(object sender, EventArgs e)
         {
-            CreateItemsModel(this.showAll,entSearch.Text.Trim(),"");
+            filter=this.filter;
+            filter.short_name=entSearch.Text.Trim();
+            CreateItemsModel(this.showAll, filter);
         }
         private void HandleEntBarcodeChanged(object sender, EventArgs e)
         {
-            CreateItemsModel(this.showAll,"",entBarcode.Text.Trim());
+            filter=this.filter;
+            filter.barcode = entBarcode.Text.Trim();
+            CreateItemsModel(this.showAll, filter);
         }
-        private void CreateItemsModel(Boolean showAll,string strfind,string strbarcode)
-        {      
-            if((strfind=="" && strbarcode=="") && !this.showAll) {          
+        private void CreateItemsModel(Boolean showAll,clStock filter)
+        {   
+            filter.is_active = CmbIsActive.ActiveText;
+            if((filter.short_name=="" && filter.barcode=="") && !this.showAll) {          
                 _treeView.Model = null;
             }else{
                 _lsModelProduct = null;
@@ -164,7 +172,7 @@ namespace Inventorifo.App
                 /* create array */
                 _clsProduct = new List<clsProduct>();
                 clsProduct prod;
-                DataTable dttv = CoreCl.fillDtProduct(CmbIsActive.ActiveText, "",strbarcode,strfind,prm.ToString());
+                DataTable dttv = CoreCl.fillDtProduct(transaction_type,filter);
                 foreach (DataRow dr in dttv.Rows)
                 {            
                     prod = new clsProduct{        
@@ -290,12 +298,15 @@ namespace Inventorifo.App
                 TreeIter iter;
                 if(selection.GetSelected( out iter)){
                     Console.WriteLine("Selected Value:"+_lsModelProduct.GetValue (iter, 0).ToString()+_lsModelProduct.GetValue (iter, 1).ToString());
-                    if(prm==1){
+                    if(transaction_type==1){
                         TransactionPurchase o = (TransactionPurchase)this.parent;                    
-                        o.doChildProduct("Product "+ _lsModelProduct.GetValue (iter, 1).ToString() +" selected",_lsModelProduct.GetValue (iter, 0).ToString());
-                    }else if(prm==2){
+                        o.doChildProduct(null,new clsProduct{id=_lsModelProduct.GetValue (iter, 0).ToString(), short_name=_lsModelProduct.GetValue (iter, 1).ToString(), product_name=_lsModelProduct.GetValue (iter, 1).ToString()});
+                    }else if(transaction_type==2){
                         TransactionSale o = (TransactionSale)this.parent;                    
-                        o.doChildProduct("Product "+ _lsModelProduct.GetValue (iter, 1).ToString() +" selected",_lsModelProduct.GetValue (iter, 0).ToString());
+                        o.doChildProduct(null,new clsProduct{id=_lsModelProduct.GetValue (iter, 0).ToString(), short_name=_lsModelProduct.GetValue (iter, 1).ToString(), product_name=_lsModelProduct.GetValue (iter, 1).ToString()});
+                    }else if(transaction_type==20){
+                        WarehouseTransfer o = (WarehouseTransfer)this.parent;                    
+                        o.doChildProduct(null,new clsProduct{id=_lsModelProduct.GetValue (iter, 0).ToString(), short_name=_lsModelProduct.GetValue (iter, 1).ToString(), product_name=_lsModelProduct.GetValue (iter, 1).ToString()});
                     }
                     
                 }            
@@ -313,22 +324,27 @@ namespace Inventorifo.App
                     if(selection.GetSelected( out iter)){
                         Console.WriteLine("Selected Value:"+_lsModelProduct.GetValue (iter, 0).ToString()+_lsModelProduct.GetValue (iter, 1).ToString());
                     }            
-                    if(prm==1){
+                    if(transaction_type==1){
                         TransactionPurchase o = (TransactionPurchase)this.parent;                    
-                        o.doChildProduct("Product "+ _lsModelProduct.GetValue (iter, 1).ToString() +" selected",_lsModelProduct.GetValue (iter, 0).ToString());
-                    }else if(prm==2){
+                        o.doChildProduct(null,new clsProduct{id=_lsModelProduct.GetValue (iter, 0).ToString(), short_name=_lsModelProduct.GetValue (iter, 1).ToString(), product_name=_lsModelProduct.GetValue (iter, 1).ToString()});
+                    }else if(transaction_type==2){
                         TransactionSale o = (TransactionSale)this.parent;                    
-                        o.doChildProduct("Product "+ _lsModelProduct.GetValue (iter, 1).ToString() +" selected",_lsModelProduct.GetValue (iter, 0).ToString());
+                        o.doChildProduct(null,new clsProduct{id=_lsModelProduct.GetValue (iter, 0).ToString(), short_name=_lsModelProduct.GetValue (iter, 1).ToString(), product_name=_lsModelProduct.GetValue (iter, 1).ToString()});
+                    }else if(transaction_type==20){
+                        WarehouseTransfer o = (WarehouseTransfer)this.parent;                    
+                        o.doChildProduct(null,new clsProduct{id=_lsModelProduct.GetValue (iter, 0).ToString(), short_name=_lsModelProduct.GetValue (iter, 1).ToString(), product_name=_lsModelProduct.GetValue (iter, 1).ToString()});
                     }
                 }
             }            
         }
+
         private void AddItem(object sender, EventArgs e)
         {
             string sql = "insert into product (name,product_group) values ('',1) ";
             Console.WriteLine (sql);
             DbCl.ExecuteTrans(DbCl.getConn(), sql);
-            CreateItemsModel(true,entSearch.Text.Trim(),"");
+            filter.short_name=entSearch.Text.Trim();
+            CreateItemsModel(true, filter);
         }
 
         private void RemoveItem(object sender, EventArgs e)

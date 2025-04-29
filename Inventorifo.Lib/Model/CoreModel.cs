@@ -1,11 +1,40 @@
-namespace Inventorifo.Lib
+namespace Inventorifo.Lib.Model
 {
+    public class clsConfig
+    {
+        public string id { get; set; }
+        public string app_id { get; set; }
+        public string app_version { get; set; }
+        public string country_code { get; set; }
+        public string currency { get; set; }
+        public string tax { get; set; }
+        public string person_id { get; set; }
+        public string organization_id { get; set; }
+    }
 	public class Response
 	{
 		public string code { get; set; }
 		public string description { get; set; }
 		public string reference_id { get; set; }
 	}
+    public class clsPerson{
+        public string id { get; set; }
+        public string name { get; set; }
+        public string address { get; set; }
+        public string phone_number { get; set; }
+        public string is_active { get; set; }
+        public string national_id_number { get; set; }
+        public string tax_id_number { get; set; }
+        public string health_insurance_id_number { get; set; }
+    }
+    public class clsOrganization{
+        public string id { get; set; }
+        public string name { get; set; }
+        public string address { get; set; }
+        public string phone_number { get; set; }
+        public string is_active { get; set; }
+        public string tax_id_number { get; set; }
+    }
 	public class UserLogin
     { //
         public UserLogin(string id, string person_id,string person_name, string person_address,string person_phone_number, string level,string level_name,string is_active,string application_id, string privilege){
@@ -40,6 +69,7 @@ namespace Inventorifo.Lib
         public string barcode { get; set; }
         public string product_group { get; set; }     
         public string product_group_name { get; set; }
+        public string is_active { get; set; }
     }
     public class clStock
     {
@@ -62,6 +92,9 @@ namespace Inventorifo.Lib
         public string location_name { get; set; }
         public string location_group { get; set; }
         public string location_group_name { get; set; }
+        public string condition { get; set; }
+        public string condition_name { get; set; }
+        public string is_active { get; set; }
     }
     public class clPayment
     {    
@@ -98,12 +131,61 @@ namespace Inventorifo.Lib
         public string state_fgcolor { get; set; }
         public string state_bgcolor { get; set; }
         public string application_id { get; set; }
+        public string tax_amount { get; set; }
+        public string is_tax { get; set; }
     }
 
-    class clTransItem
+    public class clTransactionItem
     {                          
         public string id { get; set; }
         public string transaction_id { get; set; }
+        public string product_id { get; set; }
+        public string product_short_name { get; set; }
+        public string product_name { get; set; }
+        public string stock_id { get; set; }
+        public string quantity { get; set; }
+        public string unit { get; set; }
+        public string unit_name { get; set; }
+        public string purchase_price { get; set; }
+        public string price_id { get; set; }
+        public string price { get; set; }
+        public string tax { get; set; }
+        public string state { get; set; }
+        public string state_name { get; set; }
+        public string location { get; set; }
+        public string location_name { get; set; }
+        public string condition { get; set; }
+        public string condition_name { get; set; }
+    }
+
+    public class clTransfer
+    {
+        public string id  { get; set; }
+        public string reference_id { get; set; }
+        public string source_organization_id { get; set; }
+        public string source_organization_name { get; set; }
+        public string source_location_id { get; set; }
+        public string source_location_name { get; set; }
+        public string source_condition_id { get; set; }
+        public string source_condition_name { get; set; }
+        public string destination_organization_id { get; set; }
+        public string destination_organization_name { get; set; }
+        public string destination_location_id { get; set; }
+        public string destination_location_name { get; set; }
+        public string destination_condition_id { get; set; }
+        public string destination_condition_name { get; set; }
+        public string user_id { get; set; }
+        public string user_name { get; set; }
+        public string state { get; set; }
+        public string state_name { get; set; }
+        public string state_fgcolor { get; set; }
+        public string state_bgcolor { get; set; }
+        public string application_id { get; set; }
+    }
+    public class clTransferItem
+    {                          
+        public string id { get; set; }
+        public string transfer_id { get; set; }
         public string product_id { get; set; }
         public string product_short_name { get; set; }
         public string product_name { get; set; }

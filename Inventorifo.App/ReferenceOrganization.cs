@@ -8,7 +8,7 @@ using Inventorifo.Lib.Model;
 namespace Inventorifo.App
 {
     //[Section(ContentType = typeof(EditableCellsSection), Category = Category.Widgets)]
-    class ReferencePerson : Gtk.Box
+    class ReferenceOrganization : Gtk.Box
     {
         Inventorifo.Lib.LibDb DbCl = new Inventorifo.Lib.LibDb ();
         Inventorifo.Lib.LibGui GuiCl = new Inventorifo.Lib.LibGui ();
@@ -25,13 +25,16 @@ namespace Inventorifo.App
         Boolean isEditable;
         string textForground;
         string prm;
+        string mode;
 
-        public ReferencePerson(object parent, string mode, string prm) : base(Orientation.Vertical, 3)
+        public ReferenceOrganization(object parent, string mode, string prm) : base(Orientation.Vertical, 3)
         {
             this.parent=parent;
             this.prm = prm;
+            this.mode=mode;
+            
             Label lbTitle = new Label();
-            lbTitle.Text = "Person";
+            lbTitle.Text = "Organization";
             lbTitle.ModifyFont(FontDescription.FromString("Arial 18"));
             this.PackStart(lbTitle, false, true, 0);
             Box hbox = new Box(Orientation.Horizontal, 4)
@@ -79,6 +82,7 @@ namespace Inventorifo.App
             /* create tree view */
             _treeView = new TreeView();
             _treeView.Selection.Mode = SelectionMode.Single;
+            _treeView.KeyPressEvent += HandleTreeViewKeyPressEvent;
 
             AddColumns();
             //_treeView.Columns[4].Visible = false;
@@ -98,9 +102,7 @@ namespace Inventorifo.App
             address,
             phone_number,
             is_active,
-            national_id_number,
             tax_id_number,
-            health_insurance_id_number,
             Num
         };
 
@@ -125,7 +127,7 @@ namespace Inventorifo.App
                 /* create array */
                 _articles = new List<clsPerson>();
                 clsPerson pers;
-                DataTable dttv = CoreCl.fillDtPerson(strfind);
+                DataTable dttv = CoreCl.fillDtOrganization(strfind);
                 foreach (DataRow dr in dttv.Rows)
                 {            
                     pers = new clsPerson{         
@@ -134,9 +136,7 @@ namespace Inventorifo.App
                         address=dr["address"].ToString(),
                         phone_number=dr["phone_number"].ToString(),
                         is_active=dr["is_active"].ToString(),
-                        national_id_number=dr["national_id_number"].ToString(),
                         tax_id_number=dr["tax_id_number"].ToString(),
-                        health_insurance_id_number=dr["health_insurance_id_number"].ToString()
                     } ; 
                     _articles.Add(pers);    
                 }
@@ -153,9 +153,7 @@ namespace Inventorifo.App
                     _itemsModel.SetValue(iter, (int)ColumnItem.name, _articles[i].name);
                     _itemsModel.SetValue(iter, (int)ColumnItem.address, _articles[i].address);
                     _itemsModel.SetValue(iter, (int)ColumnItem.is_active, _articles[i].is_active);
-                    _itemsModel.SetValue(iter, (int)ColumnItem.national_id_number, _articles[i].national_id_number);
                     _itemsModel.SetValue(iter, (int)ColumnItem.tax_id_number, _articles[i].tax_id_number);
-                    _itemsModel.SetValue(iter, (int)ColumnItem.health_insurance_id_number, _articles[i].health_insurance_id_number);
                 }
                 _treeView.Model = _itemsModel;           
 
@@ -211,15 +209,6 @@ namespace Inventorifo.App
             };
             rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
-            _cellColumnsRender.Add(rendererText, (int)ColumnItem.national_id_number);
-            _treeView.InsertColumn(-1, "National id number", rendererText, "text", (int)ColumnItem.national_id_number);
-
-            rendererText = new CellRendererText
-            {
-                Editable = isEditable
-            };
-            rendererText.Foreground = textForground;
-            rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.tax_id_number);
             _treeView.InsertColumn(-1, "Tax id number", rendererText, "text", (int)ColumnItem.tax_id_number);
 
@@ -239,41 +228,51 @@ namespace Inventorifo.App
             _cellColumnsRender.Add(rendererCombo, (int)ColumnItem.is_active);
             _treeView.InsertColumn(-1, "Is Active", rendererCombo, "text", (int)ColumnItem.is_active);
 
-            rendererText = new CellRendererText
-            {
-                Editable = isEditable
-            };
-            rendererText.Foreground = textForground;
-            rendererText.Edited += CellEdited;
-            _cellColumnsRender.Add(rendererText, (int)ColumnItem.health_insurance_id_number);
-            _treeView.InsertColumn(-1, "Health insurance id number", rendererText, "text", (int)ColumnItem.health_insurance_id_number);
         }
 
         private void AddItem(object sender, EventArgs e)
         {
-            string sql = "insert into person (name) values ('') ";
+            string sql = "insert into organization (name) values ('') ";
             Console.WriteLine (sql);
             DbCl.ExecuteTrans(DbCl.getConn(), sql);
             CreateItemsModel(true,entSearch.Text.Trim());
         }
         private void SelectItem(object sender, EventArgs e)
-        {
-            
-            //lstItem = (Gtk.ListStore) treeItemTransaksi.Model;
-            TreeSelection selection = _treeView.Selection;
-    
+        {            
+            TreeSelection selection = _treeView.Selection;    
             TreeIter iter;
             if(selection.GetSelected( out iter)){
                 Console.WriteLine("Selected Value:"+_itemsModel.GetValue (iter, 0).ToString()+_itemsModel.GetValue (iter, 1).ToString());
             }
-            if(this.prm=="customer"){
-                ReferenceCustomer o = (ReferenceCustomer)this.parent;
-                o.doChild("Okay! "+ _itemsModel.GetValue (iter, 1).ToString() +" selected",_itemsModel.GetValue (iter, 0).ToString());
-            }else if(this.prm=="supplier"){
-                ReferenceSupplier o = (ReferenceSupplier)this.parent;
-                o.doChild("Okay! "+ _itemsModel.GetValue (iter, 1).ToString() +" selected, please continue filling out the form Organization",_itemsModel.GetValue (iter, 0).ToString());
+            if(this.prm=="source"){
+                WarehouseTransfer o = (WarehouseTransfer)this.parent;
+                o.doChildSourceOrganization(null,new  clsOrganization{id=_itemsModel.GetValue (iter, 0).ToString(), name=_itemsModel.GetValue (iter, 1).ToString()});
+            }else if(this.prm=="destination"){
+                WarehouseTransfer o = (WarehouseTransfer)this.parent;
+                o.doChildDestinationOrganization(null,new clsOrganization{id=_itemsModel.GetValue (iter, 0).ToString(), name=_itemsModel.GetValue (iter, 1).ToString()});
+            }            
+        }
+        [GLib.ConnectBefore]
+        private void HandleTreeViewKeyPressEvent(object sender, KeyPressEventArgs e)
+        {
+            if(this.mode == "dialog"){
+                if (e.Event.Key == Gdk.Key.Return || e.Event.Key == Gdk.Key.KP_Enter)  // Check if Enter key is pressed
+                {
+                    TreeSelection selection = _treeView.Selection;    
+                    TreeIter iter;
+                    if(selection.GetSelected( out iter)){
+                        Console.WriteLine("Selected Value:"+_itemsModel.GetValue (iter, 0).ToString()+_itemsModel.GetValue (iter, 1).ToString());
+                    }
+                    if(this.prm=="source"){
+                        WarehouseTransfer o = (WarehouseTransfer)this.parent;
+                        o.doChildSourceOrganization(null,new clsOrganization{id=_itemsModel.GetValue (iter, 0).ToString(), name=_itemsModel.GetValue (iter, 1).ToString()});
+                    }else if(this.prm=="destination"){
+                        WarehouseTransfer o = (WarehouseTransfer)this.parent;
+                        o.doChildDestinationOrganization(null,new clsOrganization{id=_itemsModel.GetValue (iter, 0).ToString(), name=_itemsModel.GetValue (iter, 1).ToString()});
+                    }  
+                }
             }
-            
+
         }
 
         private void RemoveItem(object sender, EventArgs e)
@@ -294,7 +293,7 @@ namespace Inventorifo.App
                         int i = path.Indices[0];
                         _articles[i].name = args.NewText;
                         _itemsModel.SetValue(iter, column, _articles[i].name);
-                        string sql = "update person set name = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
+                        string sql = "update organization set name = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
                         Console.WriteLine (sql);
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);
                     }
@@ -304,7 +303,7 @@ namespace Inventorifo.App
                         int i = path.Indices[0];
                         _articles[i].address = args.NewText;
                         _itemsModel.SetValue(iter, column, _articles[i].address);
-                        string sql = "update person set address = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
+                        string sql = "update organization set address = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
                         Console.WriteLine (sql);
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);
                     }
@@ -314,17 +313,7 @@ namespace Inventorifo.App
                         int i = path.Indices[0];
                         _articles[i].phone_number = args.NewText;
                         _itemsModel.SetValue(iter, column, _articles[i].phone_number);
-                        string sql = "update person set phone_number = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
-                        Console.WriteLine (sql);
-                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                    }
-                    break;
-                case (int)ColumnItem.national_id_number:
-                    {
-                        int i = path.Indices[0];
-                        _articles[i].national_id_number = args.NewText;
-                        _itemsModel.SetValue(iter, column, _articles[i].national_id_number);
-                        string sql = "update person set national_id_number = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
+                        string sql = "update organization set phone_number = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
                         Console.WriteLine (sql);
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);
                     }
@@ -334,17 +323,7 @@ namespace Inventorifo.App
                         int i = path.Indices[0];
                         _articles[i].tax_id_number = args.NewText;
                         _itemsModel.SetValue(iter, column, _articles[i].tax_id_number);
-                        string sql = "update person set tax_id_number = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
-                        Console.WriteLine (sql);
-                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                    }
-                    break;
-                case (int)ColumnItem.health_insurance_id_number:
-                    {
-                        int i = path.Indices[0];
-                        _articles[i].health_insurance_id_number = args.NewText;
-                        _itemsModel.SetValue(iter, column, _articles[i].health_insurance_id_number);
-                        string sql = "update person set health_insurance_id_number = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
+                        string sql = "update organization set tax_id_number = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
                         Console.WriteLine (sql);
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);
                     }
@@ -354,7 +333,7 @@ namespace Inventorifo.App
                         int i = path.Indices[0];
                         _articles[i].is_active = args.NewText;
                         _itemsModel.SetValue(iter, column, _articles[i].is_active);
-                        string sql = "update person set is_active = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
+                        string sql = "update organization set is_active = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
                         Console.WriteLine (sql);
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);
                     }

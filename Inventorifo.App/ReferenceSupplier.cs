@@ -26,11 +26,13 @@ namespace Inventorifo.App
         Boolean isEditable;
         string textForground;
         string prm;
+        string mode;
 
         public ReferenceSupplier(object parent, string mode,string prm) : base(Orientation.Vertical, 3)
         {
             this.parent=parent;
             this.prm = prm;
+            this.mode=mode;
 
             Label lbTitle = new Label();
             lbTitle.Text = "Supplier";
@@ -80,6 +82,7 @@ namespace Inventorifo.App
             /* create tree view */
             _treeView = new TreeView();
             _treeView.Selection.Mode = SelectionMode.Single;
+            _treeView.KeyPressEvent += HandleTreeViewKeyPressEvent;
               
             AddColumns();
             _treeView.Columns[1].Visible = false;
@@ -320,6 +323,23 @@ namespace Inventorifo.App
             }            
             TransactionPurchase o = (TransactionPurchase)this.parent;
             o.doChildSupplier("Yeay! "+ _itemsModel.GetValue (iter, 2).ToString() +" selected",_itemsModel.GetValue (iter, 0).ToString());
+        }
+
+        [GLib.ConnectBefore]
+        private void HandleTreeViewKeyPressEvent(object sender, KeyPressEventArgs e)
+        {
+            if(this.mode == "dialog"){
+                if (e.Event.Key == Gdk.Key.Return || e.Event.Key == Gdk.Key.KP_Enter)  // Check if Enter key is pressed
+                {
+                    TreeSelection selection = _treeView.Selection;
+                    TreeIter iter;
+                    if(selection.GetSelected( out iter)){
+                        Console.WriteLine("Selected Value:"+_itemsModel.GetValue (iter, 0).ToString()+_itemsModel.GetValue (iter, 1).ToString());
+                    }            
+                    TransactionPurchase o = (TransactionPurchase)this.parent;
+                    o.doChildSupplier("Yeay! "+ _itemsModel.GetValue (iter, 2).ToString() +" selected",_itemsModel.GetValue (iter, 0).ToString());
+                }
+            }
         }
         public void doChild(object o,string prm){
             GLib.Timeout.Add(0, () =>

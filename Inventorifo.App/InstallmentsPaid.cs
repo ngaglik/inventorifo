@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Gtk;
 using System.Data;
 using Pango;
+using Inventorifo.Lib.Model;
 
 namespace Inventorifo.App
 {

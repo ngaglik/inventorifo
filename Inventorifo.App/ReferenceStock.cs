@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Gtk;
 using System.Data;
 using Pango;
+using Inventorifo.Lib.Model;
 
 namespace Inventorifo.App
 {
@@ -139,7 +140,7 @@ namespace Inventorifo.App
                         "LEFT OUTER JOIN location_group locgr on loc.location_group = locgr.id "+
                         "LEFT OUTER JOIN price on price.id = stock.price_id "+
                         "left outer join unit on stock.unit = unit.id, product_group prodgr "+
-                        "WHERE stock.state=0 and prod.product_group = prodgr.id "+ whrfind +whrbarcode +
+                        "WHERE prod.is_active is true and stock.state=0 and stock.quantity>0 and prod.product_group = prodgr.id "+ whrfind +whrbarcode +
                         "ORDER by prod.name asc, stock.id asc ";
                         Console.WriteLine(sql);
                 clStock sto;

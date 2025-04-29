@@ -87,6 +87,16 @@
     <property name="can-focus">False</property>
     <property name="stock">gtk-missing-image</property>
   </object>
+  <object class="GtkImage" id="image25">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-missing-image</property>
+  </object>
+  <object class="GtkImage" id="image26">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-missing-image</property>
+  </object>
   <object class="GtkImage" id="image3">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -246,8 +256,8 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="WarehouseStockMenuItem">
-                        <property name="label" translatable="yes">Warehouse Stock</property>
+                      <object class="GtkImageMenuItem" id="StockHistoryMenuItem">
+                        <property name="label" translatable="yes">Stock History</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="image">image21</property>
@@ -309,6 +319,15 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="image">image20</property>
+                        <property name="use-stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="ProfitLossReportMenuItem">
+                        <property name="label" translatable="yes">Profit &amp; Loss</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="image">image25</property>
                         <property name="use-stock">False</property>
                       </object>
                     </child>
@@ -386,6 +405,15 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="image">image13</property>
+                        <property name="use-stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="OrganizationMenuItem">
+                        <property name="label" translatable="yes">Organization</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="image">image26</property>
                         <property name="use-stock">False</property>
                       </object>
                     </child>

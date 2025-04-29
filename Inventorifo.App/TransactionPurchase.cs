@@ -6,6 +6,7 @@ using System.Data;
 using Pango;
 using UI = Gtk.Builder.ObjectAttribute;
 using System.Text.RegularExpressions;
+using Inventorifo.Lib.Model;
 
 namespace Inventorifo.App
 {
@@ -31,7 +32,7 @@ namespace Inventorifo.App
         private TreeView _treeViewItems;
         private ListStore _lsModelItems;
         private Dictionary<CellRenderer, int> _cellColumnsRenderItems;
-        private List<clTransItem> _clsItems;
+        private List<clTransactionItem> _clsItems;
         
         Box  boxMiddle;
         Box boxItem;
@@ -231,6 +232,7 @@ namespace Inventorifo.App
             _treeViewItems.ModifyFont(FontDescription.FromString("Arial 14"));
              AddColumnsItems();     
              _treeViewItems.KeyPressEvent += HandleTreeViewItemsKeyPressEvent;
+             _treeViewItems.Selection.Changed += HandleTreeVewSelectedItem;
             _treeViewItems.Columns[0].Visible = false;
             _treeViewItems.Columns[1].Visible = false;
             _treeViewItems.Columns[2].Visible = false;
@@ -305,7 +307,8 @@ namespace Inventorifo.App
             spnQty.Text = "1";
             boxTransaction.Sensitive = true;
             btnNew.Sensitive = true; 
-            entAmountPayment.Text = "0";               
+            entAmountPayment.Text = "0";         
+
             entAmountPayment.ModifyBg(StateType.Normal, new Gdk.Color(255, 255, 255));
             entAmountPayment.ModifyFg(StateType.Normal, new Gdk.Color(0, 0, 0));
             entTransactionAmount.ModifyBg(StateType.Normal, new Gdk.Color(255, 255, 255));
@@ -334,7 +337,7 @@ namespace Inventorifo.App
         }
         private void SelectedTrans(string transaction_id)
         {
-            DataTable dtTransSelected = fillDtTransaction(transaction_id,"");
+            DataTable dtTransSelected = CoreCl.fillDtTransactionPurchase(transaction_id, btnDate.Label, "");
             foreach (DataRow dr in dtTransSelected.Rows)
             { 
                 var id = transaction_id;
@@ -394,6 +397,8 @@ namespace Inventorifo.App
                             spnQty.Sensitive=false;
                             cmbPaymentMethod.Sensitive = false;
                             //boxPayment.Sensitive = true;
+                            chkTax.Sensitive = false;
+                            entTaxAmount.Sensitive = false;
                             cmbPaymentMethod.Sensitive = false;
                             entAmountPayment.Sensitive = true;
                             btnProcessCheckout.Sensitive = true;
@@ -406,6 +411,8 @@ namespace Inventorifo.App
                             spnQty.Sensitive=false;
                             cmbPaymentMethod.Sensitive = false;
                             //boxPayment.Sensitive = false;
+                            chkTax.Sensitive = false;
+                            entTaxAmount.Sensitive = false;
                             cmbPaymentMethod.Sensitive = false;
                             entAmountPayment.Sensitive = false;
                             btnProcessCheckout.Sensitive = false;
@@ -418,6 +425,8 @@ namespace Inventorifo.App
                             spnQty.Sensitive=false;
                             cmbPaymentMethod.Sensitive = false;
                             //boxPayment.Sensitive = false;
+                            chkTax.Sensitive = false;
+                            entTaxAmount.Sensitive = false;
                             cmbPaymentMethod.Sensitive = false;
                             entAmountPayment.Sensitive = false;
                             btnProcessCheckout.Sensitive = false;
@@ -431,6 +440,8 @@ namespace Inventorifo.App
                     boxProductDetail.Sensitive = true;
                     entTransactionAmount.Sensitive = true;
                     spnQty.Sensitive=true;
+                    chkTax.Sensitive = true;
+                    entTaxAmount.Sensitive = true;
                     cmbPaymentMethod.Sensitive = true;
                     entAmountPayment.Sensitive = true;
                     btnProcessCheckout.Sensitive = true;
@@ -441,7 +452,8 @@ namespace Inventorifo.App
                 chkTax.Active = is_tax;
             }                              
             
-        }
+        }      
+        
               
         public void setActivePaymentMethod(string pattern){
             var store = (ListStore)cmbPaymentMethod.Model;
@@ -536,30 +548,30 @@ namespace Inventorifo.App
             SelectFirstRow(_lsModelTrans,_treeViewTrans);
             popoverDate.Hide();
         }
-        private DataTable fillDtTransaction(string transaction_id, string strfind){
-            string whrfind = "",whrid="";
-            if(transaction_id!="") whrid = "and tr.id="+transaction_id+ " ";
-            if(strfind!="") whrfind = "and (upper(sup.organization_name) like upper('" + strfind + "%') or upper(pers.name) like upper('" + strfind + "%') )";
+        // private DataTable fillDtTransaction(string transaction_id, string strfind){
+        //     string whrfind = "",whrid="";
+        //     if(transaction_id!="") whrid = "and tr.id="+transaction_id+ " ";
+        //     if(strfind!="") whrfind = "and (upper(sup.organization_name) like upper('" + strfind + "%') or upper(pers.name) like upper('" + strfind + "%') )";
             
-            string sql = "select tr.id,tr.reference_id, "+
-                "tr.supplier_id,sup.organization_name,sup.organization_address,sup.organization_phone_number,pers.name person_name,pers.phone_number person_phone_number, "+
-                "tr.transaction_type transaction_type_id, ty.name transaction_type_name, TO_CHAR(tr.transaction_date,'yyyy-mm-dd') transaction_date, tr.transaction_amount, tr.return_amount, "+
-                "tr.payment_group_id, py.name payment_group_name, tr.payment_amount, "+
-                "tr.user_id, usr.name user_name,  "+
-                "tr.state, st.name state_name, st.fgcolor state_fgcolor, st.bgcolor state_bgcolor,  "+
-                "tr.application_id, tr.tax_amount, tr.is_tax "+
-                "from transaction tr left outer join supplier sup on tr.supplier_id=sup.id "+
-                "left outer join payment_group py on tr.payment_group_id = py.id "+
-                "left outer join person pers on sup.person_id=pers.id, "+
-                "transaction_state st, transaction_type ty, "+
-                "(select usr.id, pers.name, pers.phone_number from person pers,userlogin usr where usr.person_id=pers.id) usr "+
-                "where tr.transaction_type=1 and tr.state=st.id and tr.transaction_type=ty.id "+
-                "and tr.transaction_date::date = '"+btnDate.Label+"'::date and usr.id=tr.user_id "+
-                whrid+ whrfind+ 
-                "ORDER by tr.id desc";
-                Console.WriteLine(sql);
-                return DbCl.fillDataTable(DbCl.getConn(), sql);
-        }
+        //     string sql = "select tr.id,tr.reference_id, "+
+        //         "tr.supplier_id,sup.organization_name,sup.organization_address,sup.organization_phone_number,pers.name person_name,pers.phone_number person_phone_number, "+
+        //         "tr.transaction_type transaction_type_id, ty.name transaction_type_name, TO_CHAR(tr.transaction_date,'yyyy-mm-dd') transaction_date, tr.transaction_amount, tr.return_amount, "+
+        //         "tr.payment_group_id, py.name payment_group_name, tr.payment_amount, "+
+        //         "tr.user_id, usr.name user_name,  "+
+        //         "tr.state, st.name state_name, st.fgcolor state_fgcolor, st.bgcolor state_bgcolor,  "+
+        //         "tr.application_id, tr.tax_amount, tr.is_tax "+
+        //         "from transaction tr left outer join supplier sup on tr.supplier_id=sup.id "+
+        //         "left outer join payment_group py on tr.payment_group_id = py.id "+
+        //         "left outer join person pers on sup.person_id=pers.id, "+
+        //         "transaction_state st, transaction_type ty, "+
+        //         "(select usr.id, pers.name, pers.phone_number from person pers,userlogin usr where usr.person_id=pers.id) usr "+
+        //         "where tr.transaction_type=1 and tr.state=st.id and tr.transaction_type=ty.id "+
+        //         "and tr.transaction_date::date = '"+btnDate.Label+"'::date and usr.id=tr.user_id "+
+        //         whrid+ whrfind+ 
+        //         "ORDER by tr.id desc";
+        //         Console.WriteLine(sql);
+        //         return DbCl.fillDataTable(DbCl.getConn(), sql);
+        // }
         private void SetTransactionModel(string transaction_id, string strfind)
         {                  
                 //ListStore model;
@@ -569,7 +581,7 @@ namespace Inventorifo.App
                 _clsTrans = new List<clTransaction>();
                
                 clTransaction tran;
-                dtTransSelected =  fillDtTransaction(transaction_id, strfind);
+                dtTransSelected =  CoreCl.fillDtTransactionPurchase(transaction_id, btnDate.Label, strfind);
                 foreach (DataRow dr in dtTransSelected.Rows)
                 {              
                     tran = new clTransaction{    
@@ -640,7 +652,7 @@ namespace Inventorifo.App
             _lsModelItems = null;
             TreeIter iter;
             /* create array */
-            _clsItems = new List<clTransItem>();
+            _clsItems = new List<clTransactionItem>();
              string sql = "select ti.id, ti.transaction_id, ti.product_id, pr.short_name product_short_name, pr.name product_name,ti.stock_id, "+
             "case when ti.tax is null then 0 else ti.tax end tax, ti.state, state.name state_name, "+
             "st.quantity, st.unit,un.name unit_name, "+
@@ -656,11 +668,11 @@ namespace Inventorifo.App
             "ORDER by ti.id desc";
             //tekan kene
             Console.WriteLine(sql);
-            clTransItem item;
+            clTransactionItem item;
             dtTransSelected =  DbCl.fillDataTable(DbCl.getConn(), sql);
             foreach (DataRow dr in dtTransSelected.Rows)
             {   
-                item = new clTransItem{
+                item = new clTransactionItem{
                     id=dr["id"].ToString(),
                     transaction_id=dr["transaction_id"].ToString(),
                     product_id=dr["product_id"].ToString(),
@@ -727,24 +739,35 @@ namespace Inventorifo.App
                 TreeIter iter;
                 if(selection.GetSelected( out iter)){
                     Console.WriteLine("Selected Value:"+_lsModelItems.GetValue (iter, 0).ToString()+_lsModelItems.GetValue (iter, 1).ToString());
-                }            
-                string sql = "delete from stock where id="+_lsModelItems.GetValue (iter, 5).ToString();
-                Console.WriteLine(sql);
-                DbCl.ExecuteScalar(DbCl.getConn(), sql);
-                sql = "delete from transaction_item where id="+_lsModelItems.GetValue (iter, 0).ToString();
-                Console.WriteLine(sql);
-                DbCl.ExecuteScalar(DbCl.getConn(), sql);
-                SetItemModel(Convert.ToDouble(lbTransactionId.Text));
-                if(GetTotalItem()==0) {
-                    sql = "update transaction set state=1 where id="+lbTransactionId.Text;
-                    Console.WriteLine (sql);
-                    DbCl.ExecuteTrans(DbCl.getConn(), sql);                     
-                }
-                ItemTransactionReady(true);
+                }        
+                Console.WriteLine("state: "+_lsModelItems.GetValue (iter, 13).ToString());
+                if(_lsModelItems.GetValue (iter, 13).ToString()!="0"){
+                    string sql = "delete from stock where id="+_lsModelItems.GetValue (iter, 5).ToString();
+                    Console.WriteLine(sql);
+                    DbCl.ExecuteScalar(DbCl.getConn(), sql);
+                    sql = "delete from transaction_item where id="+_lsModelItems.GetValue (iter, 0).ToString();
+                    Console.WriteLine(sql);
+                    DbCl.ExecuteScalar(DbCl.getConn(), sql);
+                    SetItemModel(Convert.ToDouble(lbTransactionId.Text));
+                    if(GetTotalItem()==0) {
+                        sql = "update transaction set state=1 where id="+lbTransactionId.Text;
+                        Console.WriteLine (sql);
+                        DbCl.ExecuteTrans(DbCl.getConn(), sql);                     
+                    }
+                    ItemTransactionReady(true);
+                }    
+                
             }
                       
         }
-
+        private void HandleTreeVewSelectedItem(object sender, EventArgs e)
+        {
+            if (!_treeViewItems.Selection.GetSelected(out TreeIter it))
+                 return;
+            TreePath path = _lsModelItems.GetPath(it);
+            var id = (string)_lsModelItems.GetValue(it, (int)ColumnItems.product_id);            
+            SelectedItem(id);
+        }
         private void SelectedItem(string prm)
         {                          
             dtItemSelected = new DataTable();
@@ -759,7 +782,7 @@ namespace Inventorifo.App
             tag.Weight = Pango.Weight.Bold;
 
             textViewProduct.Buffer.Text = "\nShort:\n\nName:\n\nBarcode:\n\nGroup:\n\n";
-            var iter = textViewSupplier.Buffer.GetIterAtLine (2);
+            var iter = textViewProduct.Buffer.GetIterAtLine (2);
             textViewProduct.Buffer.InsertWithTags (ref iter, dtItemSelected.Rows[0].ItemArray[1].ToString(), tag);
 
             iter = textViewProduct.Buffer.GetIterAtLine (4);
@@ -1167,15 +1190,15 @@ namespace Inventorifo.App
             };
         }
 
-        public void doChildProduct(object o,string prm){
+        public void doChildProduct(object o,clsProduct prm){
             GLib.Timeout.Add(5, () =>
             {
                 GuiCl.RemoveAllWidgets(popoverProduct);
-                Label popLabel = new Label((string)o);
+                Label popLabel = new Label(prm.short_name);
                 popoverProduct.Add(popLabel);
                 popoverProduct.SetSizeRequest(200, 20);
                 popLabel.Show();
-                SelectedItem(prm);
+                SelectedItem(prm.id.ToString());
                 spnQty.GrabFocus();
                 return false;
             });
@@ -1185,7 +1208,7 @@ namespace Inventorifo.App
         {   GLib.Timeout.Add(5, () =>
             {     
                 GuiCl.RemoveAllWidgets(popoverProduct);        
-                ReferenceProduct refWidget = new ReferenceProduct(this,"dialog",1);
+                ReferenceProduct refWidget = new ReferenceProduct(this,"dialog",1, new clStock{});
                 popoverProduct.Add(refWidget);
                 popoverProduct.SetSizeRequest(600, 300);
                 refWidget.Show();          
@@ -1259,7 +1282,7 @@ namespace Inventorifo.App
                // Console.WriteLine(e.Event.Key);
                 if (e.Event.Key == Gdk.Key.Return)
                 {      
-                    Console.WriteLine("aaaaaaaaaalllllllllllllllla");           
+                    //Console.WriteLine("aaaaaaaaaalllllllllllllllla");           
                     DoCheckout(sender,e);                    
                 } 
             //}         
@@ -1267,12 +1290,7 @@ namespace Inventorifo.App
         private void DoCheckout(object sender, EventArgs e)
         {
             Boolean valid = false;
-            TreeSelection selection = _treeViewTrans.Selection;
-            TreeIter iter;
-            if(selection.GetSelected( out iter)){
-                Console.WriteLine("Selected Value:"+_lsModelTrans.GetValue (iter, 0).ToString()+_lsModelTrans.GetValue (iter, 1).ToString());
-            }  
-
+          
             if( Convert.ToInt32(cmbPaymentMethod.ActiveText) < 5){
                 if(Convert.ToInt32(entAmountPayment.Text) < Convert.ToInt32(entTransactionAmount.Text)){
                     string message = "Oh sorry, payment amount less than total purchase price";
@@ -1287,7 +1305,7 @@ namespace Inventorifo.App
                 valid=true;
             }
             if(valid){
-                string sql = "select * from transaction_item where transaction_id="+_lsModelTrans.GetValue (iter, 0).ToString();
+                string sql = "select * from transaction_item where transaction_id="+lbTransactionId.Text;
                 Console.WriteLine(sql);
                 DataTable dt =  DbCl.fillDataTable(DbCl.getConn(), sql);
                 foreach (DataRow dr in dt.Rows)
@@ -1295,14 +1313,17 @@ namespace Inventorifo.App
                     sql = "update stock set state=0 where id="+dr["stock_id"].ToString();
                     Console.WriteLine(sql);
                     DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                    sql = "update product set is_active=true where id="+dr["product_id"].ToString();
+                    Console.WriteLine(sql);
+                    DbCl.ExecuteTrans(DbCl.getConn(), sql);
                 }
-                sql = "update transaction_item set state=0 where transaction_id="+_lsModelTrans.GetValue (iter, 0).ToString();
+                sql = "update transaction_item set state=0 where transaction_id="+lbTransactionId.Text;
                 Console.WriteLine(sql);
                 DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                sql = "insert into payment (transaction_id,payment_date,amount,user_id) values ("+_lsModelTrans.GetValue (iter, 0).ToString()+",CURRENT_TIMESTAMP,"+entAmountPayment.Text.Trim()+","+this.parent.user.id+")";
+                sql = "insert into payment (transaction_id,payment_date,amount,user_id) values ("+lbTransactionId.Text+",CURRENT_TIMESTAMP,"+entAmountPayment.Text.Trim()+","+this.parent.user.id+")";
                 Console.WriteLine(sql);
                 DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                sql = "update transaction set is_tax="+chkTax.Active.ToString()+", transaction_amount="+entTransactionAmount.Text.Trim()+", payment_amount=" + CoreCl.GetPaymentAmount(_lsModelTrans.GetValue (iter, 0).ToString()).ToString()+", payment_group_id="+cmbPaymentMethod.ActiveText+", state=0 where id="+_lsModelTrans.GetValue (iter, 0).ToString();
+                sql = "update transaction set is_tax="+chkTax.Active.ToString()+", transaction_amount="+entTransactionAmount.Text.Trim()+", payment_amount=" + CoreCl.GetPaymentAmount(lbTransactionId.Text)+", payment_group_id="+cmbPaymentMethod.ActiveText+", state=0 where id="+lbTransactionId.Text;
                 Console.WriteLine(sql);
                 DbCl.ExecuteTrans(DbCl.getConn(), sql);
                 SetTransactionModel("",entSearch.Text.Trim());  

@@ -751,7 +751,11 @@
                                     <property name="height-request">50</property>
                                     <property name="visible">True</property>
                                     <property name="can-focus">True</property>
+                                    <property name="margin-left">5</property>
+                                    <property name="margin-right">5</property>
+                                    <property name="margin-start">5</property>
                                     <property name="margin-end">5</property>
+                                    <property name="margin-bottom">5</property>
                                   </object>
                                   <packing>
                                     <property name="left-attach">1</property>
@@ -786,6 +790,11 @@
                                     <property name="height-request">50</property>
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
+                                    <property name="margin-left">5</property>
+                                    <property name="margin-right">5</property>
+                                    <property name="margin-start">5</property>
+                                    <property name="margin-end">5</property>
+                                    <property name="margin-bottom">5</property>
                                   </object>
                                   <packing>
                                     <property name="left-attach">1</property>
@@ -810,6 +819,11 @@
                                     <property name="visible">True</property>
                                     <property name="can-focus">True</property>
                                     <property name="receives-default">True</property>
+                                    <property name="margin-left">5</property>
+                                    <property name="margin-right">5</property>
+                                    <property name="margin-start">5</property>
+                                    <property name="margin-end">5</property>
+                                    <property name="margin-bottom">5</property>
                                   </object>
                                   <packing>
                                     <property name="left-attach">1</property>
