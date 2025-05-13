@@ -45,11 +45,14 @@ namespace Inventorifo.App
             _treeView.Selection.Mode = SelectionMode.Single;
 
             AddColumns();
-            // _treeView.Columns[5].Visible = false; //unit_id
-            // _treeView.Columns[10].Visible = false; //product_group_id
-            // _treeView.Columns[12].Visible = false; //stock_id
-            // _treeView.Columns[13].Visible = false; //price_id
-
+            _treeView.Columns[1].Visible = false; //product id
+            _treeView.Columns[3].Visible = false; //product name
+            _treeView.Columns[4].Visible = false; //barcode
+            _treeView.Columns[6].Visible = false; //unit id
+            _treeView.Columns[8].Visible = false; //price id
+            _treeView.Columns[12].Visible = false; //product group id
+            _treeView.Columns[14].Visible = false; //location id
+            _treeView.Columns[16].Visible = false; //location group id
             sw.Add(_treeView);
 
             /* some buttons */
@@ -67,9 +70,9 @@ namespace Inventorifo.App
             entSearch.PlaceholderText = "Search";
             hbox.PackStart(entSearch, true, true, 0);
 
-            Button button = new Button("Add item");
-            button.Clicked += AddItem;
-            hbox.PackStart(button, true, true, 0);
+            // Button button = new Button("Add item");
+            // button.Clicked += AddItem;
+            // hbox.PackStart(button, true, true, 0);
 
             entSearch.Changed += HandleEntSearchChanged;
             entBarcode.Changed += HandleEntBarcodeChanged;
@@ -141,7 +144,7 @@ namespace Inventorifo.App
                         "LEFT OUTER JOIN price on price.id = stock.price_id "+
                         "left outer join unit on stock.unit = unit.id, product_group prodgr "+
                         "WHERE prod.is_active is true and stock.state=0 and stock.quantity>0 and prod.product_group = prodgr.id "+ whrfind +whrbarcode +
-                        "ORDER by prod.name asc, stock.id asc ";
+                        "ORDER by prod.name asc, stock.id desc ";
                         Console.WriteLine(sql);
                 clStock sto;
                 DataTable dttv = DbCl.fillDataTable(DbCl.getConn(), sql);
@@ -224,11 +227,11 @@ namespace Inventorifo.App
         {
 
             CellRendererText rendererText = new CellRendererText();
-            _cellColumnsRender.Add(rendererText, (int)ColumnItem.id);
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.id); //0
             _treeView.InsertColumn(-1, "Stock id", rendererText, "text", (int)ColumnItem.id);
 
             rendererText = new CellRendererText();
-            _cellColumnsRender.Add(rendererText, (int)ColumnItem.product_id);
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.product_id); //1
             _treeView.InsertColumn(-1, "Product ID", rendererText, "text", (int)ColumnItem.product_id);
 
             rendererText = new CellRendererText();
@@ -236,11 +239,11 @@ namespace Inventorifo.App
             _treeView.InsertColumn(-1, "Short name", rendererText, "text", (int)ColumnItem.short_name);
 
             rendererText = new CellRendererText();
-            _cellColumnsRender.Add(rendererText, (int)ColumnItem.product_name);
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.product_name); //2
             _treeView.InsertColumn(-1, "Product name", rendererText, "text", (int)ColumnItem.product_name);
 
             rendererText = new CellRendererText();
-            _cellColumnsRender.Add(rendererText, (int)ColumnItem.barcode);
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.barcode); //3
             _treeView.InsertColumn(-1, "Barcode", rendererText, "text", (int)ColumnItem.barcode);
 
             rendererText = new CellRendererText();
@@ -286,19 +289,19 @@ namespace Inventorifo.App
 
             rendererText = new CellRendererText();
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.location);
-            _treeView.InsertColumn(-1, "Product group id", rendererText, "text", (int)ColumnItem.location);
+            _treeView.InsertColumn(-1, "Location id", rendererText, "text", (int)ColumnItem.location);
 
             rendererText = new CellRendererText();
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.location_name);
-            _treeView.InsertColumn(-1, "Product group", rendererText, "text", (int)ColumnItem.location_name);
+            _treeView.InsertColumn(-1, "Location", rendererText, "text", (int)ColumnItem.location_name);
 
             rendererText = new CellRendererText();
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.location_group);
-            _treeView.InsertColumn(-1, "Product group id", rendererText, "text", (int)ColumnItem.location_group);
+            _treeView.InsertColumn(-1, "location group id", rendererText, "text", (int)ColumnItem.location_group);
 
             rendererText = new CellRendererText();
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.location_group_name);
-            _treeView.InsertColumn(-1, "Product group", rendererText, "text", (int)ColumnItem.location_group_name);
+            _treeView.InsertColumn(-1, "Location group", rendererText, "text", (int)ColumnItem.location_group_name);
 
         }
 

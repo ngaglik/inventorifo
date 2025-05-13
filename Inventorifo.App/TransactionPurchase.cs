@@ -13,6 +13,7 @@ namespace Inventorifo.App
     //[Section(ContentType = typeof(EditableCellsSection), Category = Category.Widgets)]
     class TransactionPurchase : Gtk.Box
     {
+        int transaction_type_id = 1;
         Inventorifo.Lib.LibDb DbCl = new Inventorifo.Lib.LibDb ();
         Inventorifo.Lib.LibGui GuiCl = new Inventorifo.Lib.LibGui ();
         Inventorifo.Lib.LibCore CoreCl = new Inventorifo.Lib.LibCore ();
@@ -433,7 +434,7 @@ namespace Inventorifo.App
                     }
                 }else{                 
                     GuiCl.SensitiveAllWidgets(boxItem,true);  
-                    GuiCl.SetEnableColumn(_treeViewItems,[5,6,7,11,12]);
+                    GuiCl.SetEnableColumn(_treeViewItems,[5,6,7,9,11,12]);
                     btnSupplier.Sensitive = true;
                     btnProduct.Sensitive = true;
                     boxSupplierDetail.Sensitive = true;
@@ -548,30 +549,7 @@ namespace Inventorifo.App
             SelectFirstRow(_lsModelTrans,_treeViewTrans);
             popoverDate.Hide();
         }
-        // private DataTable fillDtTransaction(string transaction_id, string strfind){
-        //     string whrfind = "",whrid="";
-        //     if(transaction_id!="") whrid = "and tr.id="+transaction_id+ " ";
-        //     if(strfind!="") whrfind = "and (upper(sup.organization_name) like upper('" + strfind + "%') or upper(pers.name) like upper('" + strfind + "%') )";
-            
-        //     string sql = "select tr.id,tr.reference_id, "+
-        //         "tr.supplier_id,sup.organization_name,sup.organization_address,sup.organization_phone_number,pers.name person_name,pers.phone_number person_phone_number, "+
-        //         "tr.transaction_type transaction_type_id, ty.name transaction_type_name, TO_CHAR(tr.transaction_date,'yyyy-mm-dd') transaction_date, tr.transaction_amount, tr.return_amount, "+
-        //         "tr.payment_group_id, py.name payment_group_name, tr.payment_amount, "+
-        //         "tr.user_id, usr.name user_name,  "+
-        //         "tr.state, st.name state_name, st.fgcolor state_fgcolor, st.bgcolor state_bgcolor,  "+
-        //         "tr.application_id, tr.tax_amount, tr.is_tax "+
-        //         "from transaction tr left outer join supplier sup on tr.supplier_id=sup.id "+
-        //         "left outer join payment_group py on tr.payment_group_id = py.id "+
-        //         "left outer join person pers on sup.person_id=pers.id, "+
-        //         "transaction_state st, transaction_type ty, "+
-        //         "(select usr.id, pers.name, pers.phone_number from person pers,userlogin usr where usr.person_id=pers.id) usr "+
-        //         "where tr.transaction_type=1 and tr.state=st.id and tr.transaction_type=ty.id "+
-        //         "and tr.transaction_date::date = '"+btnDate.Label+"'::date and usr.id=tr.user_id "+
-        //         whrid+ whrfind+ 
-        //         "ORDER by tr.id desc";
-        //         Console.WriteLine(sql);
-        //         return DbCl.fillDataTable(DbCl.getConn(), sql);
-        // }
+      
         private void SetTransactionModel(string transaction_id, string strfind)
         {                  
                 //ListStore model;
@@ -800,7 +778,7 @@ namespace Inventorifo.App
             return DbCl.ExecuteScalar(DbCl.getConn(), sql);
         }
         public Int64 InsertStock(string price_id){
-            string sql = "insert into stock (product_id,quantity,input_date,expired_date, price_id, unit, condition, location)"+
+            string sql = "insert into stock (product_id,quantity,input_date,expired_date, price_id, unit,  location, condition)"+
             "values ("+dtItemSelected.Rows[0].ItemArray[0].ToString()+ ","+spnQty.Text+",CURRENT_DATE,CURRENT_DATE,"+price_id+",1,1,1) returning id";
             Console.WriteLine (sql);
             return DbCl.ExecuteScalar(DbCl.getConn(), sql);
@@ -817,8 +795,8 @@ namespace Inventorifo.App
                     Int64 price_id = InsertPrice();
                     Int64 stock_id = InsertStock(price_id.ToString());
                   //  tekan kene
-                    string sql = "insert into transaction_item (transaction_id,product_id,quantity,stock_id,price_id,state) "+
-                    "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+spnQty.Text+","+ stock_id.ToString() + ","+price_id.ToString()+",1)" ;
+                    string sql = "insert into transaction_item (transaction_id,product_id,quantity,stock_id,price_id,state,location,condition) "+
+                    "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+spnQty.Text+","+ stock_id.ToString() + ","+price_id.ToString()+",1,1,1)" ;
                     Console.WriteLine (sql);
                     DbCl.ExecuteTrans(DbCl.getConn(), sql); 
                     sql = "update transaction set state=2 where id="+lbTransactionId.Text;
@@ -882,67 +860,67 @@ namespace Inventorifo.App
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.person_name);
             _treeViewTrans.InsertColumn(-1, "Person name", rendererText, "text", (int)ColumnTrans.person_name);
 
-            rendererText = new CellRendererText(); //5
+            rendererText = new CellRendererText(); //6
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.person_phone_number);
             _treeViewTrans.InsertColumn(-1, "Person phone number", rendererText, "text", (int)ColumnTrans.person_phone_number);
 
-            rendererText = new CellRendererText(); //6
+            rendererText = new CellRendererText(); //7
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.transaction_type_id);
             _treeViewTrans.InsertColumn(-1, "Transaction type", rendererText, "text", (int)ColumnTrans.transaction_type_id);
 
-            rendererText = new CellRendererText(); //6
+            rendererText = new CellRendererText(); //8
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.transaction_type_name);
             _treeViewTrans.InsertColumn(-1, "Transaction type name", rendererText, "text", (int)ColumnTrans.transaction_type_name);
 
-            rendererText = new CellRendererText(); //6
+            rendererText = new CellRendererText(); //9
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.transaction_date);
             _treeViewTrans.InsertColumn(-1, "Transaction date", rendererText, "text", (int)ColumnTrans.transaction_date);
 
-            rendererText = new CellRendererText();//13
+            rendererText = new CellRendererText();//10
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.transaction_amount);
             _treeViewTrans.InsertColumn(-1, "Transaction amount", rendererText, "text", (int)ColumnTrans.transaction_amount);
 
-            rendererText = new CellRendererText();//13
+            rendererText = new CellRendererText();//11
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.return_amount);
             _treeViewTrans.InsertColumn(-1, "Transaction amount", rendererText, "text", (int)ColumnTrans.return_amount);
 
-             rendererText = new CellRendererText(); //10
+             rendererText = new CellRendererText(); //13
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.payment_group_id);
             _treeViewTrans.InsertColumn(-1, "Payment group id", rendererText, "text", (int)ColumnTrans.payment_group_id);
 
-            rendererText = new CellRendererText();//11
+            rendererText = new CellRendererText();//14
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.payment_group_name);
             _treeViewTrans.InsertColumn(-1, "Payment group name", rendererText, "text", (int)ColumnTrans.payment_group_name);
 
-            rendererText = new CellRendererText();//12
+            rendererText = new CellRendererText();//15
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.payment_amount);
             _treeViewTrans.InsertColumn(-1, "Payment amount", rendererText, "text", (int)ColumnTrans.payment_amount);
 
-            rendererText = new CellRendererText(); //8
+            rendererText = new CellRendererText(); //16
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.user_id);
             _treeViewTrans.InsertColumn(-1, "User ID", rendererText, "text", (int)ColumnTrans.user_id);
 
-            rendererText = new CellRendererText(); //8
+            rendererText = new CellRendererText(); //17
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.user_name);
             _treeViewTrans.InsertColumn(-1, "User name", rendererText, "text", (int)ColumnTrans.user_name);
 
-            rendererText = new CellRendererText(); //7
+            rendererText = new CellRendererText(); //18
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.state);
             _treeViewTrans.InsertColumn(-1, "State", rendererText, "text", (int)ColumnTrans.state);
 
-            rendererText = new CellRendererText(); //7
+            rendererText = new CellRendererText(); //19
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.state_name);
             _treeViewTrans.InsertColumn(-1, "State name", rendererText, "text", (int)ColumnTrans.state_name);
 
-            rendererText = new CellRendererText();//15
+            rendererText = new CellRendererText();//20
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.state_fgcolor);
             _treeViewTrans.InsertColumn(-1, "State fgcolor", rendererText, "text", (int)ColumnTrans.state_fgcolor);
 
-            rendererText = new CellRendererText();//16
+            rendererText = new CellRendererText();//21
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.state_bgcolor);            
             _treeViewTrans.InsertColumn(-1, "State bgcolor", rendererText, "text", (int)ColumnTrans.state_bgcolor);
 
-            rendererText = new CellRendererText(); //9
+            rendererText = new CellRendererText(); //22
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.application_id);
             _treeViewTrans.InsertColumn(-1, "Application ID", rendererText, "text", (int)ColumnTrans.application_id);
 
@@ -950,26 +928,26 @@ namespace Inventorifo.App
           
         private void AddColumnsItems()
         {
-
+            //5,6,7,11,12
             _cellColumnsRenderItems = new Dictionary<CellRenderer, int>();
             
-            CellRendererText rendererText = new CellRendererText();
+            CellRendererText rendererText = new CellRendererText(); //0
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.id);
             _treeViewItems.InsertColumn(-1, "ID", rendererText, "text", (int)ColumnItems.id);
 
-            rendererText = new CellRendererText();
+            rendererText = new CellRendererText(); //1
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.transaction_id);
             _treeViewItems.InsertColumn(-1, "Transaction ID", rendererText, "text", (int)ColumnItems.transaction_id);            
 
-            rendererText = new CellRendererText();
+            rendererText = new CellRendererText(); //2
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.product_id);
             _treeViewItems.InsertColumn(-1, "Product ID", rendererText, "text", (int)ColumnItems.product_id); 
 
-            rendererText = new CellRendererText();
+            rendererText = new CellRendererText();//3
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.product_short_name);
             _treeViewItems.InsertColumn(-1, "Short name", rendererText, "text", (int)ColumnItems.product_short_name);
 
-            rendererText = new CellRendererText();
+            rendererText = new CellRendererText();//4
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.stock_id);
             _treeViewItems.InsertColumn(-1, "Stock ID", rendererText, "text", (int)ColumnItems.stock_id);
 
@@ -978,7 +956,7 @@ namespace Inventorifo.App
                 Editable = isEditable
             };
             rendererText.Foreground = textForeground;
-            rendererText.Edited += CellEditedItem;
+            rendererText.Edited += CellEditedItem;//5
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.quantity);
             _treeViewItems.InsertColumn(-1, "Quantity", rendererText, "text", (int)ColumnItems.quantity);
 
@@ -998,7 +976,7 @@ namespace Inventorifo.App
             };
             rendererCombo.Foreground = textForeground;
             rendererCombo.Edited += CellEditedItem;
-            rendererCombo.EditingStarted += EditingStarted;           
+            rendererCombo.EditingStarted += EditingStarted;       //6    
             _cellColumnsRenderItems.Add(rendererCombo, (int)ColumnItems.unit_name);
             _treeViewItems.InsertColumn(-1, "Unit", rendererCombo, "text", (int)ColumnItems.unit_name);
 
@@ -1008,19 +986,24 @@ namespace Inventorifo.App
                 Editable = isEditable
             };
             rendererText.Foreground = textForeground;
-            rendererText.Edited += CellEditedItem;
+            rendererText.Edited += CellEditedItem; //7
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_price);
             _treeViewItems.InsertColumn(-1, "Purchase price", rendererText, "text", (int)ColumnItems.purchase_price);
 
-            rendererText = new CellRendererText();
+            rendererText = new CellRendererText(); //8
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.price_id);
             _treeViewItems.InsertColumn(-1, "Price ID", rendererText, "text", (int)ColumnItems.price_id);
 
-            rendererText = new CellRendererText();
+            rendererText = new CellRendererText
+            {
+                Editable = isEditable
+            };
+            rendererText.Foreground = textForeground;
+            rendererText.Edited += CellEditedItem; //9
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.price);
             _treeViewItems.InsertColumn(-1, "Sale Price", rendererText, "text", (int)ColumnItems.price);
 
-            rendererText = new CellRendererText();
+            rendererText = new CellRendererText(); //10
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.tax);
             _treeViewItems.InsertColumn(-1, "Tax", rendererText, "text", (int)ColumnItems.tax);
 
@@ -1114,6 +1097,21 @@ namespace Inventorifo.App
                     entTransactionAmount.Text = (GetTotalPurchasePrice()+CalculateTax(GetTotalPurchasePrice())).ToString();
                 }
                 break;
+                case (int)ColumnItems.price:
+                {   
+                    // upadte harga beli pada tabel harga saja
+                    // transaction_item tidak perlu diupdate 
+                    // harga beli perlakuannya referensi bukan transaksi untuk mengakomodir perubahan setelah barang datang
+
+                    int i = path.Indices[0];
+                    _clsItems[i].price = args.NewText;
+                    _lsModelItems.SetValue(iter, column, _clsItems[i].price);
+                    string sql = "update price set price = '"+args.NewText+"' where id='"+_clsItems[i].price_id+"' ";
+                    Console.WriteLine (sql);
+                    DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                    
+                }
+                break;
                 case (int)ColumnItems.location_name:
                     {
                         string oldText = (string)_lsModelItems.GetValue(iter, column);
@@ -1125,6 +1123,9 @@ namespace Inventorifo.App
                             _lsModelItems.SetValue(iter, column, _clsItems[i].location_name );  
                             
                             string sql = "update stock set location = '"+arr[0].Trim()+"' where id='"+_clsItems[i].stock_id+"' ";
+                            Console.WriteLine (sql);
+                            DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                            sql = "update transaction_item set location = '"+arr[0].Trim()+"' where id='"+_clsItems[i].id+"' ";
                             Console.WriteLine (sql);
                             DbCl.ExecuteTrans(DbCl.getConn(), sql);
                         }
@@ -1141,6 +1142,9 @@ namespace Inventorifo.App
                             _lsModelItems.SetValue(iter, column, _clsItems[i].condition_name );  
                             
                             string sql = "update stock set condition = '"+arr[0].Trim()+"' where id='"+_clsItems[i].stock_id+"' ";
+                            Console.WriteLine (sql);
+                            DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                            sql = "update transaction_item set condition = '"+arr[0].Trim()+"' where id='"+_clsItems[i].id+"' ";
                             Console.WriteLine (sql);
                             DbCl.ExecuteTrans(DbCl.getConn(), sql);
                         }
@@ -1309,11 +1313,12 @@ namespace Inventorifo.App
                 Console.WriteLine(sql);
                 DataTable dt =  DbCl.fillDataTable(DbCl.getConn(), sql);
                 foreach (DataRow dr in dt.Rows)
-                { 
-                    sql = "update stock set state=0 where id="+dr["stock_id"].ToString();
+                {                     
+                    sql = "update product set is_active=true where id="+dr["product_id"].ToString();
                     Console.WriteLine(sql);
                     DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                    sql = "update product set is_active=true where id="+dr["product_id"].ToString();
+                    CoreCl.InsertStockHistory(dr["transaction_id"].ToString(),transaction_type_id.ToString(), dr["product_id"].ToString(),dr["stock_id"].ToString(),dr["location"].ToString(),dr["condition"].ToString(),dr["quantity"].ToString());
+                    sql = "update stock set state=0 where id="+dr["stock_id"].ToString();
                     Console.WriteLine(sql);
                     DbCl.ExecuteTrans(DbCl.getConn(), sql);
                 }

@@ -32,7 +32,7 @@ namespace Inventorifo.App
         string mode;
         clStock filter;
         private Boolean showAll;
-        ComboBoxText CmbIsActive;
+        ComboBoxText cmbIsActive;
 
         public ReferenceProduct(object parent, string mode, int transaction_type, clStock filter) : base(Orientation.Vertical, 3)
         {
@@ -55,17 +55,11 @@ namespace Inventorifo.App
             entBarcode = new Entry();
             entBarcode.PlaceholderText = "Barcode"; 
 
-            CmbIsActive = new ComboBoxText();
-            _lsModelIsActive = new ListStore(typeof(string));
-            // Tambahkan beberapa item ke ListStore
-            _lsModelIsActive.AppendValues("Show All");
-            _lsModelIsActive.AppendValues("Active");
-            _lsModelIsActive.AppendValues("Inactive");
-            CmbIsActive.Model = _lsModelIsActive;
-            Gtk.CellRendererText cellRendererText = new Gtk.CellRendererText();
-            CmbIsActive.PackStart(cellRendererText, true);
+            cmbIsActive = new ComboBoxText();
+            GuiCl.FillComboBoxText(cmbIsActive, "Select id,name from product_status order by id asc",0);
+            cmbIsActive.Changed += HandleCmbIsActiveChanged;
 
-            hbox.PackStart(CmbIsActive, true, true, 0);  
+            hbox.PackStart(cmbIsActive, true, true, 0);  
             hbox.PackStart(entBarcode, true, true, 0);   
             hbox.PackStart(entSearch, true, true, 0);    
             switch (mode)
@@ -78,8 +72,8 @@ namespace Inventorifo.App
                         isEditable = false;
                         textForground = "black";
                         showAll = false;
-                        if(transaction_type==1) CmbIsActive.Active = 0;
-                        else CmbIsActive.Active = 1;
+                        if(transaction_type==1) cmbIsActive.Active = 0;
+                        else cmbIsActive.Active = 1;
                     } 
                     break;
                 case "widget":
@@ -91,7 +85,7 @@ namespace Inventorifo.App
                         textForground = "green";
                         popover = new Popover(button);  
                         showAll = true;
-                        CmbIsActive.Active = 0;
+                        cmbIsActive.Active = 0;
                     } 
                     break;
             }    
@@ -115,7 +109,7 @@ namespace Inventorifo.App
             //_treeView.Columns[13].Visible = false;
             /* some buttons */
             
-            
+            //Console.WriteLine("filter.is_active "+ filter.is_active);
             CreateItemsModel(true,filter);
             sw.Add(_treeView);
             //_treeView.CanFocus = true;
@@ -149,22 +143,35 @@ namespace Inventorifo.App
             Num
         };
         
+        private void HandleCmbIsActiveChanged(object sender, EventArgs e)
+        {
+            Gtk.Application.Invoke(delegate
+            {
+                this.filter.is_active=cmbIsActive.ActiveText;
+                CreateItemsModel(this.showAll, this.filter);
+            });
+        }
         private void HandleEntSearchChanged(object sender, EventArgs e)
         {
-            filter=this.filter;
-            filter.short_name=entSearch.Text.Trim();
-            CreateItemsModel(this.showAll, filter);
+            Gtk.Application.Invoke(delegate
+            {
+                this.filter.short_name=entSearch.Text.Trim();
+                CreateItemsModel(this.showAll, this.filter);
+            });
         }
         private void HandleEntBarcodeChanged(object sender, EventArgs e)
         {
-            filter=this.filter;
-            filter.barcode = entBarcode.Text.Trim();
-            CreateItemsModel(this.showAll, filter);
+            Gtk.Application.Invoke(delegate
+            {
+                this.filter.barcode = entBarcode.Text.Trim();
+                CreateItemsModel(this.showAll, this.filter);
+            });
         }
         private void CreateItemsModel(Boolean showAll,clStock filter)
         {   
-            filter.is_active = CmbIsActive.ActiveText;
-            if((filter.short_name=="" && filter.barcode=="") && !this.showAll) {          
+            
+            //Console.WriteLine("filter.is_active = "+ this.filter.is_active);
+            if((this.filter.short_name=="" && this.filter.barcode=="") && !this.showAll) {          
                 _treeView.Model = null;
             }else{
                 _lsModelProduct = null;
@@ -172,7 +179,7 @@ namespace Inventorifo.App
                 /* create array */
                 _clsProduct = new List<clsProduct>();
                 clsProduct prod;
-                DataTable dttv = CoreCl.fillDtProduct(transaction_type,filter);
+                DataTable dttv = CoreCl.fillDtProduct(transaction_type,this.filter);
                 foreach (DataRow dr in dttv.Rows)
                 {            
                     prod = new clsProduct{        

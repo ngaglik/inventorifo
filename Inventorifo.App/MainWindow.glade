@@ -168,7 +168,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="PuchaseReturnMenuItem">
+                      <object class="GtkImageMenuItem" id="PurchaseReturnMenuItem">
                         <property name="label" translatable="yes">Purchase Return</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
@@ -278,7 +278,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkImageMenuItem" id="TransactionSaleReportMenuItem">
+                      <object class="GtkImageMenuItem" id="ReportSaleMenuItem">
                         <property name="label" translatable="yes">Sale Report</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
@@ -287,7 +287,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="TransactionSaleReturnReportMenuItem">
+                      <object class="GtkImageMenuItem" id="ReportSaleReturnMenuItem">
                         <property name="label" translatable="yes">Sale Return Report</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
@@ -296,7 +296,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="TransactionPurchaseReportMenuItem">
+                      <object class="GtkImageMenuItem" id="ReportPurchaseMenuItem">
                         <property name="label" translatable="yes">Purchase Report</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
@@ -305,7 +305,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="TransactionPurchaseReturnReportMenuItem">
+                      <object class="GtkImageMenuItem" id="ReportPurchaseReturnMenuItem">
                         <property name="label" translatable="yes">Purchase Return Report</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
@@ -314,7 +314,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="MovementReturnReportMenuItem">
+                      <object class="GtkImageMenuItem" id="ReportMovementMenuItem">
                         <property name="label" translatable="yes">Movement Report</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
@@ -323,8 +323,8 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="ProfitLossReportMenuItem">
-                        <property name="label" translatable="yes">Profit &amp; Loss</property>
+                      <object class="GtkImageMenuItem" id="ReportProfitLossMenuItem">
+                        <property name="label" translatable="yes">Profit &amp; Loss Report</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="image">image25</property>

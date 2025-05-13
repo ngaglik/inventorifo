@@ -41,13 +41,21 @@ namespace Inventorifo.App
             };
 
             MenuItem purchaseMenuItem = (MenuItem)builder.GetObject("PurchaseMenuItem");
+            MenuItem purchaseReturnMenuItem = (MenuItem)builder.GetObject("PurchaseReturnMenuItem");
             MenuItem saleMenuItem = (MenuItem)builder.GetObject("SaleMenuItem");
+            MenuItem saleReturnMenuItem = (MenuItem)builder.GetObject("SaleReturnMenuItem");
 
             MenuItem transferMenuItem = (MenuItem)builder.GetObject("TransferMenuItem");
+            MenuItem stockHistoryMenuItem = (MenuItem)builder.GetObject("StockHistoryMenuItem");
 
             MenuItem stockMenuItem = (MenuItem)builder.GetObject("StockMenuItem");
             MenuItem productMenuItem = (MenuItem)builder.GetObject("ProductMenuItem");
             MenuItem productGroupMenuItem = (MenuItem)builder.GetObject("ProductGroupMenuItem");
+            
+            MenuItem reportSaleMenuItem = (MenuItem)builder.GetObject("ReportSaleMenuItem");
+            MenuItem reportPurchaseMenuItem = (MenuItem)builder.GetObject("ReportPurchaseMenuItem");
+            MenuItem reportSaleReturnMenuItem = (MenuItem)builder.GetObject("ReportSaleReturnMenuItem");
+            MenuItem reportPurchaseReturnMenuItem = (MenuItem)builder.GetObject("ReportPurchaseReturnMenuItem");
 
             MenuItem customerMenuItem = (MenuItem)builder.GetObject("CustomerMenuItem");
             MenuItem supplierMenuItem = (MenuItem)builder.GetObject("SupplierMenuItem");
@@ -62,8 +70,16 @@ namespace Inventorifo.App
             
             DeleteEvent += Window_DeleteEvent;
             purchaseMenuItem.Activated += PurchaseMenuItem_Activated;
+            purchaseReturnMenuItem.Activated += PurchaseReturnMenuItem_Activated;
             saleMenuItem.Activated += SaleMenuItem_Activated;
+            saleReturnMenuItem.Activated += SaleReturnMenuItem_Activated;
             transferMenuItem.Activated += TransferMenuItem_Activated;
+            stockHistoryMenuItem.Activated += StockHistoryMenuItem_Activated;
+            reportSaleMenuItem.Activated += reportSaleMenuItem_Activated;
+            reportPurchaseMenuItem.Activated += reportPurchaseMenuItem_Activated;
+            reportSaleReturnMenuItem.Activated += reportSaleReturnMenuItem_Activated;
+            reportPurchaseReturnMenuItem.Activated += reportPurchaseReturnMenuItem_Activated;
+
             stockMenuItem.Activated += StockMenuItem_Activated;
             productMenuItem.Activated += ProductMenuItem_Activated;
             productGroupMenuItem.Activated += ProductGroupMenuItem_Activated;
@@ -94,18 +110,25 @@ namespace Inventorifo.App
             TransactionPurchase transWidget = new TransactionPurchase(this,null);
             mainBox.PackStart(transWidget, false, true, 5);
             transWidget.ShowAll();
-
-          //  MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, "Purchase ");
-          //  md.Run();
-          //  md.Destroy();
+        }
+        private void PurchaseReturnMenuItem_Activated(object sender, EventArgs a){
+            ClearMainBox();
+            TransactionPurchaseReturn transWidget = new TransactionPurchaseReturn(this,null);
+            mainBox.PackStart(transWidget, false, true, 5);
+            transWidget.ShowAll();
         }
         private void SaleMenuItem_Activated(object sender, EventArgs a)
         {
             ClearMainBox();
             TransactionSale transWidget = new TransactionSale(this,null);
             mainBox.PackStart(transWidget, false, true, 5);
-            transWidget.ShowAll();            
-          
+            transWidget.ShowAll();
+        }
+        private void SaleReturnMenuItem_Activated(object sender, EventArgs a){
+            ClearMainBox();
+            TransactionSaleReturn transWidget = new TransactionSaleReturn(this,null);
+            mainBox.PackStart(transWidget, false, true, 5);
+            transWidget.ShowAll();
         }
         private void TransferMenuItem_Activated(object sender, EventArgs a)
         {
@@ -114,6 +137,16 @@ namespace Inventorifo.App
             mainBox.PackStart(transWidget, false, true, 5);
             transWidget.ShowAll();            
           
+        }
+        private void StockHistoryMenuItem_Activated(object sender, EventArgs a)
+        {
+            Gtk.Application.Invoke(delegate
+            {
+                ClearMainBox();
+                WarehouseStockHistory refWidget = new WarehouseStockHistory(this,null);
+                mainBox.PackStart(refWidget, true, true, 5);
+                refWidget.ShowAll();
+            });
         }
         private void StockMenuItem_Activated(object sender, EventArgs a)
         {
@@ -130,7 +163,8 @@ namespace Inventorifo.App
             Gtk.Application.Invoke(delegate
             {
                 ClearMainBox();
-                ReferenceProduct refWidget = new ReferenceProduct(this,"widget",0, new clStock{});
+                clStock filter = new clStock {is_active="true",short_name=""};
+                ReferenceProduct refWidget = new ReferenceProduct(this,"widget",0, filter);
                 mainBox.PackStart(refWidget, true, true, 5);
                 refWidget.ShowAll();
             });
@@ -161,6 +195,48 @@ namespace Inventorifo.App
             {
                 ClearMainBox();
                 ReferenceOrganization refWidget = new ReferenceOrganization(this, "widget", null);
+                mainBox.PackStart(refWidget, true, true, 5);
+                refWidget.ShowAll();
+            });
+        }
+        private void reportSaleMenuItem_Activated(object sender, EventArgs a)
+        {
+            Gtk.Application.Invoke(delegate
+            {
+                ClearMainBox();
+                clTransaction filterTrans = new clTransaction {transaction_date = DateTime.Now.ToString("yyyy-MM-dd"), transaction_type_id="2"};
+                ReportTransactionSale refWidget = new ReportTransactionSale(this, "widget", filterTrans);
+                mainBox.PackStart(refWidget, true, true, 5);
+                refWidget.ShowAll();
+            });
+        }
+        private void reportPurchaseMenuItem_Activated(object sender, EventArgs a)
+        {
+            Gtk.Application.Invoke(delegate
+            {
+                ClearMainBox();
+                clTransaction filterTrans = new clTransaction {transaction_date = DateTime.Now.ToString("yyyy-MM-dd"), transaction_type_id="1"};
+                ReportTransactionPurchase refWidget = new ReportTransactionPurchase(this, "widget", filterTrans);
+                mainBox.PackStart(refWidget, true, true, 5);
+                refWidget.ShowAll();
+            });
+        }
+        private void reportSaleReturnMenuItem_Activated(object sender, EventArgs a)
+        {
+            Gtk.Application.Invoke(delegate
+            {
+                ClearMainBox();                
+                ReportTransactionSaleReturn refWidget = new ReportTransactionSaleReturn(this, "widget", "4");
+                mainBox.PackStart(refWidget, true, true, 5);
+                refWidget.ShowAll();
+            });
+        }
+        private void reportPurchaseReturnMenuItem_Activated(object sender, EventArgs a)
+        {
+            Gtk.Application.Invoke(delegate
+            {
+                ClearMainBox();
+                ReportTransactionPurchaseReturn refWidget = new ReportTransactionPurchaseReturn(this, "widget", "3");
                 mainBox.PackStart(refWidget, true, true, 5);
                 refWidget.ShowAll();
             });

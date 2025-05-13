@@ -13,6 +13,7 @@ namespace Inventorifo.App
     //[Section(ContentType = typeof(EditableCellsSection), Category = Category.Widgets)]
     class TransactionSale : Gtk.Box
     {
+        int transaction_type_id = 2;
         Inventorifo.Lib.LibDb DbCl = new Inventorifo.Lib.LibDb ();
         Inventorifo.Lib.LibGui GuiCl = new Inventorifo.Lib.LibGui ();
         Inventorifo.Lib.LibCore CoreCl = new Inventorifo.Lib.LibCore ();
@@ -25,6 +26,7 @@ namespace Inventorifo.App
             Console.WriteLine(this.parent.user.id + " "+ this.parent.user.person_name);
             
         }
+        
         private TreeView _treeViewTrans;
         private ListStore _lsModelTrans;
         private Dictionary<CellRenderer, int> _cellColumnsRender;
@@ -442,7 +444,7 @@ namespace Inventorifo.App
                 }else{
                  
                     GuiCl.SensitiveAllWidgets(boxItem,true);
-                    GuiCl.SetEnableColumn(_treeViewItems,[5]);
+                    //GuiCl.SetEnableColumn(_treeViewItems,[5]);
                     btnCustomer.Sensitive = true;
                     btnProduct.Sensitive = true;
                     boxCustomerDetail.Sensitive = true;
@@ -820,11 +822,11 @@ namespace Inventorifo.App
             } 
 
             Console.WriteLine("==============3====" + valid.ToString()); 
-
+            //insert transaksi item disik
             
             if(valid){
                 //FIFO show all stock in store location
-                sql = "select stock.id stock_id,stock.quantity,stock.product_id,stock.price_id,stock.location "+
+                sql = "select stock.id stock_id,stock.quantity,stock.product_id,stock.price_id,stock.location, stock.condition "+
                 "from stock,location loc,location_group locgr "+
                 "where stock.quantity>0 and state=0 and locgr.id=2 and product_id="+ dtItemSelected.Rows[0].ItemArray[0].ToString() + " "+
                 "and stock.location=loc.id and loc.location_group=locgr.id "+
@@ -835,22 +837,26 @@ namespace Inventorifo.App
                 balance = Convert.ToDouble(spnQty.Text);  
                 foreach(DataRow drs in dts.Rows){                    
                     if(Convert.ToDouble(balance) > Convert.ToDouble(drs["quantity"].ToString()) ){
+                        
+                        sql = "insert into transaction_item (transaction_id,product_id,quantity,stock_id,price_id,state, location, condition) "+
+                        "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+drs["quantity"].ToString()+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1,"+ drs["location"].ToString() + ","+drs["condition"].ToString()+")" ;
+                        Console.WriteLine (sql); 
+                        DbCl.ExecuteTrans(DbCl.getConn(), sql);  
+                        CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), dtItemSelected.Rows[0].ItemArray[0].ToString(), drs["stock_id"].ToString(),drs["location"].ToString(),drs["condition"].ToString(),"-"+drs["quantity"].ToString());
                         sql = "update stock set quantity=0 where id="+drs["stock_id"].ToString() ;
                         Console.WriteLine (sql);
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                        sql = sql = "insert into transaction_item (transaction_id,product_id,quantity,stock_id,price_id,state) "+
-                        "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+drs["quantity"].ToString()+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1)" ;
-                        Console.WriteLine (sql); 
-                        DbCl.ExecuteTrans(DbCl.getConn(), sql);  
                         balance = balance-Convert.ToDouble(drs["quantity"].ToString());
                     }else{
+                        
+                        sql = "insert into transaction_item (transaction_id,product_id,quantity,stock_id,price_id,state, location, condition) "+
+                        "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+balance.ToString()+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1,"+ drs["location"].ToString() + ","+drs["condition"].ToString()+")" ;
+                        Console.WriteLine (sql); 
+                        DbCl.ExecuteTrans(DbCl.getConn(), sql); 
+                        CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), dtItemSelected.Rows[0].ItemArray[0].ToString(), drs["stock_id"].ToString(),drs["location"].ToString(),drs["condition"].ToString(),"-"+balance.ToString());
                         sql = "update stock set quantity=quantity-"+balance.ToString()+" where id="+drs["stock_id"].ToString() ;
                         Console.WriteLine (sql);
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                        sql = sql = "insert into transaction_item (transaction_id,product_id,quantity,stock_id,price_id,state) "+
-                        "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+balance.ToString()+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1)" ;
-                        Console.WriteLine (sql); 
-                        DbCl.ExecuteTrans(DbCl.getConn(), sql); 
                         balance = 0;
                     }
                     if (balance==0) break;
@@ -1268,15 +1274,7 @@ namespace Inventorifo.App
                 valid=true;
             }
             if(valid){
-                // string sql = "select * from transaction_item where transaction_id="+_lsModelTrans.GetValue (iter, 0).ToString();
-                // Console.WriteLine(sql);
-                // DataTable dt =  DbCl.fillDataTable(DbCl.getConn(), sql);
-                // foreach (DataRow dr in dt.Rows)
-                // { 
-                //     sql = "update stock set state=0 where id="+dr["stock_id"].ToString();
-                //     Console.WriteLine(sql);
-                //     DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                // }
+               
                 string sql = "update transaction_item set state=0 where transaction_id="+lbTransactionId.Text;
                 Console.WriteLine(sql);
                 DbCl.ExecuteTrans(DbCl.getConn(), sql);
@@ -1291,6 +1289,7 @@ namespace Inventorifo.App
                 SetItemModel(Convert.ToDouble(lbTransactionId.Text));
                 //ItemTransactionReady(false);
                 TransactionReady();
+                resp = new Response{ code = "20",description = "Success"} ;
             }  
             return resp;
         }

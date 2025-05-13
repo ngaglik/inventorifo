@@ -96,6 +96,33 @@ namespace Inventorifo.Lib.Model
         public string condition_name { get; set; }
         public string is_active { get; set; }
     }
+    public class clStockHistory
+    {
+        public string id { get; set; }
+        public string transaction_id { get; set; }
+        public string input_date { get; set; }
+        public string transaction_type { get; set; }
+        public string transaction_type_name { get; set; }
+        public string product_id { get; set; }
+        public string stock_id { get; set; }
+        public string short_name { get; set; }
+        public string product_name { get; set; }
+        public string barcode { get; set; }
+        public string quantity_before { get; set; }
+        public string quantity { get; set; }
+        public string quantity_after { get; set; }
+        public string unit { get; set; }
+        public string unit_name { get; set; }
+        public string product_group_id { get; set; }
+        public string product_group_name { get; set; }
+        public string location { get; set; }
+        public string location_name { get; set; }
+        public string location_group { get; set; }
+        public string location_group_name { get; set; }
+        public string condition { get; set; }
+        public string condition_name { get; set; }
+        public string is_active { get; set; }
+    }
     public class clPayment
     {    
         public string id { get; set; }
@@ -158,6 +185,30 @@ namespace Inventorifo.Lib.Model
         public string condition_name { get; set; }
     }
 
+    public class clReportTransaction
+    {                          
+        public string id { get; set; }
+        public string input_date { get; set; }
+        public string transaction_id { get; set; }
+        public string product_id { get; set; }
+        public string product_short_name { get; set; }
+        public string product_name { get; set; }
+        public string stock_id { get; set; }
+        public string quantity { get; set; }
+        public string unit { get; set; }
+        public string unit_name { get; set; }
+        public string purchase_price { get; set; }
+        public string price_id { get; set; }
+        public string price { get; set; }
+        public string tax { get; set; }
+        public string state { get; set; }
+        public string state_name { get; set; }
+        public string location { get; set; }
+        public string location_name { get; set; }
+        public string condition { get; set; }
+        public string condition_name { get; set; }
+        public string expired_date { get; set; }
+    }
     public class clTransfer
     {
         public string id  { get; set; }

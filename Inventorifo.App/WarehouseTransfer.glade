@@ -443,7 +443,7 @@ Organization
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">False</property>
-                        <property name="tooltip-text" translatable="yes">Create new transaction</property>
+                        <property name="tooltip-text" translatable="yes">Choose source organization</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
                         <style>
@@ -609,7 +609,7 @@ Organization
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">False</property>
-                        <property name="tooltip-text" translatable="yes">Create new transaction</property>
+                        <property name="tooltip-text" translatable="yes">Choose source organization</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
                         <style>
@@ -824,7 +824,7 @@ Organization
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">False</property>
-                        <property name="tooltip-text" translatable="yes">Show popup product</property>
+                        <property name="tooltip-text" translatable="yes">Save transfer</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
                       </object>
