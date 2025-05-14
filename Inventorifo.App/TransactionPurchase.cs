@@ -131,10 +131,15 @@ namespace Inventorifo.App
             quantity,
             unit,
             unit_name,
-            price_id,
+            purchase_price_id,
+            purchase_tax,
             purchase_price,
-            price,
-            tax,
+            purchase_discount_percent,
+            purchase_deiscount_amount,
+            sale_price,
+            sale_discount_percent,
+            sale_discount_amount,
+            sale_tax,
             state,
             state_name,
             location,
@@ -634,10 +639,10 @@ namespace Inventorifo.App
              string sql = "select ti.id, ti.transaction_id, ti.product_id, pr.short_name product_short_name, pr.name product_name,ti.stock_id, "+
             "case when ti.tax is null then 0 else ti.tax end tax, ti.state, state.name state_name, "+
             "st.quantity, st.unit,un.name unit_name, "+
-            "price.id price_id, case when price.purchase_price is null then 0 else price.purchase_price end purchase_price, case when price.price is null then 0 else price.price end price, "+
+            "price.id price_id, case when pp.purchase_price is null then 0 else pp.purchase_price end purchase_price, case when sp.price is null then 0 else sp.price end sale_price, "+
             "st.location, lo.name location_name, st.condition, co.name condition_name "+
             "from transaction_item_state state, transaction_item ti, product pr, stock st "+
-            "LEFT OUTER JOIN price on price.id = st.price_id "+
+            "LEFT OUTER JOIN purchase_price pp on purchase_price.id = st.purchase_price_id "+
             "left outer join unit un on un.id=st.unit "+
             "left outer join condition co on st.condition=co.id "+
             "left outer join location lo on st.location=lo.id "+
