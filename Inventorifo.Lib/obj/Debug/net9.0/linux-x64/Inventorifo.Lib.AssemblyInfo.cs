@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Inventorifo.Lib")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+88657aad1b7fdf035fe312a261c4f2ca9dcb8e63")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3588c3b0512455263aec87a2dc134cb981cb8ae5")]
 [assembly: System.Reflection.AssemblyProductAttribute("Inventorifo.Lib")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Inventorifo.Lib")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,19 +1,20 @@
 {
   "version": 2,
-  "dgSpecHash": "jITES6pECyE=",
+  "dgSpecHash": "9/jSucLpJAs=",
   "success": true,
-  "projectFilePath": "/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj",
+  "projectFilePath": "/home/osdm/Documents/DotnetProjects/inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj",
   "expectedPackageFiles": [
-    "/home/alisalatiga/.nuget/packages/atksharp/3.24.24.95/atksharp.3.24.24.95.nupkg.sha512",
-    "/home/alisalatiga/.nuget/packages/cairosharp/3.24.24.95/cairosharp.3.24.24.95.nupkg.sha512",
-    "/home/alisalatiga/.nuget/packages/gdksharp/3.24.24.95/gdksharp.3.24.24.95.nupkg.sha512",
-    "/home/alisalatiga/.nuget/packages/giosharp/3.24.24.95/giosharp.3.24.24.95.nupkg.sha512",
-    "/home/alisalatiga/.nuget/packages/glibsharp/3.24.24.95/glibsharp.3.24.24.95.nupkg.sha512",
-    "/home/alisalatiga/.nuget/packages/gtksharp/3.24.24.95/gtksharp.3.24.24.95.nupkg.sha512",
-    "/home/alisalatiga/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/8.0.2/microsoft.extensions.dependencyinjection.abstractions.8.0.2.nupkg.sha512",
-    "/home/alisalatiga/.nuget/packages/microsoft.extensions.logging.abstractions/8.0.2/microsoft.extensions.logging.abstractions.8.0.2.nupkg.sha512",
-    "/home/alisalatiga/.nuget/packages/npgsql/9.0.3/npgsql.9.0.3.nupkg.sha512",
-    "/home/alisalatiga/.nuget/packages/pangosharp/3.24.24.95/pangosharp.3.24.24.95.nupkg.sha512"
+    "/home/osdm/.nuget/packages/atksharp/3.24.24.95/atksharp.3.24.24.95.nupkg.sha512",
+    "/home/osdm/.nuget/packages/cairosharp/3.24.24.95/cairosharp.3.24.24.95.nupkg.sha512",
+    "/home/osdm/.nuget/packages/gdksharp/3.24.24.95/gdksharp.3.24.24.95.nupkg.sha512",
+    "/home/osdm/.nuget/packages/giosharp/3.24.24.95/giosharp.3.24.24.95.nupkg.sha512",
+    "/home/osdm/.nuget/packages/glibsharp/3.24.24.95/glibsharp.3.24.24.95.nupkg.sha512",
+    "/home/osdm/.nuget/packages/gtksharp/3.24.24.95/gtksharp.3.24.24.95.nupkg.sha512",
+    "/home/osdm/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/8.0.2/microsoft.extensions.dependencyinjection.abstractions.8.0.2.nupkg.sha512",
+    "/home/osdm/.nuget/packages/microsoft.extensions.logging.abstractions/8.0.2/microsoft.extensions.logging.abstractions.8.0.2.nupkg.sha512",
+    "/home/osdm/.nuget/packages/npgsql/9.0.3/npgsql.9.0.3.nupkg.sha512",
+    "/home/osdm/.nuget/packages/pangosharp/3.24.24.95/pangosharp.3.24.24.95.nupkg.sha512",
+    "/home/osdm/.nuget/packages/microsoft.netcore.app.host.win-x64/9.0.5/microsoft.netcore.app.host.win-x64.9.0.5.nupkg.sha512"
   ],
   "logs": []
 }

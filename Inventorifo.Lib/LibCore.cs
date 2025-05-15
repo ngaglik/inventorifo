@@ -105,7 +105,7 @@ namespace Inventorifo.Lib
                     whrid = " and prod.id= "+filter.product_id + " ";
                 }
                 Console.WriteLine("6 "+filter.product_id);
-                string sql = "SELECT prod.id, prod.short_name, prod.name product_name, prod.barcode, "+
+                string sql = "SELECT prod.id, prod.short_name, prod.name product_name, prod.barcode, prod.price1, prod.price2, prod.price3, "+
                 "case when store_quantity is null then 0 else store_quantity end store_quantity, "+
                 "case when global_quantity is null then 0 else global_quantity end global_quantity, "+
                 "prod.product_group, prodgr.name product_group_name "+

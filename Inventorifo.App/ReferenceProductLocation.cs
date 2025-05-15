@@ -9,7 +9,7 @@ using Inventorifo.Lib.Model;
 namespace Inventorifo.App
 {
     //[Section(ContentType = typeof(EditableCellsSection), Category = Category.Widgets)]
-    class ReferenceProduct : Gtk.Box
+    class ReferenceProductLocation : Gtk.Box
     {
         Inventorifo.Lib.LibDb DbCl = new Inventorifo.Lib.LibDb ();
         Inventorifo.Lib.LibGui GuiCl = new Inventorifo.Lib.LibGui ();
@@ -34,7 +34,7 @@ namespace Inventorifo.App
         private Boolean showAll;
         ComboBoxText cmbIsActive;
 
-        public ReferenceProduct(object parent, string mode, int transaction_type, clStock filter) : base(Orientation.Vertical, 3)
+        public ReferenceProductLocation(object parent, string mode, int transaction_type, clStock filter) : base(Orientation.Vertical, 3)
         {
             this.parent=parent;
             this.transaction_type = transaction_type;
@@ -42,7 +42,7 @@ namespace Inventorifo.App
             this.filter = filter;
 
             Label lbTitle = new Label();
-            lbTitle.Text = "Product";
+            lbTitle.Text = "Product Location";
             lbTitle.ModifyFont(FontDescription.FromString("Arial 18"));
             this.PackStart(lbTitle, false, true, 0);
             
@@ -134,9 +134,6 @@ namespace Inventorifo.App
             barcode,
             product_group,      
             product_group_name,
-            price1,
-            price2,
-            price3,
             Num
         };
 
@@ -194,16 +191,13 @@ namespace Inventorifo.App
                         barcode=dr["barcode"].ToString(),
                         product_group= dr["product_group"].ToString(),
                         product_group_name= dr["product_group_name"].ToString(),
-                        price1=dr["price1"].ToString(),
-                        price2=dr["price2"].ToString(),
-                        price3=dr["price3"].ToString(),
                     } ;                                 
                     _clsProduct.Add(prod);      
                 }
 
                 /* create list store */
                 //
-                _lsModelProduct = new ListStore(typeof(string), typeof(string),typeof(string), typeof(string), typeof(string),typeof(string), typeof(string), typeof(string), typeof(string),  typeof(string),  typeof(string));
+                _lsModelProduct = new ListStore(typeof(string), typeof(string),typeof(string), typeof(string), typeof(string), typeof(string),  typeof(string),  typeof(string));
 
                 /* add items */
                 for (int i = 0; i < _clsProduct.Count; i++)
@@ -217,9 +211,6 @@ namespace Inventorifo.App
                     _lsModelProduct.SetValue(iter, (int)ColumnProduct.barcode, _clsProduct[i].barcode);
                     _lsModelProduct.SetValue(iter, (int)ColumnProduct.product_group, _clsProduct[i].product_group);
                     _lsModelProduct.SetValue(iter, (int)ColumnProduct.product_group_name, _clsProduct[i].product_group_name);
-                    _lsModelProduct.SetValue(iter, (int)ColumnProduct.price1, _clsProduct[i].price1);
-                    _lsModelProduct.SetValue(iter, (int)ColumnProduct.price2, _clsProduct[i].price2);
-                    _lsModelProduct.SetValue(iter, (int)ColumnProduct.price3, _clsProduct[i].price3);
                 }
                 _treeView.Model = _lsModelProduct;                
             }
@@ -276,34 +267,6 @@ namespace Inventorifo.App
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnProduct.barcode);
             _treeView.InsertColumn(-1, "Barcode", rendererText, "text", (int)ColumnProduct.barcode);
-
-            rendererText = new CellRendererText
-            {
-                Editable = isEditable
-            };
-            rendererText.Foreground = textForground;
-            rendererText.Edited += CellEdited;
-            _cellColumnsRender.Add(rendererText, (int)ColumnProduct.price1);
-            _treeView.InsertColumn(-1, "Price1", rendererText, "text", (int)ColumnProduct.price1);
-
-            rendererText = new CellRendererText
-            {
-                Editable = isEditable
-            };
-            rendererText.Foreground = textForground;
-            rendererText.Edited += CellEdited;
-            _cellColumnsRender.Add(rendererText, (int)ColumnProduct.price2);
-            _treeView.InsertColumn(-1, "Price2", rendererText, "text", (int)ColumnProduct.price2);
-
-            rendererText = new CellRendererText
-            {
-                Editable = isEditable
-            };
-            rendererText.Foreground = textForground;
-            rendererText.Edited += CellEdited;
-            _cellColumnsRender.Add(rendererText, (int)ColumnProduct.price3);
-            _treeView.InsertColumn(-1, "Price3", rendererText, "text", (int)ColumnProduct.price3);
-
 
             ListStore lstModelCombo = new ListStore(typeof(string), typeof(string));
             String sql = "Select id,name from product_group order by name asc";
@@ -434,39 +397,6 @@ namespace Inventorifo.App
                         _clsProduct[i].barcode = args.NewText;
                         _lsModelProduct.SetValue(iter, column, _clsProduct[i].barcode);
                         string sql = "update product set barcode = '"+args.NewText+"' where id='"+_clsProduct[i].id+"' ";
-                        Console.WriteLine (sql);
-                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                    }
-                    break;
-                case (int)ColumnProduct.price1:
-                    {
-                        string oldText = (string)_lsModelProduct.GetValue(iter, column);
-                        int i = path.Indices[0];
-                        _clsProduct[i].price1 = args.NewText;
-                        _lsModelProduct.SetValue(iter, column, _clsProduct[i].price1);
-                        string sql = "update product set price1 = '"+args.NewText+"' where id='"+_clsProduct[i].id+"' ";
-                        Console.WriteLine (sql);
-                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                    }
-                    break;
-                case (int)ColumnProduct.price2:
-                    {
-                        string oldText = (string)_lsModelProduct.GetValue(iter, column);
-                        int i = path.Indices[0];
-                        _clsProduct[i].price2 = args.NewText;
-                        _lsModelProduct.SetValue(iter, column, _clsProduct[i].price2);
-                        string sql = "update product set price2 = '"+args.NewText+"' where id='"+_clsProduct[i].id+"' ";
-                        Console.WriteLine (sql);
-                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                    }
-                    break;
-                case (int)ColumnProduct.price3:
-                    {
-                        string oldText = (string)_lsModelProduct.GetValue(iter, column);
-                        int i = path.Indices[0];
-                        _clsProduct[i].price3 = args.NewText;
-                        _lsModelProduct.SetValue(iter, column, _clsProduct[i].price3);
-                        string sql = "update product set price3 = '"+args.NewText+"' where id='"+_clsProduct[i].id+"' ";
                         Console.WriteLine (sql);
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);
                     }

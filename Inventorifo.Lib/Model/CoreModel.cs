@@ -70,6 +70,9 @@ namespace Inventorifo.Lib.Model
         public string product_group { get; set; }     
         public string product_group_name { get; set; }
         public string is_active { get; set; }
+        public string price1 { get; set; }
+        public string price2 { get; set; }
+        public string price3 { get; set; }
     }
     public class clStock
     {

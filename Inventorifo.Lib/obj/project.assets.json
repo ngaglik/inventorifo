@@ -143,6 +143,149 @@
           "lib/net6.0/PangoSharp.dll": {}
         }
       }
+    },
+    "net9.0/win-x64": {
+      "AtkSharp/3.24.24.95": {
+        "type": "package",
+        "dependencies": {
+          "GLibSharp": "3.24.24.95"
+        },
+        "compile": {
+          "lib/net6.0/AtkSharp.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/AtkSharp.dll": {}
+        }
+      },
+      "CairoSharp/3.24.24.95": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/CairoSharp.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/CairoSharp.dll": {}
+        }
+      },
+      "GdkSharp/3.24.24.95": {
+        "type": "package",
+        "dependencies": {
+          "CairoSharp": "3.24.24.95",
+          "GLibSharp": "3.24.24.95",
+          "GioSharp": "3.24.24.95",
+          "PangoSharp": "3.24.24.95"
+        },
+        "compile": {
+          "lib/net6.0/GdkSharp.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/GdkSharp.dll": {}
+        }
+      },
+      "GioSharp/3.24.24.95": {
+        "type": "package",
+        "dependencies": {
+          "GLibSharp": "3.24.24.95"
+        },
+        "compile": {
+          "lib/net6.0/GioSharp.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/GioSharp.dll": {}
+        }
+      },
+      "GLibSharp/3.24.24.95": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/GLibSharp.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/GLibSharp.dll": {}
+        }
+      },
+      "GtkSharp/3.24.24.95": {
+        "type": "package",
+        "dependencies": {
+          "AtkSharp": "3.24.24.95",
+          "CairoSharp": "3.24.24.95",
+          "GLibSharp": "3.24.24.95",
+          "GdkSharp": "3.24.24.95",
+          "GioSharp": "3.24.24.95",
+          "PangoSharp": "3.24.24.95"
+        },
+        "compile": {
+          "lib/net6.0/GtkSharp.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/GtkSharp.dll": {}
+        },
+        "build": {
+          "build/GtkSharp.targets": {}
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net6.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions/8.0.2": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net6.0/Microsoft.Extensions.Logging.Abstractions.targets": {}
+        }
+      },
+      "Npgsql/9.0.3": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "8.0.2"
+        },
+        "compile": {
+          "lib/net8.0/Npgsql.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Npgsql.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "PangoSharp/3.24.24.95": {
+        "type": "package",
+        "dependencies": {
+          "CairoSharp": "3.24.24.95",
+          "GLibSharp": "3.24.24.95"
+        },
+        "compile": {
+          "lib/net6.0/PangoSharp.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/PangoSharp.dll": {}
+        }
+      }
     }
   },
   "libraries": {
@@ -368,19 +511,19 @@
     ]
   },
   "packageFolders": {
-    "/home/alisalatiga/.nuget/packages/": {}
+    "/home/osdm/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj",
+      "projectUniqueName": "/home/osdm/Documents/DotnetProjects/inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj",
       "projectName": "Inventorifo.Lib",
-      "projectPath": "/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj",
-      "packagesPath": "/home/alisalatiga/.nuget/packages/",
-      "outputPath": "/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.Lib/obj/",
+      "projectPath": "/home/osdm/Documents/DotnetProjects/inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj",
+      "packagesPath": "/home/osdm/.nuget/packages/",
+      "outputPath": "/home/osdm/Documents/DotnetProjects/inventorifo/Inventorifo.Lib/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/home/alisalatiga/.nuget/NuGet/NuGet.Config"
+        "/home/osdm/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
@@ -404,7 +547,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.200"
+      "SdkAnalysisLevel": "9.0.300"
     },
     "frameworks": {
       "net9.0": {
@@ -430,12 +573,23 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[9.0.5, 9.0.5]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/home/alisalatiga/.dotnet/sdk/9.0.203/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/home/osdm/.dotnet/sdk/9.0.300/PortableRuntimeIdentifierGraph.json"
+      }
+    },
+    "runtimes": {
+      "win-x64": {
+        "#import": []
       }
     }
   }
