@@ -133,7 +133,6 @@ namespace Inventorifo.App
             unit_name,
             price_id,
             purchase_price,
-            price,
             tax,
             state,
             state_name,
@@ -223,7 +222,7 @@ namespace Inventorifo.App
             _treeViewTrans = (TreeView)builder.GetObject("TreeViewTrans");
             _treeViewTrans.Selection.Mode = SelectionMode.Single;
             textForeground = "green";
-            textBackground = "lightred";
+            textBackground = "white";
             isEditable = true;
             AddColumnsTrans(); 
             _treeViewTrans.Selection.Changed += HandleTreeVewSelectedTrans;
@@ -239,7 +238,7 @@ namespace Inventorifo.App
             _treeViewItems.Columns[2].Visible = false;
             _treeViewItems.Columns[4].Visible = false;
             _treeViewItems.Columns[8].Visible = false;
-            _treeViewItems.Columns[10].Visible = false; //tax
+            _treeViewItems.Columns[9].Visible = false; //tax
             
             textViewProduct = (TextView)builder.GetObject("TextViewProduct");
             textViewSupplier = (TextView)builder.GetObject("TextViewSupplier");
@@ -363,7 +362,7 @@ namespace Inventorifo.App
                 btnPreviousPayment.Label = payment_amount;
                 entTaxAmount.Text = tax_amount;
                 entTransactionAmount.Text = transaction_amount;
-                lbBillCalculated.Text = (Convert.ToDouble(transaction_amount)+Convert.ToDouble(tax_amount)-Convert.ToDouble(payment_amount)).ToString() ;
+                lbBillCalculated.Text = GetOutstandingBalance(transaction_amount, payment_amount).ToString() ;
                 
                 var tag = new TextTag (null);
                 textViewSupplier.Buffer.TagTable.Add (tag);
@@ -434,7 +433,7 @@ namespace Inventorifo.App
                     }
                 }else{                 
                     GuiCl.SensitiveAllWidgets(boxItem,true);  
-                    GuiCl.SetEnableColumn(_treeViewItems,[5,6,7,9,11,12]);
+                    GuiCl.SetEnableColumn(_treeViewItems,[5,6,7,9,10,11]);
                     btnSupplier.Sensitive = true;
                     btnProduct.Sensitive = true;
                     boxSupplierDetail.Sensitive = true;
@@ -455,6 +454,12 @@ namespace Inventorifo.App
             
         }      
         
+        private double GetOutstandingBalance(string transaction_amount, string payment_amount){
+            double total = 0;
+            total = Convert.ToDouble(transaction_amount)-Convert.ToDouble(payment_amount);
+            if(total<0) total = 0;
+            return total;
+        }
               
         public void setActivePaymentMethod(string pattern){
             var store = (ListStore)cmbPaymentMethod.Model;
@@ -634,10 +639,10 @@ namespace Inventorifo.App
              string sql = "select ti.id, ti.transaction_id, ti.product_id, pr.short_name product_short_name, pr.name product_name,ti.stock_id, "+
             "case when ti.tax is null then 0 else ti.tax end tax, ti.state, state.name state_name, "+
             "st.quantity, st.unit,un.name unit_name, "+
-            "price.id price_id, case when pp.purchase_price is null then 0 else pp.purchase_price end purchase_price, case when sp.price is null then 0 else sp.price end sale_price, "+
+            "pp.id price_id, case when pp.purchase_price is null then 0 else pp.purchase_price end purchase_price, "+
             "st.location, lo.name location_name, st.condition, co.name condition_name "+
             "from transaction_item_state state, transaction_item ti, product pr, stock st "+
-            "LEFT OUTER JOIN purchase_price pp on purchase_price.id = st.purchase_price_id "+
+            "LEFT OUTER JOIN price pp on pp.id = st.price_id "+
             "left outer join unit un on un.id=st.unit "+
             "left outer join condition co on st.condition=co.id "+
             "left outer join location lo on st.location=lo.id "+
@@ -662,7 +667,7 @@ namespace Inventorifo.App
                     unit_name=dr["unit_name"].ToString(),
                     purchase_price=dr["purchase_price"].ToString(),
                     price_id=dr["price_id"].ToString(),
-                    price=dr["price"].ToString(),
+                   // price=dr["price"].ToString(),
                     tax=dr["tax"].ToString(),
                     state=dr["state"].ToString(), 
                     state_name=dr["state_name"].ToString(), 
@@ -674,7 +679,7 @@ namespace Inventorifo.App
                 _clsItems.Add(item);                    
             }
 
-            _lsModelItems = new ListStore(typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string));
+            _lsModelItems = new ListStore(typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string));
 
             /* add items */
             for (int i = 0; i < _clsItems.Count; i++)
@@ -691,7 +696,7 @@ namespace Inventorifo.App
                 _lsModelItems.SetValue(iter, (int)ColumnItems.unit_name, _clsItems[i].unit_name);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_price, _clsItems[i].purchase_price);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.price_id, _clsItems[i].price_id);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.price, _clsItems[i].price);
+               // _lsModelItems.SetValue(iter, (int)ColumnItems.price, _clsItems[i].price);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.tax, _clsItems[i].tax);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.state, _clsItems[i].state);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.state_name, _clsItems[i].state_name);
@@ -773,7 +778,7 @@ namespace Inventorifo.App
             textViewProduct.Buffer.InsertWithTags (ref iter, dtItemSelected.Rows[0].ItemArray[5].ToString(), tag);
         }
         public Int64 InsertPrice(){
-            string sql = "insert into price (input_date,purchase_price,price) values (CURRENT_TIMESTAMP,"+ CoreCl.GetLastPurchasePrice(dtItemSelected.Rows[0].ItemArray[0].ToString()).ToString() +","+ CoreCl.GetLastSalePrice(dtItemSelected.Rows[0].ItemArray[0].ToString()).ToString()+") returning id";
+            string sql = "insert into price (input_date,purchase_price) values (CURRENT_TIMESTAMP,"+ CoreCl.GetLastPurchasePrice(dtItemSelected.Rows[0].ItemArray[0].ToString()).ToString() +") returning id";
             Console.WriteLine (sql);
             return DbCl.ExecuteScalar(DbCl.getConn(), sql);
         }
@@ -994,16 +999,8 @@ namespace Inventorifo.App
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.price_id);
             _treeViewItems.InsertColumn(-1, "Price ID", rendererText, "text", (int)ColumnItems.price_id);
 
-            rendererText = new CellRendererText
-            {
-                Editable = isEditable
-            };
-            rendererText.Foreground = textForeground;
-            rendererText.Edited += CellEditedItem; //9
-            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.price);
-            _treeViewItems.InsertColumn(-1, "Sale Price", rendererText, "text", (int)ColumnItems.price);
-
-            rendererText = new CellRendererText(); //10
+            
+            rendererText = new CellRendererText(); //9
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.tax);
             _treeViewItems.InsertColumn(-1, "Tax", rendererText, "text", (int)ColumnItems.tax);
 
@@ -1097,21 +1094,7 @@ namespace Inventorifo.App
                     entTransactionAmount.Text = (GetTotalPurchasePrice()+CalculateTax(GetTotalPurchasePrice())).ToString();
                 }
                 break;
-                case (int)ColumnItems.price:
-                {   
-                    // upadte harga beli pada tabel harga saja
-                    // transaction_item tidak perlu diupdate 
-                    // harga beli perlakuannya referensi bukan transaksi untuk mengakomodir perubahan setelah barang datang
-
-                    int i = path.Indices[0];
-                    _clsItems[i].price = args.NewText;
-                    _lsModelItems.SetValue(iter, column, _clsItems[i].price);
-                    string sql = "update price set price = '"+args.NewText+"' where id='"+_clsItems[i].price_id+"' ";
-                    Console.WriteLine (sql);
-                    DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                    
-                }
-                break;
+             
                 case (int)ColumnItems.location_name:
                     {
                         string oldText = (string)_lsModelItems.GetValue(iter, column);

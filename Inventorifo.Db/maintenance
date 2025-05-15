@@ -1,3 +1,15 @@
+truncate table transaction_item;
+truncate table transaction;
+truncate table transfer_item;
+truncate table transfer;
+truncate table payment;
+truncate table stock;
+truncate table price;
+
+ALTER TABLE "public"."transaction_item" RENAME COLUMN "sale_price" TO "price";
+ALTER TABLE "public"."transaction_item" RENAME COLUMN "sale_tax" TO "tax";
+
+
 /opt/PostgreSQL/10/bin/pg_dump -h localhost -p 5432 -U postgres -F c -b -v -f  "inventorifo.backup" -d inventorifo
 
 /opt/PostgreSQL/10/bin/pg_restore -h localhost -p 5432 -U postgres -d inventorifo  "inventorifo.backup"

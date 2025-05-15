@@ -189,7 +189,7 @@ namespace Inventorifo.App
                         id=dr["id"].ToString(),
                         short_name=dr["short_name"].ToString(),
                         product_name= dr["product_name"].ToString(),
-                        store_quantity=dr["store_quantity"].ToString(),
+                        //store_quantity=dr["store_quantity"].ToString(),
                         global_quantity=dr["global_quantity"].ToString(),
                         barcode=dr["barcode"].ToString(),
                         product_group= dr["product_group"].ToString(),
@@ -203,7 +203,7 @@ namespace Inventorifo.App
 
                 /* create list store */
                 //
-                _lsModelProduct = new ListStore(typeof(string), typeof(string),typeof(string), typeof(string), typeof(string),typeof(string), typeof(string), typeof(string), typeof(string),  typeof(string),  typeof(string));
+                _lsModelProduct = new ListStore( typeof(string),typeof(string), typeof(string), typeof(string),typeof(string), typeof(string), typeof(string), typeof(string),  typeof(string),  typeof(string));
 
                 /* add items */
                 for (int i = 0; i < _clsProduct.Count; i++)
@@ -212,7 +212,7 @@ namespace Inventorifo.App
                     _lsModelProduct.SetValue(iter, (int)ColumnProduct.id, _clsProduct[i].id);
                     _lsModelProduct.SetValue(iter, (int)ColumnProduct.short_name, _clsProduct[i].short_name);
                     _lsModelProduct.SetValue(iter, (int)ColumnProduct.product_name, _clsProduct[i].product_name);
-                    _lsModelProduct.SetValue(iter, (int)ColumnProduct.store_quantity, _clsProduct[i].store_quantity);
+                   // _lsModelProduct.SetValue(iter, (int)ColumnProduct.store_quantity, _clsProduct[i].store_quantity);
                     _lsModelProduct.SetValue(iter, (int)ColumnProduct.global_quantity, _clsProduct[i].global_quantity);
                     _lsModelProduct.SetValue(iter, (int)ColumnProduct.barcode, _clsProduct[i].barcode);
                     _lsModelProduct.SetValue(iter, (int)ColumnProduct.product_group, _clsProduct[i].product_group);
@@ -259,9 +259,9 @@ namespace Inventorifo.App
             _treeView.InsertColumn(-1, "Short name", rendererText, "text", (int)ColumnProduct.short_name);
 
             
-            rendererText = new CellRendererText(); //3
-            _cellColumnsRender.Add(rendererText, (int)ColumnProduct.store_quantity);
-            _treeView.InsertColumn(-1, "Store quantity", rendererText, "text", (int)ColumnProduct.store_quantity);
+            // rendererText = new CellRendererText(); //3
+            // _cellColumnsRender.Add(rendererText, (int)ColumnProduct.store_quantity);
+            // _treeView.InsertColumn(-1, "Store quantity", rendererText, "text", (int)ColumnProduct.store_quantity);
 
 
             rendererText = new CellRendererText(); //3

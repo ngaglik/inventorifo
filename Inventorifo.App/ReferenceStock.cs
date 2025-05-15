@@ -133,7 +133,7 @@ namespace Inventorifo.App
                         
                 string sql = "SELECT stock.id, prod.id product_id, prod.short_name, prod.name product_name, prod.barcode, "+
                         "stock.quantity, stock.unit, unit.name unit_name, TO_CHAR(stock.expired_date, 'yyyy-mm-dd') expired_date, "+
-                        "price.id price_id, price.purchase_price, price.price, "+
+                        "price.id price_id, price.purchase_price, prod.price1 price, "+
                         "prodgr.id product_group_id, prodgr.name product_group_name, "+
                         "stock.location, loc.name location_name, "+
                         "loc.location_group, locgr.name location_group_name "+

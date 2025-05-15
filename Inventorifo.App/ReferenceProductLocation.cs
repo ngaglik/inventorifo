@@ -179,7 +179,7 @@ namespace Inventorifo.App
                 /* create array */
                 _clsProduct = new List<clsProduct>();
                 clsProduct prod;
-                DataTable dttv = CoreCl.fillDtProduct(transaction_type,this.filter);
+                DataTable dttv = CoreCl.fillDtProductByLocation(transaction_type,this.filter);
                 foreach (DataRow dr in dttv.Rows)
                 {            
                     prod = new clsProduct{        

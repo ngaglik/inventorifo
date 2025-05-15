@@ -105,6 +105,75 @@ namespace Inventorifo.Lib
                     whrid = " and prod.id= "+filter.product_id + " ";
                 }
                 Console.WriteLine("6 "+filter.product_id);
+                // string sql = "SELECT prod.id, prod.short_name, prod.name product_name, prod.barcode, prod.price1, prod.price2, prod.price3, "+
+                // "case when store_quantity is null then 0 else store_quantity end store_quantity, "+
+                // "case when global_quantity is null then 0 else global_quantity end global_quantity, "+
+                // "prod.product_group, prodgr.name product_group_name "+
+                // "FROM product_group prodgr, product prod "+
+                // "left outer join (select sum(quantity) store_quantity,product_id,location_group from stock,location loc,location_group locgr where state=0 "+whrcondition+whrlocation+" and stock.location=loc.id and loc.location_group=locgr.id "+whrlocgroup+" group by product_id,loc.id) prstore on prstore.product_id=prod.id "+
+                // "left outer join (select sum(quantity) global_quantity,product_id from stock where state=0 group by product_id) prglobal  on prglobal.product_id=prod.id "+
+                // "WHERE prod.product_group = prodgr.id "+ whrfind + whrbarcode + whrtype +whrid+whractive+
+                // "ORDER by prod.name asc";
+                string sql = "SELECT prod.id, prod.short_name, prod.name product_name, prod.barcode, prod.price1, prod.price2, prod.price3, "+
+                "case when global_quantity is null then 0 else global_quantity end global_quantity, "+
+                "prod.product_group, prodgr.name product_group_name "+
+                "FROM product_group prodgr, product prod "+
+                "left outer join (select sum(quantity) global_quantity,product_id from stock where state=0 group by product_id) prglobal  on prglobal.product_id=prod.id "+
+                "WHERE prod.product_group = prodgr.id "+ whrfind + whrbarcode + whrtype +whrid+whractive+
+                "ORDER by prod.name asc";
+                Console.WriteLine(sql);
+                dtout = DbCl.fillDataTable(DbCl.getConn(), sql);
+                return dtout;
+        }
+        public DataTable fillDtProductByLocation(int transaction_type, clStock filter){
+            Console.WriteLine("fillDtProduct");
+            DataTable dtout = new DataTable();
+                string whrlocgroup="", whractive="", whrlocation="", whrcondition="", whrid="", whrbarcode="", whrfind = "", whrtype="";
+                Console.WriteLine("1 "+filter.is_active);
+                if(filter.is_active is null || filter.is_active=="") {
+                }else{
+                    if(filter.is_active=="0") whractive = "and prod.is_active = true ";
+                    if(filter.is_active=="01") whractive = "and prod.is_active = false ";
+                    if(filter.is_active=="10") whractive = "";
+                }
+                Console.WriteLine("2 "+filter.barcode);
+                if(filter.barcode is null || filter.barcode=="") {
+                }else{
+                    whrbarcode = "and prod.barcode =  '" + filter.barcode + "' ";
+                }
+                Console.WriteLine("3 "+filter.location);
+                if(filter.location is null || filter.location=="") {
+                }else{
+                    whrlocation = "and stock.location =  '" + filter.location + "' ";
+                }
+                Console.WriteLine("4 "+filter.condition);
+                if(filter.condition is null || filter.condition=="") {
+                }else{
+                    whrcondition = "and stock.condition =  '" + filter.condition + "' ";
+                }
+                Console.WriteLine("transaction_type "+transaction_type.ToString());
+                if(transaction_type==20){                    
+                   // whrtype = " and store_quantity>0 ";                    
+                }
+                if(transaction_type==2 ) {
+                        whrlocgroup = "and locgr.id=2 ";
+                        whrtype = "and store_quantity>0 "; 
+                    }
+                Console.WriteLine("5 "+filter.product_id);
+                if(filter.product_id is null || filter.product_id == ""){
+                    if(filter.short_name is null || filter.short_name==""){
+                        dtout = new DataTable();
+                    }else{
+                        if(filter.short_name.Length>=2){
+                            whrfind = "and (upper(prod.name) like upper('%" + filter.short_name + "%') or upper(prod.short_name) like upper('" + filter.short_name + "%')) ";
+                        }else{
+                            dtout = new DataTable();
+                        }
+                    }               
+                }else{
+                    whrid = " and prod.id= "+filter.product_id + " ";
+                }
+                Console.WriteLine("6 "+filter.product_id);
                 string sql = "SELECT prod.id, prod.short_name, prod.name product_name, prod.barcode, prod.price1, prod.price2, prod.price3, "+
                 "case when store_quantity is null then 0 else store_quantity end store_quantity, "+
                 "case when global_quantity is null then 0 else global_quantity end global_quantity, "+
@@ -113,17 +182,16 @@ namespace Inventorifo.Lib
                 "left outer join (select sum(quantity) store_quantity,product_id,location_group from stock,location loc,location_group locgr where state=0 "+whrcondition+whrlocation+" and stock.location=loc.id and loc.location_group=locgr.id "+whrlocgroup+" group by product_id,loc.id) prstore on prstore.product_id=prod.id "+
                 "left outer join (select sum(quantity) global_quantity,product_id from stock where state=0 group by product_id) prglobal  on prglobal.product_id=prod.id "+
                 "WHERE prod.product_group = prodgr.id "+ whrfind + whrbarcode + whrtype +whrid+whractive+
-                "ORDER by prod.name asc";
+                "ORDER by prod.name asc";               
                 Console.WriteLine(sql);
                 dtout = DbCl.fillDataTable(DbCl.getConn(), sql);
                 return dtout;
         }
-        
         public DataTable fillDtTransactionPurchase(string transaction_id, string date, string strfind){
             Console.WriteLine("fillDtTransactionPurchase");
             string whrfind = "",whrid="", whrdate="";
             if(transaction_id!="") whrid = "and tr.id="+transaction_id+ " ";
-            if(strfind!="") whrfind = "and (upper(cus.organization_name) like upper('" + strfind + "%') or upper(pers.name) like upper('" + strfind + "%') )";
+            if(strfind!="") whrfind = "and tr.id='"+strfind+"' or ((upper(sup.organization_name) like upper('" + strfind + "%') or upper(pers.name) like upper('" + strfind + "%')) )";
             if(date!="") whrdate = "and tr.transaction_date::date = '"+date+"'::date ";
 
             string sql = "select tr.id,tr.reference_id, "+
