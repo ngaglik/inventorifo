@@ -9,6 +9,8 @@ truncate table price;
 ALTER TABLE "public"."transaction_item" RENAME COLUMN "sale_price" TO "price";
 ALTER TABLE "public"."transaction_item" RENAME COLUMN "sale_tax" TO "tax";
 
+ALTER TABLE "public"."purchase_price" RENAME COLUMN "purchase_price" TO "item_price";
+
 
 /opt/PostgreSQL/10/bin/pg_dump -h localhost -p 5432 -U postgres -F c -b -v -f  "inventorifo.backup" -d inventorifo
 

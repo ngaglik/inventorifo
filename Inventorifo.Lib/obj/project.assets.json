@@ -368,19 +368,19 @@
     ]
   },
   "packageFolders": {
-    "/home/alisalatiga/.nuget/packages/": {}
+    "/home/osdm/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj",
+      "projectUniqueName": "/home/osdm/Documents/DotnetProjects/inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj",
       "projectName": "Inventorifo.Lib",
-      "projectPath": "/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj",
-      "packagesPath": "/home/alisalatiga/.nuget/packages/",
-      "outputPath": "/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.Lib/obj/",
+      "projectPath": "/home/osdm/Documents/DotnetProjects/inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj",
+      "packagesPath": "/home/osdm/.nuget/packages/",
+      "outputPath": "/home/osdm/Documents/DotnetProjects/inventorifo/Inventorifo.Lib/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/home/alisalatiga/.nuget/NuGet/NuGet.Config"
+        "/home/osdm/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
@@ -404,7 +404,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.200"
+      "SdkAnalysisLevel": "9.0.300"
     },
     "frameworks": {
       "net9.0": {
@@ -435,7 +435,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/home/alisalatiga/.dotnet/sdk/9.0.203/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/home/osdm/.dotnet/sdk/9.0.300/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

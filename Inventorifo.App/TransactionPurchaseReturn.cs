@@ -33,7 +33,7 @@ namespace Inventorifo.App
         private TreeView _treeViewItems;
         private ListStore _lsModelItems;
         private Dictionary<CellRenderer, int> _cellColumnsRenderItems;
-        private List<clTransactionItem> _clsItems;
+        private List<clTransactionItem1> _clsItems;
         
         Box  boxMiddle;
         Box boxItem;
@@ -127,9 +127,19 @@ namespace Inventorifo.App
             quantity,
             unit,
             unit_name,
-            price_id,
-            purchase_price,
-            price,
+            purchase_price_id,
+            purchase_item_price,
+            purchase_main_discount,
+            purchase_additional_discount,
+            purchase_deduction_amount,
+            purchase_final_price,
+            purchase_tax,
+            item_price,
+            main_discount,
+            additional_discount,
+            deduction_amount,
+            final_price,
+            subtotal,
             tax,
             state,
             state_name,
@@ -356,7 +366,7 @@ namespace Inventorifo.App
             double total = 0;
             for (int i = 0; i < _clsItems.Count; i++)
             {
-                total += (Convert.ToDouble(_clsItems[i].quantity)*Convert.ToDouble(_clsItems[i].purchase_price)) ;
+                total += (Convert.ToDouble(_clsItems[i].quantity)*Convert.ToDouble(_clsItems[i].purchase_final_price)) ;
             } 
             return total;
         }
@@ -466,12 +476,12 @@ namespace Inventorifo.App
             _lsModelItems = null;
             TreeIter iter;
             /* create array */
-            _clsItems = new List<clTransactionItem>();           
-            clTransactionItem item; 
+            _clsItems = new List<clTransactionItem1>();           
+            clTransactionItem1 item; 
             DataTable dt = CoreCl.fillDtTransactionItem(transaction_id.ToString(),"");
             foreach (DataRow dr in dt.Rows)
             {   
-                item = new clTransactionItem{
+                item = new clTransactionItem1{
                     id=dr["id"].ToString(),
                     transaction_id=dr["transaction_id"].ToString(),
                     product_id=dr["product_id"].ToString(),
@@ -481,9 +491,9 @@ namespace Inventorifo.App
                     quantity=dr["quantity"].ToString(),
                     unit=dr["unit"].ToString(),
                     unit_name=dr["unit_name"].ToString(),
-                    purchase_price=dr["purchase_price"].ToString(),
-                    price_id=dr["price_id"].ToString(),
-                    price=dr["price"].ToString(),
+                    purchase_price_id=dr["purchase_price_id"].ToString(),
+                    purchase_item_price=dr["purchase_item_price"].ToString(),
+                   // price=dr["price"].ToString(),
                     tax=dr["tax"].ToString(),
                     state=dr["state"].ToString(), 
                     state_name=dr["state_name"].ToString(), 
@@ -491,8 +501,7 @@ namespace Inventorifo.App
                     location_name=dr["location_name"].ToString(), 
                     condition=dr["condition"].ToString(),
                     condition_name=dr["condition_name"].ToString(), 
-                };
-                _clsItems.Add(item);                    
+                };                    
             }
 
             _lsModelItems = new ListStore(typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string));
@@ -510,9 +519,9 @@ namespace Inventorifo.App
                 _lsModelItems.SetValue(iter, (int)ColumnItems.quantity, _clsItems[i].quantity);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.unit, _clsItems[i].unit);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.unit_name, _clsItems[i].unit_name);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_price, _clsItems[i].purchase_price);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.price_id, _clsItems[i].price_id);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.price, _clsItems[i].price);
+                _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_item_price, _clsItems[i].purchase_item_price);
+                _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_price_id, _clsItems[i].purchase_price_id);
+                _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_final_price, _clsItems[i].purchase_final_price);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.tax, _clsItems[i].tax);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.state, _clsItems[i].state);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.state_name, _clsItems[i].state_name);
@@ -833,16 +842,16 @@ namespace Inventorifo.App
             _treeViewItems.InsertColumn(-1, "Unit", rendererText, "text", (int)ColumnItems.unit_name);
 
             rendererText = new CellRendererText();
-            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_price);
-            _treeViewItems.InsertColumn(-1, "Purchase price", rendererText, "text", (int)ColumnItems.purchase_price);
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_item_price);
+            _treeViewItems.InsertColumn(-1, "Purchase item price", rendererText, "text", (int)ColumnItems.purchase_item_price);
 
             rendererText = new CellRendererText();
-            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.price_id);
-            _treeViewItems.InsertColumn(-1, "Price ID", rendererText, "text", (int)ColumnItems.price_id);
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_price_id);
+            _treeViewItems.InsertColumn(-1, "Price ID", rendererText, "text", (int)ColumnItems.purchase_price_id);
 
             rendererText = new CellRendererText();   
-            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.price);
-            _treeViewItems.InsertColumn(-1, "Sale Price", rendererText, "text", (int)ColumnItems.price);
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_final_price);
+            _treeViewItems.InsertColumn(-1, "Final Price", rendererText, "text", (int)ColumnItems.purchase_final_price);
 
             rendererText = new CellRendererText();
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.tax);
@@ -888,7 +897,7 @@ namespace Inventorifo.App
                     // entTransactionAmount.Text = (GetTotalSalePrice()+CalculateTax(GetTotalSalePrice())).ToString();
                 }
                 break;
-                case (int)ColumnItems.price:
+                case (int)ColumnItems.purchase_final_price:
                 {
                     // int i = path.Indices[0];
                     // _clsItems[i].price = args.NewText;

@@ -165,6 +165,39 @@ namespace Inventorifo.Lib.Model
         public string is_tax { get; set; }
     }
 
+    public class clTransactionItem1
+    {                          
+        public string id { get; set; }
+        public string transaction_id { get; set; }
+        public string product_id { get; set; }
+        public string product_short_name { get; set; }
+        public string product_name { get; set; }
+        public string stock_id { get; set; }
+        public string quantity { get; set; }
+        public string unit { get; set; }
+        public string unit_name { get; set; }
+        public string purchase_price_id { get; set; }
+        public string purchase_item_price { get; set; }
+        public string purchase_main_discount { get; set; }
+        public string purchase_additional_discount { get; set; }
+        public string purchase_deduction_amount { get; set; }
+        public string purchase_final_price { get; set; }
+        public string purchase_tax { get; set; }
+        public string item_price { get; set; }
+        public string main_discount { get; set; }
+        public string additional_discount { get; set; }
+        public string deduction_amount { get; set; }
+        public string final_price { get; set; }
+        public string subtotal { get; set; }
+        public string tax { get; set; }
+        public string state { get; set; }
+        public string state_name { get; set; }
+        public string location { get; set; }
+        public string location_name { get; set; }
+        public string condition { get; set; }
+        public string condition_name { get; set; }
+    }
+
     public class clTransactionItem
     {                          
         public string id { get; set; }

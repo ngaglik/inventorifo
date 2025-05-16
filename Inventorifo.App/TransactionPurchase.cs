@@ -33,7 +33,7 @@ namespace Inventorifo.App
         private TreeView _treeViewItems;
         private ListStore _lsModelItems;
         private Dictionary<CellRenderer, int> _cellColumnsRenderItems;
-        private List<clTransactionItem> _clsItems;
+        private List<clTransactionItem1> _clsItems;
         
         Box  boxMiddle;
         Box boxItem;
@@ -131,8 +131,19 @@ namespace Inventorifo.App
             quantity,
             unit,
             unit_name,
-            price_id,
-            purchase_price,
+            purchase_price_id,
+            purchase_item_price,
+            purchase_main_discount,
+            purchase_additional_discount,
+            purchase_deduction_amount,
+            purchase_final_price,
+            purchase_tax,
+            item_price,
+            main_discount,
+            additional_discount,
+            deduction_amount,
+            final_price,
+            subtotal,
             tax,
             state,
             state_name,
@@ -486,7 +497,7 @@ namespace Inventorifo.App
             double total = 0;
             for (int i = 0; i < _clsItems.Count; i++)
             {
-                total += (Convert.ToDouble(_clsItems[i].quantity)*Convert.ToDouble(_clsItems[i].purchase_price)) ;
+                total += (Convert.ToDouble(_clsItems[i].quantity)*Convert.ToDouble(_clsItems[i].purchase_final_price)) ;
             } 
             return total;
         }
@@ -635,14 +646,14 @@ namespace Inventorifo.App
             _lsModelItems = null;
             TreeIter iter;
             /* create array */
-            _clsItems = new List<clTransactionItem>();
+            _clsItems = new List<clTransactionItem1>();
              string sql = "select ti.id, ti.transaction_id, ti.product_id, pr.short_name product_short_name, pr.name product_name,ti.stock_id, "+
             "case when ti.tax is null then 0 else ti.tax end tax, ti.state, state.name state_name, "+
             "st.quantity, st.unit,un.name unit_name, "+
-            "pp.id price_id, case when pp.purchase_price is null then 0 else pp.purchase_price end purchase_price, "+
+            "pp.id purchase_price_id, pp.item_price purchase_item_price,pp.main_discount purchase_main_discount, purchase.additional_discount purchase_additional_discount, purchase.deduction_amount purchase_deduction_amount, purchase.final_price purchase_final_price, purchase.tax purchase_tax, "+
             "st.location, lo.name location_name, st.condition, co.name condition_name "+
             "from transaction_item_state state, transaction_item ti, product pr, stock st "+
-            "LEFT OUTER JOIN price pp on pp.id = st.price_id "+
+            "LEFT OUTER JOIN purchase_price pp on pp.id = st.price_id "+
             "left outer join unit un on un.id=st.unit "+
             "left outer join condition co on st.condition=co.id "+
             "left outer join location lo on st.location=lo.id "+
@@ -651,11 +662,11 @@ namespace Inventorifo.App
             "ORDER by ti.id desc";
             //tekan kene
             Console.WriteLine(sql);
-            clTransactionItem item;
+            clTransactionItem1 item;
             dtTransSelected =  DbCl.fillDataTable(DbCl.getConn(), sql);
             foreach (DataRow dr in dtTransSelected.Rows)
             {   
-                item = new clTransactionItem{
+                item = new clTransactionItem1{
                     id=dr["id"].ToString(),
                     transaction_id=dr["transaction_id"].ToString(),
                     product_id=dr["product_id"].ToString(),
@@ -665,8 +676,8 @@ namespace Inventorifo.App
                     quantity=dr["quantity"].ToString(),
                     unit=dr["unit"].ToString(),
                     unit_name=dr["unit_name"].ToString(),
-                    purchase_price=dr["purchase_price"].ToString(),
-                    price_id=dr["price_id"].ToString(),
+                    purchase_price_id=dr["purchase_price_id"].ToString(),
+                    purchase_item_price=dr["purchase_item_price"].ToString(),
                    // price=dr["price"].ToString(),
                     tax=dr["tax"].ToString(),
                     state=dr["state"].ToString(), 
@@ -694,8 +705,8 @@ namespace Inventorifo.App
                 _lsModelItems.SetValue(iter, (int)ColumnItems.quantity, _clsItems[i].quantity);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.unit, _clsItems[i].unit);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.unit_name, _clsItems[i].unit_name);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_price, _clsItems[i].purchase_price);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.price_id, _clsItems[i].price_id);
+                _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_price_id, _clsItems[i].purchase_price_id);
+                _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_item_price, _clsItems[i].purchase_item_price);
                // _lsModelItems.SetValue(iter, (int)ColumnItems.price, _clsItems[i].price);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.tax, _clsItems[i].tax);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.state, _clsItems[i].state);
@@ -992,12 +1003,12 @@ namespace Inventorifo.App
             };
             rendererText.Foreground = textForeground;
             rendererText.Edited += CellEditedItem; //7
-            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_price);
-            _treeViewItems.InsertColumn(-1, "Purchase price", rendererText, "text", (int)ColumnItems.purchase_price);
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_item_price);
+            _treeViewItems.InsertColumn(-1, "Purchase item price", rendererText, "text", (int)ColumnItems.purchase_item_price);
 
             rendererText = new CellRendererText(); //8
-            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.price_id);
-            _treeViewItems.InsertColumn(-1, "Price ID", rendererText, "text", (int)ColumnItems.price_id);
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_price_id);
+            _treeViewItems.InsertColumn(-1, "Price ID", rendererText, "text", (int)ColumnItems.purchase_price_id);
 
             
             rendererText = new CellRendererText(); //9
@@ -1078,16 +1089,16 @@ namespace Inventorifo.App
                     entTransactionAmount.Text = (GetTotalPurchasePrice()+CalculateTax(GetTotalPurchasePrice())).ToString();
                 }
                 break;
-                case (int)ColumnItems.purchase_price:
+                case (int)ColumnItems.purchase_item_price:
                 {   
                     // upadte harga beli pada tabel harga saja
                     // transaction_item tidak perlu diupdate 
                     // harga beli perlakuannya referensi bukan transaksi untuk mengakomodir perubahan setelah barang datang
 
                     int i = path.Indices[0];
-                    _clsItems[i].purchase_price = args.NewText;
-                    _lsModelItems.SetValue(iter, column, _clsItems[i].purchase_price);
-                    string sql = "update price set purchase_price = '"+args.NewText+"' where id='"+_clsItems[i].price_id+"' ";
+                    _clsItems[i].purchase_item_price = args.NewText;
+                    _lsModelItems.SetValue(iter, column, _clsItems[i].purchase_item_price);
+                    string sql = "update price set purchase_price = '"+args.NewText+"' where id='"+_clsItems[i].purchase_item_price+"' ";
                     Console.WriteLine (sql);
                     DbCl.ExecuteTrans(DbCl.getConn(), sql);
                     entTaxAmount.Text = CalculateTax(GetTotalPurchasePrice()).ToString();
