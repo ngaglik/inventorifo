@@ -5,11 +5,44 @@ truncate table transfer;
 truncate table payment;
 truncate table stock;
 truncate table price;
+truncate table stock_history;
 
 ALTER TABLE "public"."transaction_item" RENAME COLUMN "sale_price" TO "price";
 ALTER TABLE "public"."transaction_item" RENAME COLUMN "sale_tax" TO "tax";
+ALTER TABLE "public"."transaction_item" DROP COLUMN "price";
+ALTER TABLE "public"."transaction_item" DROP COLUMN "tax";
+ALTER TABLE "public"."transaction_item" DROP COLUMN "state";
+ALTER TABLE "public"."transaction_item" DROP COLUMN "quantity";
+ALTER TABLE "public"."transaction_item" DROP COLUMN "location";
+ALTER TABLE "public"."transaction_item" DROP COLUMN "condition";
+ALTER TABLE "public"."transaction_item" DROP COLUMN "price_id";
+ALTER TABLE "public"."transaction_item" ADD  "quantity" DOUBLE PRECISION NULL DEFAULT 0 ;
+ALTER TABLE "public"."transaction_item" ADD  "unit" INT NULL DEFAULT 0 ;
+ALTER TABLE "public"."transaction_item" ADD  "purchase_price_id" BIGINT NULL;
+ALTER TABLE "public"."transaction_item" ADD  "item_price" DOUBLE PRECISION NULL DEFAULT 0 ;
+ALTER TABLE "public"."transaction_item" ADD  "main_discount" INT NULL DEFAULT 0 ;
+ALTER TABLE "public"."transaction_item" ADD  "additional_discount" INT NULL DEFAULT 0 ;
+ALTER TABLE "public"."transaction_item" ADD  "deduction_amount" DOUBLE PRECISION NULL DEFAULT 0 ;
+ALTER TABLE "public"."transaction_item" ADD  "final_price" DOUBLE PRECISION NULL DEFAULT 0 ;
+ALTER TABLE "public"."transaction_item" ADD  "tax" DOUBLE PRECISION NULL DEFAULT 0 ;
+ALTER TABLE "public"."transaction_item" ADD  "state" INT NULL DEFAULT 1 ;
+ALTER TABLE "public"."transaction_item" ADD  "location" INT NULL;
+ALTER TABLE "public"."transaction_item" ADD  "condition" INT NULL;
 
+
+
+ALTER TABLE "public"."price" RENAME TO "purchase_price";
 ALTER TABLE "public"."purchase_price" RENAME COLUMN "purchase_price" TO "item_price";
+ALTER TABLE "public"."purchase_price" DROP COLUMN "purchase_price";
+ALTER TABLE "public"."purchase_price" DROP COLUMN "discount_percent";
+ALTER TABLE "public"."purchase_price" DROP COLUMN "purchase_tax";
+ALTER TABLE "public"."purchase_price" DROP COLUMN "discount_amount";
+ALTER TABLE "public"."purchase_price" ADD  "main_discount" INT NULL DEFAULT 0 ;
+ALTER TABLE "public"."purchase_price" ADD  "additional_discount" INT NULL DEFAULT 0 ;
+ALTER TABLE "public"."purchase_price" ADD  "deduction_amount" DOUBLE PRECISION NULL DEFAULT 0 ;
+ALTER TABLE "public"."purchase_price" ADD  "final_price" DOUBLE PRECISION NULL DEFAULT 0 ;
+ALTER TABLE "public"."purchase_price" ADD  "tax" DOUBLE PRECISION NULL DEFAULT 0 ;
+
 
 
 /opt/PostgreSQL/10/bin/pg_dump -h localhost -p 5432 -U postgres -F c -b -v -f  "inventorifo.backup" -d inventorifo

@@ -129,7 +129,6 @@ namespace Inventorifo.App
             id,
             short_name,
             product_name,
-            store_quantity,
             global_quantity,
             barcode,
             product_group,      

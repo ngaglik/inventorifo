@@ -139,6 +139,7 @@ namespace Inventorifo.Lib.Model
     {    
         public string id { get; set; }
         public string reference_id { get; set; }
+        public string reference_date { get; set; }
         public string supplier_id { get; set; }
         public string customer_id { get; set; }
         public string organization_name { get; set; }
@@ -182,6 +183,7 @@ namespace Inventorifo.Lib.Model
         public string purchase_additional_discount { get; set; }
         public string purchase_deduction_amount { get; set; }
         public string purchase_final_price { get; set; }
+        public string purchase_subtotal { get; set; }
         public string purchase_tax { get; set; }
         public string item_price { get; set; }
         public string main_discount { get; set; }
@@ -234,6 +236,7 @@ namespace Inventorifo.Lib.Model
         public string unit { get; set; }
         public string unit_name { get; set; }
         public string purchase_price { get; set; }
+        public string purchase_price_id { get; set; }
         public string price_id { get; set; }
         public string price { get; set; }
         public string tax { get; set; }

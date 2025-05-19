@@ -107,26 +107,30 @@ namespace Inventorifo.App
         private void PurchaseMenuItem_Activated(object sender, EventArgs a)
         {
             ClearMainBox();
-            TransactionPurchase transWidget = new TransactionPurchase(this,null);
+            clTransaction filterTrans = new clTransaction {transaction_date = DateTime.Now.ToString("yyyy-MM-dd"), transaction_type_id="1"};
+            TransactionPurchase transWidget = new TransactionPurchase(this,filterTrans);
             mainBox.PackStart(transWidget, false, true, 5);
             transWidget.ShowAll();
         }
         private void PurchaseReturnMenuItem_Activated(object sender, EventArgs a){
             ClearMainBox();
-            TransactionPurchaseReturn transWidget = new TransactionPurchaseReturn(this,null);
+            clTransaction filterTrans = new clTransaction {transaction_date = DateTime.Now.ToString("yyyy-MM-dd"), transaction_type_id="3"};
+            TransactionPurchaseReturn transWidget = new TransactionPurchaseReturn(this,filterTrans);
             mainBox.PackStart(transWidget, false, true, 5);
             transWidget.ShowAll();
         }
         private void SaleMenuItem_Activated(object sender, EventArgs a)
         {
             ClearMainBox();
-            TransactionSale transWidget = new TransactionSale(this,null);
+            clTransaction filterTrans = new clTransaction {transaction_date = DateTime.Now.ToString("yyyy-MM-dd"), transaction_type_id="2"};
+            TransactionSale transWidget = new TransactionSale(this,filterTrans);
             mainBox.PackStart(transWidget, false, true, 5);
             transWidget.ShowAll();
         }
         private void SaleReturnMenuItem_Activated(object sender, EventArgs a){
             ClearMainBox();
-            TransactionSaleReturn transWidget = new TransactionSaleReturn(this,null);
+            clTransaction filterTrans = new clTransaction {transaction_date = DateTime.Now.ToString("yyyy-MM-dd"), transaction_type_id="4"};
+            TransactionSaleReturn transWidget = new TransactionSaleReturn(this,filterTrans);
             mainBox.PackStart(transWidget, false, true, 5);
             transWidget.ShowAll();
         }
