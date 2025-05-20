@@ -73,6 +73,7 @@ namespace Inventorifo.Lib.Model
         public string price1 { get; set; }
         public string price2 { get; set; }
         public string price3 { get; set; }
+        public string last_purchase_price { get; set; }
     }
     public class clStock
     {

@@ -52,3 +52,8 @@
 /home/osdm/Documents/DotnetProjects/inventorifo/Inventorifo.Lib/obj/Debug/net9.0/win-x64/Inventorifo.Lib.pdb
 /home/osdm/Documents/DotnetProjects/inventorifo/Inventorifo.Lib/obj/Debug/net9.0/win-x64/Inventorifo.Lib.genruntimeconfig.cache
 /home/osdm/Documents/DotnetProjects/inventorifo/Inventorifo.Lib/obj/Debug/net9.0/win-x64/ref/Inventorifo.Lib.dll
+/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.App/Inventorifo.lin/Inventorifo.Lib.exe
+/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.App/Inventorifo.lin/Inventorifo.Lib.deps.json
+/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.App/Inventorifo.lin/Inventorifo.Lib.runtimeconfig.json
+/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.App/Inventorifo.lin/Inventorifo.Lib.dll
+/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.App/Inventorifo.lin/Inventorifo.Lib.pdb

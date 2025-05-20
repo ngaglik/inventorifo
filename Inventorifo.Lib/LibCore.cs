@@ -105,13 +105,13 @@ namespace Inventorifo.Lib
                     whrid = " and prod.id= "+filter.product_id + " ";
                 }
                 Console.WriteLine("6 "+filter.product_id);
-                string sql = "SELECT prod.id, prod.short_name, prod.name product_name, prod.barcode, prod.price1, prod.price2, prod.price3, "+
+                string sql = "SELECT prod.id, prod.short_name, prod.name product_name, prod.barcode, prod.price1, prod.price2, prod.price3, prod.last_purchase_price, "+
                 "case when global_quantity is null then 0 else global_quantity end global_quantity, "+
                 "prod.product_group, prodgr.name product_group_name "+
                 "FROM product_group prodgr, product prod "+
                 "left outer join (select sum(quantity) global_quantity,product_id from stock where state=0 group by product_id) prglobal  on prglobal.product_id=prod.id "+
                 "WHERE prod.product_group = prodgr.id "+ whrfind + whrbarcode + whrtype +whrid+whractive+
-                "ORDER by prod.name asc";
+                "ORDER by prod.id desc";
                 Console.WriteLine(sql);
                 dtout = DbCl.fillDataTable(DbCl.getConn(), sql);
                 return dtout;
@@ -436,10 +436,10 @@ namespace Inventorifo.Lib
             string sql = "select ti.id, ti.transfer_id, ti.product_id, pr.short_name product_short_name, pr.name product_name,ti.stock_id, "+
             "case when ti.tax is null then 0 else ti.tax end tax, ti.state, state.name state_name, "+
             "ti.quantity, st.unit,un.name unit_name, "+
-            "price.id price_id, case when price.purchase_price is null then 0 else price.purchase_price end purchase_price, case when price.price is null then 0 else price.price end price, "+
+            "pp.id purchase_price_id, pp.item_price purchase_item_price,pp.main_discount purchase_main_discount, pp.additional_discount purchase_additional_discount, pp.deduction_amount purchase_deduction_amount, pp.final_price purchase_final_price, 0 purchase_subtotal, pp.tax purchase_tax, "+
             "st.location, lo.name location_name, st.condition, co.name condition_name "+
             "from transaction_item_state state, transfer_item ti, product pr, stock st "+
-            "LEFT OUTER JOIN price on price.id = st.price_id "+
+            "LEFT OUTER JOIN purchase_price pp on pp.id = st.price_id "+
             "left outer join unit un on un.id=st.unit "+
             "left outer join condition co on st.condition=co.id "+
             "left outer join location lo on st.location=lo.id "+
