@@ -7,6 +7,7 @@ using Pango;
 using UI = Gtk.Builder.ObjectAttribute;
 using System.Text.RegularExpressions;
 using Inventorifo.Lib.Model;
+using Cairo;
 
 namespace Inventorifo.App
 {
@@ -898,7 +899,7 @@ namespace Inventorifo.App
             }
             return model;
         }
-       
+        
         private void AddColumnsTrans()
         {
             _cellColumnsRender = new Dictionary<CellRenderer, int>();
@@ -918,6 +919,16 @@ namespace Inventorifo.App
             rendererText.Edited += CellEditedTrans;
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.reference_id);
             _treeViewTrans.InsertColumn(-1, "Reference ID", rendererText, "text", (int)ColumnTrans.reference_id);            
+
+            rendererText = new CellRendererText //1
+            {
+                Editable = isEditable
+            };
+            rendererText.Foreground = textForeground;
+            rendererText.Background = textBackground;
+            rendererText.Edited += CellEditedTrans;
+            _cellColumnsRender.Add(rendererText, (int)ColumnTrans.reference_date);
+            _treeViewTrans.InsertColumn(-1, "Reference Date", rendererText, "text", (int)ColumnTrans.reference_date);  
 
             rendererText = new CellRendererText(); //2
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.supplier_id);
@@ -1164,7 +1175,7 @@ namespace Inventorifo.App
             _lsModelItems.GetIter(out TreeIter iter, path);
 
             switch (column)
-            {
+            {                
                 case (int)ColumnItems.quantity:
                 {
                     int i = path.Indices[0];
@@ -1340,6 +1351,33 @@ namespace Inventorifo.App
             _lsModelTrans.GetIter(out TreeIter iter, path);
             switch (column)
             {
+                case(int)ColumnTrans.reference_date:
+                {
+                    int i = path.Indices[0];
+                    Calendar calendar = new Calendar();
+                    Dialog dialog = new Dialog("Select Date", this.parent, DialogFlags.Modal);
+                    dialog.ContentArea.PackStart(calendar, true, true, 0);
+                    dialog.AddButton("Cancel", ResponseType.Cancel);
+                    dialog.AddButton("OK", ResponseType.Ok);
+                    dialog.ShowAll();
+
+                    if (dialog.Run() == (int)ResponseType.Ok)
+                    {
+                        DateTime selected = new DateTime(
+                            calendar.Date.Year,
+                            calendar.Date.Month,
+                            calendar.Date.Day
+                        );
+
+                        _lsModelTrans.SetValue(iter, column, selected.ToString("yyyy-MM-dd"));
+                        string sql = "update transaction set reference_date = '"+selected.ToString("yyyy-MM-dd")+"' where id='"+_clsTrans[i].id+"' ";
+                        Console.WriteLine (sql);
+                        DbCl.ExecuteTrans(DbCl.getConn(), sql); 
+                    }
+                    dialog.Destroy();
+                    
+                }
+                break;
                 case (int)ColumnTrans.reference_id:
                 {
                     int i = path.Indices[0];
