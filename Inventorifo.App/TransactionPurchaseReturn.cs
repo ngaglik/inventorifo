@@ -237,7 +237,9 @@ namespace Inventorifo.App
             cmbDestinationCondition = (ComboBoxText)builder.GetObject("CmbDestinationCondition");
             GuiCl.FillComboBoxText(cmbDestinationCondition, "Select id,name from condition order by id asc",0);
 
-            SetTransactionModel("",entSearch.Text.Trim()); // iki marai error
+
+            SetTransactionModel("",entSearch.Text.Trim()); //iki marai error
+
             TransactionReady();       
         }        
 

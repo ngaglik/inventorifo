@@ -136,6 +136,7 @@ namespace Inventorifo.App
             price1,
             price2,
             price3,
+            last_purchase_price,
             Num
         };
 
@@ -196,13 +197,14 @@ namespace Inventorifo.App
                         price1=dr["price1"].ToString(),
                         price2=dr["price2"].ToString(),
                         price3=dr["price3"].ToString(),
+                        last_purchase_price=dr["last_purchase_price"].ToString(),
                     } ;                                 
                     _clsProduct.Add(prod);      
                 }
 
                 /* create list store */
                 //
-                _lsModelProduct = new ListStore( typeof(string),typeof(string), typeof(string), typeof(string),typeof(string), typeof(string), typeof(string), typeof(string),  typeof(string),  typeof(string));
+                _lsModelProduct = new ListStore(typeof(string), typeof(string),typeof(string), typeof(string), typeof(string),typeof(string), typeof(string), typeof(string), typeof(string),  typeof(string),  typeof(string));
 
                 /* add items */
                 for (int i = 0; i < _clsProduct.Count; i++)
@@ -219,6 +221,7 @@ namespace Inventorifo.App
                     _lsModelProduct.SetValue(iter, (int)ColumnProduct.price1, _clsProduct[i].price1);
                     _lsModelProduct.SetValue(iter, (int)ColumnProduct.price2, _clsProduct[i].price2);
                     _lsModelProduct.SetValue(iter, (int)ColumnProduct.price3, _clsProduct[i].price3);
+                    _lsModelProduct.SetValue(iter, (int)ColumnProduct.last_purchase_price, _clsProduct[i].last_purchase_price);
                 }
                 _treeView.Model = _lsModelProduct;                
             }
@@ -282,8 +285,17 @@ namespace Inventorifo.App
             };
             rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
+            _cellColumnsRender.Add(rendererText, (int)ColumnProduct.last_purchase_price);
+            _treeView.InsertColumn(-1, "Last Purchase price", rendererText, "text", (int)ColumnProduct.last_purchase_price);
+
+            rendererText = new CellRendererText
+            {
+                Editable = isEditable
+            };
+            rendererText.Foreground = textForground;
+            rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnProduct.price1);
-            _treeView.InsertColumn(-1, "Price1", rendererText, "text", (int)ColumnProduct.price1);
+            _treeView.InsertColumn(-1, "Sale Price1", rendererText, "text", (int)ColumnProduct.price1);
 
             rendererText = new CellRendererText
             {
@@ -292,7 +304,7 @@ namespace Inventorifo.App
             rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnProduct.price2);
-            _treeView.InsertColumn(-1, "Price2", rendererText, "text", (int)ColumnProduct.price2);
+            _treeView.InsertColumn(-1, "Sale Price2", rendererText, "text", (int)ColumnProduct.price2);
 
             rendererText = new CellRendererText
             {
@@ -301,7 +313,7 @@ namespace Inventorifo.App
             rendererText.Foreground = textForground;
             rendererText.Edited += CellEdited;
             _cellColumnsRender.Add(rendererText, (int)ColumnProduct.price3);
-            _treeView.InsertColumn(-1, "Price3", rendererText, "text", (int)ColumnProduct.price3);
+            _treeView.InsertColumn(-1, "Sale Price3", rendererText, "text", (int)ColumnProduct.price3);
 
 
             ListStore lstModelCombo = new ListStore(typeof(string), typeof(string));
@@ -433,6 +445,17 @@ namespace Inventorifo.App
                         _clsProduct[i].barcode = args.NewText;
                         _lsModelProduct.SetValue(iter, column, _clsProduct[i].barcode);
                         string sql = "update product set barcode = '"+args.NewText+"' where id='"+_clsProduct[i].id+"' ";
+                        Console.WriteLine (sql);
+                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                    }
+                    break;
+                case (int)ColumnProduct.last_purchase_price:
+                    {
+                        string oldText = (string)_lsModelProduct.GetValue(iter, column);
+                        int i = path.Indices[0];
+                        _clsProduct[i].last_purchase_price = args.NewText;
+                        _lsModelProduct.SetValue(iter, column, _clsProduct[i].last_purchase_price);
+                        string sql = "update product set last_purchase_price = '"+args.NewText+"' where id='"+_clsProduct[i].id+"' ";
                         Console.WriteLine (sql);
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);
                     }

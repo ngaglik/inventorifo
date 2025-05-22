@@ -240,6 +240,11 @@ namespace Inventorifo.App
             isEditable = true;
             AddColumnsTrans(); 
             _treeViewTrans.Selection.Changed += HandleTreeVewSelectedTrans;
+            _treeViewTrans.Columns[3].Visible = false;
+            _treeViewTrans.Columns[8].Visible = false;
+            _treeViewTrans.Columns[13].Visible = false;
+            _treeViewTrans.Columns[16].Visible = false;
+            _treeViewTrans.Columns[19].Visible = false;
 
             _treeViewItems = (TreeView)builder.GetObject("TreeViewItem");
             _treeViewItems.Selection.Mode = SelectionMode.Single;
@@ -485,7 +490,7 @@ namespace Inventorifo.App
                     }
                 }else{                 
                     GuiCl.SensitiveAllWidgets(boxItem,true);  
-                    GuiCl.SetEnableColumn(_treeViewItems,[5,6,7,9,10,11]);
+                    GuiCl.SetEnableColumn(_treeViewItems,[5,6,7,8,9,10,11]);
                     btnSupplier.Sensitive = true;
                     btnProduct.Sensitive = true;
                     boxSupplierDetail.Sensitive = true;
@@ -567,6 +572,7 @@ namespace Inventorifo.App
             // }
         }
         private void UpdateItemTax(){
+            
             TreeIter iter;
             if (_lsModelItems.GetIterFirst(out iter))
             {
@@ -920,7 +926,7 @@ namespace Inventorifo.App
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.reference_id);
             _treeViewTrans.InsertColumn(-1, "Reference ID", rendererText, "text", (int)ColumnTrans.reference_id);            
 
-            rendererText = new CellRendererText //1
+            rendererText = new CellRendererText //2
             {
                 Editable = isEditable
             };
@@ -930,43 +936,43 @@ namespace Inventorifo.App
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.reference_date);
             _treeViewTrans.InsertColumn(-1, "Reference Date", rendererText, "text", (int)ColumnTrans.reference_date);  
 
-            rendererText = new CellRendererText(); //2
+            rendererText = new CellRendererText(); //3
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.supplier_id);
             _treeViewTrans.InsertColumn(-1, "Supplier ID", rendererText, "text", (int)ColumnTrans.supplier_id);            
 
-            rendererText = new CellRendererText(); //3
+            rendererText = new CellRendererText(); //4
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.organization_name);
             _treeViewTrans.InsertColumn(-1, "Organization name", rendererText, "text", (int)ColumnTrans.organization_name); 
 
-            rendererText = new CellRendererText(); //4
+            rendererText = new CellRendererText(); //5
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.organization_phone_number);
             _treeViewTrans.InsertColumn(-1, "Organization phone number", rendererText, "text", (int)ColumnTrans.organization_phone_number);
 
-            rendererText = new CellRendererText(); //5
+            rendererText = new CellRendererText(); //6
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.person_name);
             _treeViewTrans.InsertColumn(-1, "Person name", rendererText, "text", (int)ColumnTrans.person_name);
 
-            rendererText = new CellRendererText(); //6
+            rendererText = new CellRendererText(); //7
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.person_phone_number);
             _treeViewTrans.InsertColumn(-1, "Person phone number", rendererText, "text", (int)ColumnTrans.person_phone_number);
 
-            rendererText = new CellRendererText(); //7
+            rendererText = new CellRendererText(); //8
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.transaction_type_id);
             _treeViewTrans.InsertColumn(-1, "Transaction type", rendererText, "text", (int)ColumnTrans.transaction_type_id);
 
-            rendererText = new CellRendererText(); //8
+            rendererText = new CellRendererText(); //9
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.transaction_type_name);
             _treeViewTrans.InsertColumn(-1, "Transaction type name", rendererText, "text", (int)ColumnTrans.transaction_type_name);
 
-            rendererText = new CellRendererText(); //9
+            rendererText = new CellRendererText(); //10
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.transaction_date);
             _treeViewTrans.InsertColumn(-1, "Transaction date", rendererText, "text", (int)ColumnTrans.transaction_date);
 
-            rendererText = new CellRendererText();//10
+            rendererText = new CellRendererText();//11
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.transaction_amount);
             _treeViewTrans.InsertColumn(-1, "Transaction amount", rendererText, "text", (int)ColumnTrans.transaction_amount);
 
-            rendererText = new CellRendererText();//11
+            rendererText = new CellRendererText();//12
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.return_amount);
             _treeViewTrans.InsertColumn(-1, "Transaction amount", rendererText, "text", (int)ColumnTrans.return_amount);
 
@@ -990,23 +996,23 @@ namespace Inventorifo.App
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.user_name);
             _treeViewTrans.InsertColumn(-1, "User name", rendererText, "text", (int)ColumnTrans.user_name);
 
-            rendererText = new CellRendererText(); //18
+            rendererText = new CellRendererText(); //19
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.state);
             _treeViewTrans.InsertColumn(-1, "State", rendererText, "text", (int)ColumnTrans.state);
 
-            rendererText = new CellRendererText(); //19
+            rendererText = new CellRendererText(); //20
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.state_name);
             _treeViewTrans.InsertColumn(-1, "State name", rendererText, "text", (int)ColumnTrans.state_name);
 
-            rendererText = new CellRendererText();//20
+            rendererText = new CellRendererText();//21
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.state_fgcolor);
             _treeViewTrans.InsertColumn(-1, "State fgcolor", rendererText, "text", (int)ColumnTrans.state_fgcolor);
 
-            rendererText = new CellRendererText();//21
+            rendererText = new CellRendererText();//22
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.state_bgcolor);            
             _treeViewTrans.InsertColumn(-1, "State bgcolor", rendererText, "text", (int)ColumnTrans.state_bgcolor);
 
-            rendererText = new CellRendererText(); //22
+            rendererText = new CellRendererText(); //23
             _cellColumnsRender.Add(rendererText, (int)ColumnTrans.application_id);
             _treeViewTrans.InsertColumn(-1, "Application ID", rendererText, "text", (int)ColumnTrans.application_id);
 
@@ -1075,7 +1081,7 @@ namespace Inventorifo.App
                 Editable = isEditable
             };
             rendererText.Foreground = textForeground;
-            rendererText.Edited += CellEditedItem; //7
+            rendererText.Edited += CellEditedItem; //8
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_item_price);
             _treeViewItems.InsertColumn(-1, "Item price", rendererText, "text", (int)ColumnItems.purchase_item_price);
 
@@ -1084,7 +1090,7 @@ namespace Inventorifo.App
                 Editable = isEditable
             };
             rendererText.Foreground = textForeground;
-            rendererText.Edited += CellEditedItem; //8
+            rendererText.Edited += CellEditedItem; //9
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_main_discount);
             _treeViewItems.InsertColumn(-1, "Main discount", rendererText, "text", (int)ColumnItems.purchase_main_discount);
 
@@ -1214,6 +1220,9 @@ namespace Inventorifo.App
                     string sql = "update purchase_price set item_price = '"+args.NewText+"', final_price='"+purchase_final_price.ToString()+"' where id='"+_clsItems[i].purchase_price_id+"' ";
                     Console.WriteLine (sql);
                     DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                    sql = "update product set last_purchase_price='"+purchase_final_price.ToString()+"'  where id='"+_clsItems[i].product_id+"' ";
+                    Console.WriteLine (sql);
+                    DbCl.ExecuteTrans(DbCl.getConn(), sql);
                     chkTax.Active = false;
                     SetTotalCalculation();
                 }
@@ -1233,6 +1242,9 @@ namespace Inventorifo.App
                     _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_subtotal, _clsItems[i].purchase_subtotal);
 
                     string sql = "update purchase_price set main_discount = '"+args.NewText+"', final_price='"+purchase_final_price.ToString()+"'  where id='"+_clsItems[i].purchase_price_id+"' ";
+                    Console.WriteLine (sql);
+                    DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                    sql = "update product set last_purchase_price='"+purchase_final_price.ToString()+"'  where id='"+_clsItems[i].product_id+"' ";
                     Console.WriteLine (sql);
                     DbCl.ExecuteTrans(DbCl.getConn(), sql);
                     chkTax.Active = false;
@@ -1256,6 +1268,9 @@ namespace Inventorifo.App
                     string sql = "update purchase_price set additional_discount = '"+args.NewText+"', final_price='"+purchase_final_price.ToString()+"'  where id='"+_clsItems[i].purchase_price_id+"' ";
                     Console.WriteLine (sql);
                     DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                    sql = "update product set last_purchase_price='"+purchase_final_price.ToString()+"'  where id='"+_clsItems[i].product_id+"' ";
+                    Console.WriteLine (sql);
+                    DbCl.ExecuteTrans(DbCl.getConn(), sql);
                     chkTax.Active = false;
                     SetTotalCalculation();
                 }
@@ -1276,7 +1291,10 @@ namespace Inventorifo.App
 
                     string sql = "update purchase_price set deduction_amount = '"+args.NewText+"', final_price='"+purchase_final_price.ToString()+"'  where id='"+_clsItems[i].purchase_price_id+"' ";
                     Console.WriteLine (sql);
-                    DbCl.ExecuteTrans(DbCl.getConn(), sql);                    
+                    DbCl.ExecuteTrans(DbCl.getConn(), sql);    
+                    sql = "update product set last_purchase_price='"+purchase_final_price.ToString()+"'  where id='"+_clsItems[i].product_id+"' ";
+                    Console.WriteLine (sql);
+                    DbCl.ExecuteTrans(DbCl.getConn(), sql);                
                     chkTax.Active = false;
                     SetTotalCalculation();
                 }
@@ -1411,7 +1429,7 @@ namespace Inventorifo.App
                 GuiCl.RemoveAllWidgets(popoverProduct);        
                 ReferenceProduct refWidget = new ReferenceProduct(this,"dialog",1, new clStock{});
                 popoverProduct.Add(refWidget);
-                popoverProduct.SetSizeRequest(600, 300);
+                popoverProduct.SetSizeRequest(800, 400);
                 refWidget.Show();          
                 popoverProduct.ShowAll();
                 return false;
@@ -1457,7 +1475,7 @@ namespace Inventorifo.App
                 GuiCl.RemoveAllWidgets(popoverSupplier);        
                 ReferenceSupplier refWidget = new ReferenceSupplier(this,"dialog","purchase");
                 popoverSupplier.Add(refWidget);
-                popoverSupplier.SetSizeRequest(200, 400);
+                popoverSupplier.SetSizeRequest(300, 500);
                 refWidget.Show();          
                 popoverSupplier.ShowAll();
                 return false;
