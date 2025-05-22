@@ -153,6 +153,7 @@ namespace Inventorifo.App
             // md.Run();
             // md.Destroy();
             ClearMainBox();
+            clTransfer filterTrans = new clTransfer {transaction_date = DateTime.Now.ToString("yyyy-MM-dd"), transaction_type_id="1"};
             WarehouseTransfer transWidget = new WarehouseTransfer(this,null);
             mainBox.PackStart(transWidget, false, true, 5);
             transWidget.ShowAll();            

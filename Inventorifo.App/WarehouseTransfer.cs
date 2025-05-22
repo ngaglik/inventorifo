@@ -18,10 +18,10 @@ namespace Inventorifo.App
         Inventorifo.Lib.LibCore CoreCl = new Inventorifo.Lib.LibCore ();
 
         public MainWindow parent;
-        public string prm;
-        public WarehouseTransfer(object parent, string prm) : this(new Builder("WarehouseTransfer.glade")) { 
+        clTransfer filterTrans;
+        public WarehouseTransfer(object parent, clTransfer filterTrans) : this(new Builder("WarehouseTransfer.glade")) { 
             this.parent=(MainWindow)parent;
-            this.prm = prm;
+            this.filterTrans = filterTrans;
             Console.WriteLine(this.parent.user.id + " "+ this.parent.user.person_name);
             
         }
@@ -33,7 +33,7 @@ namespace Inventorifo.App
         private TreeView _treeViewItems;
         private ListStore _lsModelItems;
         private Dictionary<CellRenderer, int> _cellColumnsRenderItems;
-        private List<clTransferItem> _clsItems;
+        private List<clTransactionItem1> _clsItems;
         
         Box  boxMiddle;
         Box boxItem;
@@ -127,20 +127,31 @@ namespace Inventorifo.App
         private enum ColumnItems
         { 
             id,
-            transfer_id,
+            transaction_id,
             product_id,
             product_short_name,
             product_name,
             stock_id,
-            tax,
-            state,
-            state_name,
             quantity,
             unit,
             unit_name,
-            price_id,
-            purchase_price,
-            price, 
+            purchase_price_id,
+            purchase_item_price,
+            purchase_main_discount,
+            purchase_additional_discount,
+            purchase_deduction_amount,
+            purchase_final_price,
+            purchase_subtotal,
+            purchase_tax,
+            // item_price,
+            // main_discount,
+            // additional_discount,
+            // deduction_amount,
+            // final_price,
+            // subtotal,
+            // tax,
+            state,
+            state_name,
             location,
             location_name,
             condition,
@@ -293,7 +304,7 @@ namespace Inventorifo.App
         private void HandleCmbSourceLocationChanged(object sender, EventArgs e)
         {
             ComboBoxText widget = sender as ComboBoxText;
-            if (widget != null)
+            if (widget != null && widget.HasFocus)
             {
                 string sql = "update transfer set source_location_id="+widget.ActiveText+" where id="+lbTransactionId.Text;
                 Console.WriteLine (sql);
@@ -303,7 +314,7 @@ namespace Inventorifo.App
         private void HandleCmbSourceConditionChanged(object sender, EventArgs e)
         {
             ComboBoxText widget = sender as ComboBoxText;
-            if (widget != null)
+            if (widget != null && widget.HasFocus)
             {
                 string sql = "update transfer set source_condition_id="+widget.ActiveText+" where id="+lbTransactionId.Text;
                 Console.WriteLine (sql);
@@ -313,7 +324,7 @@ namespace Inventorifo.App
         private void HandleCmbDestinationLocationChanged(object sender, EventArgs e)
         {
             ComboBoxText widget = sender as ComboBoxText;
-            if (widget != null)
+            if (widget != null && widget.HasFocus)
             {
                 string sql = "update transfer set destination_location_id="+widget.ActiveText+" where id="+lbTransactionId.Text;
                 Console.WriteLine (sql);
@@ -323,7 +334,7 @@ namespace Inventorifo.App
         private void HandleCmbDestinationConditionChanged(object sender, EventArgs e)
         {
             ComboBoxText widget = sender as ComboBoxText;
-            if (widget != null)
+            if (widget != null && widget.HasFocus)
             {
                 string sql = "update transfer set destination_condition_id="+widget.ActiveText+" where id="+lbTransactionId.Text;
                 Console.WriteLine (sql);
@@ -450,8 +461,9 @@ namespace Inventorifo.App
                     //entAmountPayment.Sensitive = true;
                     btnSave.Sensitive = true;
                 }
-                ItemTransactionReady(false);
-                SetItemModel(Convert.ToDouble(lbTransactionId.Text));  
+                
+                SetItemModel(Convert.ToDouble(transaction_id)); 
+                ItemTransactionReady(false); 
             }                              
             
         }
@@ -584,72 +596,90 @@ namespace Inventorifo.App
        
        
         private void SetItemModel(Double transaction_id)
-        {          
-            //ListStore model;
-            _lsModelItems = null;
-            TreeIter iter;
-            /* create array */
-            _clsItems = new List<clTransferItem>();           
-            clTransferItem item; 
-            DataTable dt = CoreCl.fillDtTransferItem(transaction_id.ToString(),"");
-            foreach (DataRow dr in dt.Rows)
-            {   
-                item = new clTransferItem{
-                    id=dr["id"].ToString(),
-                    transfer_id=dr["transfer_id"].ToString(),
-                    product_id=dr["product_id"].ToString(),
-                    product_short_name=dr["product_short_name"].ToString(),
-                    product_name=dr["product_name"].ToString(),
-                    stock_id=dr["stock_id"].ToString(),
-                    price=dr["price"].ToString(),
-                    tax=dr["tax"].ToString(),
-                    state=dr["state"].ToString(), 
-                    state_name=dr["state_name"].ToString(), 
-                    quantity=dr["quantity"].ToString(),
-                    unit=dr["unit"].ToString(),
-                    unit_name=dr["unit_name"].ToString(),
-                    purchase_price=dr["purchase_price"].ToString(),
-                    price_id=dr["price_id"].ToString(),
-                    location=dr["location"].ToString(), 
-                    location_name=dr["location_name"].ToString(), 
-                    condition=dr["condition"].ToString(),
-                    condition_name=dr["condition_name"].ToString(), 
+        {       
+            Gtk.Application.Invoke(delegate
+            {    
+                //ListStore model;
+                _lsModelItems = null;
+                TreeIter iter;
+                /* create array */
+                _clsItems = new List<clTransactionItem1>();
+                clTransactionItem1 item;
+                
+                clTransactionItem1 filterItem = new clTransactionItem1{                    
+                    //product_short_name = entSearch.Text.Trim(),
                 };
-                _clsItems.Add(item);                    
-            }
+                clTransfer filterTrans = new clTransfer {
+                    transaction_date = DateTime.Now.ToString("yyyy-MM-dd"), 
+                    transaction_type_id="1"
+                };
+                DataTable dt = CoreCl.fillDtTransferItem(filterTrans, filterItem);
+                foreach (DataRow dr in dt.Rows)
+                {                   
+                    item = new clTransactionItem1{
+                        id=dr["id"].ToString(),
+                        transaction_id=dr["transaction_id"].ToString(),
+                        product_id=dr["product_id"].ToString(),
+                        product_short_name=dr["product_short_name"].ToString(),
+                        product_name=dr["product_name"].ToString(),
+                        stock_id=dr["stock_id"].ToString(),
+                        quantity=dr["quantity"].ToString(),
+                        unit=dr["unit"].ToString(),
+                        unit_name=dr["unit_name"].ToString(),
+                        purchase_price_id=dr["purchase_price_id"].ToString(),
+                        purchase_item_price=dr["purchase_item_price"].ToString(),
+                        purchase_main_discount=dr["purchase_main_discount"].ToString(),
+                        purchase_additional_discount=dr["purchase_additional_discount"].ToString(),
+                        purchase_deduction_amount=dr["purchase_deduction_amount"].ToString(),
+                        purchase_final_price= dr["purchase_final_price"].ToString(),
+                        purchase_subtotal= (Convert.ToDouble(dr["purchase_final_price"].ToString())*Convert.ToDouble(dr["quantity"].ToString())).ToString(),
+                        purchase_tax=dr["purchase_tax"].ToString(),
+                        state=dr["state"].ToString(), 
+                        state_name=dr["state_name"].ToString(), 
+                        location=dr["location"].ToString(), 
+                        location_name=dr["location_name"].ToString(), 
+                        condition=dr["condition"].ToString(),
+                        condition_name=dr["condition_name"].ToString(), 
+                    };
+                    _clsItems.Add(item);                    
+                }
 
-            _lsModelItems = new ListStore(typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string));
+                _lsModelItems = new ListStore(typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string));
 
-            /* add items */
-            for (int i = 0; i < _clsItems.Count; i++)
-            {
-                iter = _lsModelItems.Append();
-                _lsModelItems.SetValue(iter, (int)ColumnItems.id, _clsItems[i].id);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.transfer_id, _clsItems[i].transfer_id);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.product_id, _clsItems[i].product_id);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.product_short_name, _clsItems[i].product_short_name);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.product_name, _clsItems[i].product_name);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.stock_id, _clsItems[i].stock_id);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.tax, _clsItems[i].tax);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.state, _clsItems[i].state);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.state_name, _clsItems[i].state_name);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.quantity, _clsItems[i].quantity);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.unit, _clsItems[i].unit);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.unit_name, _clsItems[i].unit_name);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_price, _clsItems[i].purchase_price);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.price_id, _clsItems[i].price_id);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.price, _clsItems[i].price);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.location, _clsItems[i].location);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.location_name, _clsItems[i].location_name);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.condition, _clsItems[i].condition);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.condition_name, _clsItems[i].condition_name);
-            }
-            _treeViewItems.Model = _lsModelItems;   
-              
-            lbTotalItem.Text =  GetTotalItem().ToString(); 
-           // entTaxAmount.Text = CalculateTax(GetTotalSalePrice()).ToString();
-           // entTransactionAmount.Text = (GetTotalSalePrice()+CalculateTax(GetTotalSalePrice())).ToString();
-
+                /* add items */
+                for (int i = 0; i < _clsItems.Count; i++)
+                {
+                    iter = _lsModelItems.Append();
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.id, _clsItems[i].id);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.transaction_id, _clsItems[i].transaction_id);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.product_id, _clsItems[i].product_id);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.product_short_name, _clsItems[i].product_short_name);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.product_name, _clsItems[i].product_name);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.stock_id, _clsItems[i].stock_id);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.quantity, _clsItems[i].quantity);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.unit, _clsItems[i].unit);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.unit_name, _clsItems[i].unit_name);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_price_id, _clsItems[i].purchase_price_id);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_item_price, _clsItems[i].purchase_item_price);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_main_discount, _clsItems[i].purchase_main_discount);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_additional_discount, _clsItems[i].purchase_additional_discount);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_deduction_amount, _clsItems[i].purchase_deduction_amount);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_final_price, _clsItems[i].purchase_final_price);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_subtotal, _clsItems[i].purchase_subtotal);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_tax, _clsItems[i].purchase_tax);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.state, _clsItems[i].state);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.state_name, _clsItems[i].state_name);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.location, _clsItems[i].location);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.location_name, _clsItems[i].location_name);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.condition, _clsItems[i].condition);
+                    _lsModelItems.SetValue(iter, (int)ColumnItems.condition_name, _clsItems[i].condition_name);
+                }
+                _treeViewItems.Model = _lsModelItems;   
+                  
+                lbTotalItem.Text =  GetTotalItem().ToString(); 
+                // entTaxAmount.Text = CalculateTax(GetTotalPurchasePrice()).ToString();
+                // entTransactionAmount.Text = (GetTotalPurchasePrice()+CalculateTax(GetTotalPurchasePrice())).ToString();
+            });
         }
 
         
@@ -726,20 +756,20 @@ namespace Inventorifo.App
             Response resp = new Response();
             Int64 price_id = InsertPrice();
             Int64 stock_id = InsertStockIn(price_id.ToString());
-         
-            string sql = "insert into transfer_item (transfer_id,product_id,quantity,stock_id,price_id,state) "+
-                        "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+spnQty.Text+","+ stock_id.ToString() + ","+price_id.ToString()+",1)" ;
-            Console.WriteLine (sql); 
+            string sql = "insert into transaction_item (transaction_id,product_id,quantity,stock_id,purchase_price_id,state,location,condition) "+
+            "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+spnQty.Text+","+ stock_id.ToString() + ","+price_id.ToString()+",1,1,1)" ;
+            Console.WriteLine (sql);
             DbCl.ExecuteTrans(DbCl.getConn(), sql); 
             sql = "update transaction set state=2 where id="+lbTransactionId.Text;
-            Console.WriteLine(sql);
-            DbCl.ExecuteTrans(DbCl.getConn(), sql);
+            Console.WriteLine (sql);
+            DbCl.ExecuteTrans(DbCl.getConn(), sql); 
             resp = new Response{ code = "20",description = "Success"} ;                     
             return resp;   
         }
 
         public Int64 InsertPrice(){
-            string sql = "insert into purchase_price (input_date,item_price,final_price) values (CURRENT_TIMESTAMP,"+ dtItemSelected.Rows[0].ItemArray[0].ToString() +","+ dtItemSelected.Rows[0].ItemArray[0].ToString()+") returning id";
+            string sql = "insert into purchase_price (input_date,item_price,final_price) "+
+            "values (CURRENT_TIMESTAMP,"+ dtItemSelected.Rows[0].ItemArray[7].ToString() +","+ dtItemSelected.Rows[0].ItemArray[7].ToString()+") returning id";
             Console.WriteLine (sql);
             return DbCl.ExecuteScalar(DbCl.getConn(), sql);
         }
@@ -916,6 +946,7 @@ namespace Inventorifo.App
                // Console.WriteLine(e.Event.Key);
                 if (e.Event.Key == Gdk.Key.Return)
                 {   
+                    Console.WriteLine("cmbTransferType.ActiveText "+cmbTransferType.ActiveText);
                     Response resp = new Response();
                     if(cmbTransferType.ActiveText=="1"){
                         resp  = AddItemTransferIn();
@@ -1050,66 +1081,83 @@ namespace Inventorifo.App
           
         private void AddColumnsItems()
         {
-
+            //5,6,7,11,12
             _cellColumnsRenderItems = new Dictionary<CellRenderer, int>();
             
-            CellRendererText rendererText = new CellRendererText();
+            CellRendererText rendererText = new CellRendererText(); //0
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.id);
             _treeViewItems.InsertColumn(-1, "ID", rendererText, "text", (int)ColumnItems.id);
 
-            rendererText = new CellRendererText();
-            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.transfer_id);
-            _treeViewItems.InsertColumn(-1, "Transfer ID", rendererText, "text", (int)ColumnItems.transfer_id);            
+            rendererText = new CellRendererText(); //1
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.transaction_id);
+            _treeViewItems.InsertColumn(-1, "Transaction ID", rendererText, "text", (int)ColumnItems.transaction_id);            
 
-            rendererText = new CellRendererText();
+            rendererText = new CellRendererText(); //2
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.product_id);
             _treeViewItems.InsertColumn(-1, "Product ID", rendererText, "text", (int)ColumnItems.product_id); 
 
-            rendererText = new CellRendererText();
+            rendererText = new CellRendererText();//3
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.product_short_name);
             _treeViewItems.InsertColumn(-1, "Short name", rendererText, "text", (int)ColumnItems.product_short_name);
 
-            rendererText = new CellRendererText();
+            rendererText = new CellRendererText();//4
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.stock_id);
             _treeViewItems.InsertColumn(-1, "Stock ID", rendererText, "text", (int)ColumnItems.stock_id);
 
-            rendererText = new CellRendererText();
+            rendererText = new CellRendererText(); //5
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.quantity);
             _treeViewItems.InsertColumn(-1, "Quantity", rendererText, "text", (int)ColumnItems.quantity);
 
-            rendererText = new CellRendererText();      
+            rendererText = new CellRendererText();     //6    
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.unit_name);
             _treeViewItems.InsertColumn(-1, "Unit", rendererText, "text", (int)ColumnItems.unit_name);
 
-            rendererText = new CellRendererText();
-            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_price);
-            _treeViewItems.InsertColumn(-1, "Purchase price", rendererText, "text", (int)ColumnItems.purchase_price);
+            rendererText = new CellRendererText(); //7
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_price_id);
+            _treeViewItems.InsertColumn(-1, "Price ID", rendererText, "text", (int)ColumnItems.purchase_price_id);
 
-            rendererText = new CellRendererText();
-            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.price_id);
-            _treeViewItems.InsertColumn(-1, "Price ID", rendererText, "text", (int)ColumnItems.price_id);
+            rendererText = new CellRendererText();//8
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_item_price);
+            _treeViewItems.InsertColumn(-1, "Item price", rendererText, "text", (int)ColumnItems.purchase_item_price);
 
-            rendererText = new CellRendererText();   
-            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.price);
-            _treeViewItems.InsertColumn(-1, "Sale Price", rendererText, "text", (int)ColumnItems.price);
+            rendererText = new CellRendererText(); //9
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_main_discount);
+            _treeViewItems.InsertColumn(-1, "Main discount", rendererText, "text", (int)ColumnItems.purchase_main_discount);
 
-            rendererText = new CellRendererText();
-            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.tax);
-            _treeViewItems.InsertColumn(-1, "Tax", rendererText, "text", (int)ColumnItems.tax);
+            rendererText = new CellRendererText(); //10
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_additional_discount);
+            _treeViewItems.InsertColumn(-1, "Additional discount", rendererText, "text", (int)ColumnItems.purchase_additional_discount);
+
+            rendererText = new CellRendererText(); //11
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_deduction_amount);
+            _treeViewItems.InsertColumn(-1, "Deduction amount", rendererText, "text", (int)ColumnItems.purchase_deduction_amount);
+
+            rendererText = new CellRendererText(); //12
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_final_price);
+            _treeViewItems.InsertColumn(-1, "Net price", rendererText, "text", (int)ColumnItems.purchase_final_price);
             
-            rendererText = new CellRendererText();            
+            rendererText = new CellRendererText(); //13
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_subtotal);
+            _treeViewItems.InsertColumn(-1, "Subtotal", rendererText, "text", (int)ColumnItems.purchase_subtotal);
+            
+            rendererText = new CellRendererText(); //14
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_tax);
+            _treeViewItems.InsertColumn(-1, "Tax", rendererText, "text", (int)ColumnItems.purchase_tax);
+            
+            rendererText = new CellRendererText();  //15       
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.location_name);
             _treeViewItems.InsertColumn(-1, "Location", rendererText, "text", (int)ColumnItems.location_name);
 
-            rendererText = new CellRendererText();           
+
+            rendererText = new CellRendererText();  //16      
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.condition_name);
             _treeViewItems.InsertColumn(-1, "Condition", rendererText, "text", (int)ColumnItems.condition_name);
 
-            rendererText = new CellRendererText();
+            rendererText = new CellRendererText(); //16
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.state_name);
             _treeViewItems.InsertColumn(-1, "State", rendererText, "text", (int)ColumnItems.state_name);
            
-            rendererText = new CellRendererText();
+           rendererText = new CellRendererText(); //17
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.product_name);
             _treeViewItems.InsertColumn(-1, "Product name", rendererText, "text", (int)ColumnItems.product_name);
 
@@ -1137,7 +1185,7 @@ namespace Inventorifo.App
                     // entTransactionAmount.Text = (GetTotalSalePrice()+CalculateTax(GetTotalSalePrice())).ToString();
                 }
                 break;
-                case (int)ColumnItems.price:
+                case (int)ColumnItems.purchase_final_price:
                 {
                     // int i = path.Indices[0];
                     // _clsItems[i].price = args.NewText;
@@ -1199,10 +1247,10 @@ namespace Inventorifo.App
             {     
                 GuiCl.RemoveAllWidgets(popoverProduct);   
                 string is_active = "true";     
-                if(cmbTransferType.ActiveText=="1"){
+                if(cmbTransferType.ActiveText=="0"){
                     is_active = "";
                 }
-                ReferenceProduct refWidget = new ReferenceProduct(this,"dialog",20, new clStock{location=cmbSourceLocation.ActiveText,condition=cmbSourceCondition.ActiveText,is_active=is_active});
+                ReferenceProduct refWidget = new ReferenceProduct(this,"dialog",20+Convert.ToInt32(cmbTransferType.ActiveText), new clStock{location=cmbSourceLocation.ActiveText,condition=cmbSourceCondition.ActiveText,is_active=is_active});
                 popoverProduct.Add(refWidget);
                 popoverProduct.SetSizeRequest(600, 300);
                 refWidget.Show();          

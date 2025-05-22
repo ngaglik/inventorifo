@@ -173,7 +173,7 @@ namespace Inventorifo.App
         private void CreateItemsModel(Boolean showAll,clStock filter)
         {   
             
-            //Console.WriteLine("filter.is_active = "+ this.filter.is_active);
+            Console.WriteLine("filter.location = "+ this.filter.location);
             if((this.filter.short_name=="" && this.filter.barcode=="") && !this.showAll) {          
                 _treeView.Model = null;
             }else{
@@ -352,14 +352,14 @@ namespace Inventorifo.App
                 TreeSelection selection = _treeView.Selection;
                 TreeIter iter;
                 if(selection.GetSelected( out iter)){
-                    Console.WriteLine("Selected Value:"+_lsModelProduct.GetValue (iter, 0).ToString()+_lsModelProduct.GetValue (iter, 1).ToString());
+                    Console.WriteLine("SelectItem Selected Value:"+_lsModelProduct.GetValue (iter, 0).ToString()+_lsModelProduct.GetValue (iter, 1).ToString());
                     if(transaction_type==1){
                         TransactionPurchase o = (TransactionPurchase)this.parent;                    
                         o.doChildProduct(null,new clsProduct{id=_lsModelProduct.GetValue (iter, 0).ToString(), short_name=_lsModelProduct.GetValue (iter, 1).ToString(), product_name=_lsModelProduct.GetValue (iter, 1).ToString()});
                     }else if(transaction_type==2){
                         TransactionSale o = (TransactionSale)this.parent;                    
                         o.doChildProduct(null,new clsProduct{id=_lsModelProduct.GetValue (iter, 0).ToString(), short_name=_lsModelProduct.GetValue (iter, 1).ToString(), product_name=_lsModelProduct.GetValue (iter, 1).ToString()});
-                    }else if(transaction_type==20){
+                    }else if(transaction_type>20){
                         WarehouseTransfer o = (WarehouseTransfer)this.parent;                    
                         o.doChildProduct(null,new clsProduct{id=_lsModelProduct.GetValue (iter, 0).ToString(), short_name=_lsModelProduct.GetValue (iter, 1).ToString(), product_name=_lsModelProduct.GetValue (iter, 1).ToString()});
                     }
@@ -377,7 +377,7 @@ namespace Inventorifo.App
                     TreeSelection selection = _treeView.Selection;
                     TreeIter iter;
                     if(selection.GetSelected( out iter)){
-                        Console.WriteLine("Selected Value:"+_lsModelProduct.GetValue (iter, 0).ToString()+_lsModelProduct.GetValue (iter, 1).ToString());
+                        Console.WriteLine("HandleTreeViewKeyPressEvent Selected Value:"+_lsModelProduct.GetValue (iter, 0).ToString()+_lsModelProduct.GetValue (iter, 1).ToString());
                     }            
                     if(transaction_type==1){
                         TransactionPurchase o = (TransactionPurchase)this.parent;                    
@@ -385,7 +385,7 @@ namespace Inventorifo.App
                     }else if(transaction_type==2){
                         TransactionSale o = (TransactionSale)this.parent;                    
                         o.doChildProduct(null,new clsProduct{id=_lsModelProduct.GetValue (iter, 0).ToString(), short_name=_lsModelProduct.GetValue (iter, 1).ToString(), product_name=_lsModelProduct.GetValue (iter, 1).ToString()});
-                    }else if(transaction_type==20){
+                    }else if(transaction_type>20){
                         WarehouseTransfer o = (WarehouseTransfer)this.parent;                    
                         o.doChildProduct(null,new clsProduct{id=_lsModelProduct.GetValue (iter, 0).ToString(), short_name=_lsModelProduct.GetValue (iter, 1).ToString(), product_name=_lsModelProduct.GetValue (iter, 1).ToString()});
                     }

@@ -92,6 +92,8 @@ namespace Inventorifo.Lib.Model
         public string price { get; set; }
         public string product_group_id { get; set; }
         public string product_group_name { get; set; }
+        public string organization { get; set; }
+        public string organization_name { get; set; }
         public string location { get; set; }
         public string location_name { get; set; }
         public string location_group { get; set; }
@@ -252,7 +254,11 @@ namespace Inventorifo.Lib.Model
     public class clTransfer
     {
         public string id  { get; set; }
+        public string transaction_date { get; set; }
+        public string transaction_type_id { get; set; }
+        public string transaction_type_name { get; set; }
         public string reference_id { get; set; }
+        public string reference_date { get; set; }
         public string source_organization_id { get; set; }
         public string source_organization_name { get; set; }
         public string source_location_id { get; set; }
