@@ -374,6 +374,8 @@ namespace Inventorifo.App
             { 
                 var id = transaction_id;
                 var state = dr["state"].ToString();
+                var transfer_type_id = dr["transfer_type_id"].ToString();
+                var transfer_type_name = dr["transfer_type_name"].ToString();
                 var source_organization_id = dr["source_organization_id"].ToString();
                 var source_organization_name = dr["source_organization_name"].ToString();
                 var source_location_id = dr["source_location_id"].ToString();
@@ -394,15 +396,18 @@ namespace Inventorifo.App
                 //lbBillCalculated.Text = (Convert.ToDouble(transaction_amount)+Convert.ToDouble(tax_amount)-Convert.ToDouble(payment_amount)).ToString() ;
                                 
                 lbTransactionId.Text = id;
+                GuiCl.SetActiveComboBoxText(cmbTransferType,transfer_type_id);
+                
                 sourceOrganizationId = source_organization_id;
                 textViewSourceOrganization.Buffer.Text = source_organization_name;
-                cmbSourceLocation.ActiveId = source_location_id;
-                cmbSourceCondition.ActiveId = source_condition_id;
+                GuiCl.SetActiveComboBoxText(cmbSourceLocation,source_location_id);
+                GuiCl.SetActiveComboBoxText(cmbSourceCondition,source_condition_id);
 
                 destinationOrganizationId = destination_organization_id;
                 textViewDestinationOrganization.Buffer.Text = destination_organization_name;
-                cmbDestinationLocation.ActiveId = destination_location_id;
-                cmbDestinationCondition.ActiveId = destination_condition_id;
+                GuiCl.SetActiveComboBoxText(cmbDestinationLocation,destination_location_id);
+                GuiCl.SetActiveComboBoxText(cmbDestinationCondition,destination_condition_id);
+                
                 CellRendererText retrievedRenderer = GuiCl.GetCellRendererText(_treeViewItems, 2);
                 
 
@@ -689,12 +694,15 @@ namespace Inventorifo.App
 
         private void SelectedItem(string prm)
         {                          
-            dtItemSelected = new DataTable();
-            string sql = "SELECT prod.id, prod.short_name, prod.name prod_name, prod.barcode, prod.product_group, prodgr.name product_group_name "+
-                    "FROM product prod, product_group prodgr "+
-                    "WHERE prod.product_group = prodgr.id and prod.id= "+prm;
-                    Console.WriteLine(sql);          
-            dtItemSelected = DbCl.fillDataTable(DbCl.getConn(), sql);   
+            // dtItemSelected = new DataTable();
+            // string sql = "SELECT prod.id, prod.short_name, prod.name prod_name, prod.barcode, prod.product_group, prodgr.name product_group_name, prod.price1, prod.price2, prod.price3, prod.last_purchase_price "+
+            //         "FROM product prod, product_group prodgr "+
+            //         "WHERE prod.product_group = prodgr.id and prod.id= "+prm;
+            //         Console.WriteLine(sql);          
+            // dtItemSelected = DbCl.fillDataTable(DbCl.getConn(), sql);   
+
+            clStock filterStock = new clStock{product_id=prm};
+            dtItemSelected = CoreCl.fillDtProduct(0,filterStock);
 
             var tag = new TextTag (null);
             textViewProduct.Buffer.TagTable.Add (tag);
@@ -711,7 +719,7 @@ namespace Inventorifo.App
             textViewProduct.Buffer.InsertWithTags (ref iter, dtItemSelected.Rows[0].ItemArray[3].ToString(), tag);
             
             iter = textViewProduct.Buffer.GetIterAtLine (8);
-            textViewProduct.Buffer.InsertWithTags (ref iter, dtItemSelected.Rows[0].ItemArray[5].ToString(), tag);
+            textViewProduct.Buffer.InsertWithTags (ref iter, dtItemSelected.Rows[0].ItemArray[10].ToString(), tag);
         }
         
         public Response AddItemTransferIn(){
@@ -731,7 +739,7 @@ namespace Inventorifo.App
         }
 
         public Int64 InsertPrice(){
-            string sql = "insert into price (input_date,purchase_price,price) values (CURRENT_TIMESTAMP,"+ CoreCl.GetLastPurchasePrice(dtItemSelected.Rows[0].ItemArray[0].ToString()).ToString() +","+ CoreCl.GetLastSalePrice(dtItemSelected.Rows[0].ItemArray[0].ToString()).ToString()+") returning id";
+            string sql = "insert into purchase_price (input_date,item_price,final_price) values (CURRENT_TIMESTAMP,"+ dtItemSelected.Rows[0].ItemArray[0].ToString() +","+ dtItemSelected.Rows[0].ItemArray[0].ToString()+") returning id";
             Console.WriteLine (sql);
             return DbCl.ExecuteScalar(DbCl.getConn(), sql);
         }
@@ -751,7 +759,7 @@ namespace Inventorifo.App
             double store_quantity = 0;
             double global_quantity = 0;
             //check available product
-            DataTable dts = CoreCl.fillDtProduct(20,new clStock{product_id=dtItemSelected.Rows[0].ItemArray[0].ToString()});
+            DataTable dts = CoreCl.fillDtProductByLocation(20,new clStock{product_id=dtItemSelected.Rows[0].ItemArray[0].ToString()});
             foreach(DataRow drs in dts.Rows){
                 Console.WriteLine(drs["short_name"].ToString()+"======2======== "+drs["store_quantity"].ToString()+"===="); 
                 store_quantity =  Convert.ToDouble(drs["store_quantity"].ToString()); 

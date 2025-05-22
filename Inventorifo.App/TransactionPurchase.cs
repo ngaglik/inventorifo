@@ -413,7 +413,8 @@ namespace Inventorifo.App
                 var tax_amount = dr["tax_amount"].ToString();
                 bool is_tax;
                 bool succes = bool.TryParse(dr["is_tax"].ToString(), out is_tax);
-                setActivePaymentMethod(payment_group_id);
+                //setActivePaymentMethod(payment_group_id);
+                GuiCl.SetActiveComboBoxText(cmbPaymentMethod,payment_group_id);
 
                 entAmountPayment.Text = "0";
                 btnPreviousPayment.Label = payment_amount;
