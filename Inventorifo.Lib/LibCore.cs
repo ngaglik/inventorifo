@@ -83,13 +83,12 @@ namespace Inventorifo.Lib
                     whrcondition = "and stock.condition =  '" + filter.condition + "' ";
                 }
                 Console.WriteLine("transaction_type "+transaction_type.ToString());
-                if(transaction_type==20){                    
-                   // whrtype = " and store_quantity>0 ";                    
+                if(transaction_type==21 || transaction_type==21 ) { // transfer internal || trasnfer out
+                    whrlocgroup = "and (case when global_quantity is null then 0 else global_quantity end) >0 ";
+                }else if(transaction_type==2 ) {
+                    whrlocgroup = "and locgr.id=2 ";
+                    whrtype = "and (case when global_quantity is null then 0 else global_quantity end) >0 "; 
                 }
-                if(transaction_type==2 ) {
-                        whrlocgroup = "and locgr.id=2 ";
-                        whrtype = "and store_quantity>0 "; 
-                    }
                 Console.WriteLine("5 "+filter.product_id);
                 if(filter.product_id is null || filter.product_id == ""){
                     if(filter.short_name is null || filter.short_name==""){
@@ -165,7 +164,7 @@ namespace Inventorifo.Lib
                     whrid = " and prod.id= "+filter.product_id + " ";
                 }
                 Console.WriteLine("6 "+filter.product_id);
-                string sql = "SELECT prod.id, prod.short_name, prod.name product_name, prod.barcode, prod.price1, prod.price2, prod.price3, "+
+                string sql = "SELECT prod.id, prod.short_name, prod.name product_name, prod.barcode, prod.price1, prod.price2, prod.price3, prod.last_purchase_price, "+
                 "case when store_quantity is null then 0 else store_quantity end store_quantity, "+
                 "case when global_quantity is null then 0 else global_quantity end global_quantity, "+
                 "prod.product_group, prodgr.name product_group_name "+
@@ -429,22 +428,46 @@ namespace Inventorifo.Lib
                 Console.WriteLine(sql);
                 return DbCl.fillDataTable(DbCl.getConn(), sql);
         }
-        public DataTable fillDtTransferItem(string transaction_id, string state){
+        public DataTable fillDtTransferItem(clTransfer filterTrans, clTransactionItem1 filterItem){
+           Console.WriteLine("fillDtTransactionItem");
+            string whrfind = "",whrid="",whritemid="", whrdate="",whrtype="";
+            ;
+            if(filterTrans.id is null || filterTrans.id=="") {
+            }else{
+                whrid = "and tr.id = '"+filterTrans.id+"' ";
+            }
+            
+            if(filterTrans.transaction_date is null || filterTrans.transaction_date=="") {
+            }else{
+                whrdate = "and tr.transaction_date = '"+filterTrans.transaction_date+"' ";
+            }
+            if(filterItem.id is null || filterItem.id=="") {
+            }else{
+                whritemid = "and ti.id = '"+filterItem.id+"' ";
+            }
+            if(filterItem.product_short_name is null || filterItem.product_short_name==""){
+                //return new DataTable();
+            }else{
+                if(filterItem.product_short_name.Length>=2){
+                    whrfind = "and (upper(pr.name) like upper('" + filterItem.product_name + "%') or upper(pr.short_name) like upper('" + filterItem.product_short_name + "%')) ";
+                }
+            }  
             string whrstate = "";
-            if(state!="") whrstate = "and ti.state="+state +" ";
+            //if(state!="") whrstate = "and ti.state="+state +" ";
 
-            string sql = "select ti.id, ti.transfer_id, ti.product_id, pr.short_name product_short_name, pr.name product_name,ti.stock_id, "+
+            
+             string sql = "select ti.id, ti.transaction_id, ti.product_id, pr.short_name product_short_name, pr.name product_name,ti.stock_id, "+
             "case when ti.tax is null then 0 else ti.tax end tax, ti.state, state.name state_name, "+
-            "ti.quantity, st.unit,un.name unit_name, "+
+            "st.quantity, st.unit,un.name unit_name, "+
             "pp.id purchase_price_id, pp.item_price purchase_item_price,pp.main_discount purchase_main_discount, pp.additional_discount purchase_additional_discount, pp.deduction_amount purchase_deduction_amount, pp.final_price purchase_final_price, 0 purchase_subtotal, pp.tax purchase_tax, "+
             "st.location, lo.name location_name, st.condition, co.name condition_name "+
-            "from transaction_item_state state, transfer_item ti, product pr, stock st "+
+            "from transfer tr, transaction_item_state state, transfer_item ti, product pr, stock st "+
             "LEFT OUTER JOIN purchase_price pp on pp.id = st.price_id "+
             "left outer join unit un on un.id=st.unit "+
             "left outer join condition co on st.condition=co.id "+
             "left outer join location lo on st.location=lo.id "+
-            "where ti.product_id=pr.id and ti.stock_id=st.id and state.id=ti.state "+
-            "and ti.transfer_id="+transaction_id.ToString()+ " "+whrstate+
+            "where tr.id=ti.transaction_id and ti.product_id=pr.id and ti.stock_id=st.id and state.id=ti.state "+
+             whrid+whrstate+
             "ORDER by ti.id desc";
             //tekan kene
             Console.WriteLine(sql);            

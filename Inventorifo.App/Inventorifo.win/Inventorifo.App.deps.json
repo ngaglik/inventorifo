@@ -1,18 +1,19 @@
 {
   "runtimeTarget": {
-    "name": ".NETCoreApp,Version=v9.0",
+    "name": ".NETCoreApp,Version=v9.0/win-x64",
     "signature": ""
   },
   "compilationOptions": {},
   "targets": {
-    ".NETCoreApp,Version=v9.0": {
-      "Inventorifo.Lib/1.0.0": {
+    ".NETCoreApp,Version=v9.0": {},
+    ".NETCoreApp,Version=v9.0/win-x64": {
+      "Inventorifo.App/1.0.0": {
         "dependencies": {
           "GtkSharp": "3.24.24.95",
-          "Npgsql": "9.0.3"
+          "Inventorifo.Lib": "1.0.0"
         },
         "runtime": {
-          "Inventorifo.Lib.dll": {}
+          "Inventorifo.App.dll": {}
         }
       },
       "AtkSharp/3.24.24.95": {
@@ -124,11 +125,23 @@
             "fileVersion": "3.24.24.95"
           }
         }
+      },
+      "Inventorifo.Lib/1.0.0": {
+        "dependencies": {
+          "GtkSharp": "3.24.24.95",
+          "Npgsql": "9.0.3"
+        },
+        "runtime": {
+          "Inventorifo.Lib.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
       }
     }
   },
   "libraries": {
-    "Inventorifo.Lib/1.0.0": {
+    "Inventorifo.App/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -202,6 +215,11 @@
       "sha512": "sha512-H7JeyEvLsgvsbamGpRgoNtdvzPiGwwsUuoeTobN1C/JRjw1J8Snw0yf2WBr7CKx5GLwbrwpQYOb7N/HD17ME8A==",
       "path": "pangosharp/3.24.24.95",
       "hashPath": "pangosharp.3.24.24.95.nupkg.sha512"
+    },
+    "Inventorifo.Lib/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
     }
   }
 }
