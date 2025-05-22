@@ -12,6 +12,20 @@ namespace Inventorifo.Lib
     {
         LibDb DbCl = new LibDb ();
 
+        public void SetActiveComboBoxText(Gtk.ComboBoxText sender, string pattern){
+            var store = (ListStore)sender.Model;
+                    int index = 0;
+                    foreach (object[] row in store)
+                    {
+                        if (pattern == row[0].ToString())
+                        {
+                            sender.Active = index;
+                            break;
+                        }
+                        index++;
+                    }
+        }
+
         public void FillComboBoxText(Gtk.ComboBoxText sender, string sql, int selectedId)
         {
             Gtk.Application.Invoke(delegate
