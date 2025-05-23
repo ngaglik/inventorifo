@@ -105,7 +105,7 @@ namespace Inventorifo.Lib
                 }
                 Console.WriteLine("6 "+filter.product_id);
                 string sql = "SELECT prod.id, prod.short_name, prod.name product_name, prod.barcode, prod.price1, prod.price2, prod.price3, prod.last_purchase_price, "+
-                "case when global_quantity is null then 0 else global_quantity end global_quantity, "+
+                "case when global_quantity is null then 0 else global_quantity end global_quantity,  "+
                 "prod.product_group, prodgr.name product_group_name "+
                 "FROM product_group prodgr, product prod "+
                 "left outer join (select sum(quantity) global_quantity,product_id from stock where state=0 group by product_id) prglobal  on prglobal.product_id=prod.id "+
@@ -144,11 +144,14 @@ namespace Inventorifo.Lib
                 Console.WriteLine("transaction_type "+transaction_type.ToString());
                 if(transaction_type==20){                    
                    // whrtype = " and store_quantity>0 ";                    
-                }
-                if(transaction_type==2 ) {
+                }else if(transaction_type==21){                    
+                   // whrtype = " and store_quantity>0 ";                    
+                }else if(transaction_type==22){                    
+                   // whrtype = " and store_quantity>0 ";                    
+                }else if(transaction_type==2 ) {
                         whrlocgroup = "and locgr.id=2 ";
                         whrtype = "and store_quantity>0 "; 
-                    }
+                }
                 Console.WriteLine("5 "+filter.product_id);
                 if(filter.product_id is null || filter.product_id == ""){
                     if(filter.short_name is null || filter.short_name==""){
