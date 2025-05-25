@@ -614,7 +614,7 @@ namespace Inventorifo.App
                     transaction_date = DateTime.Now.ToString("yyyy-MM-dd"), 
                     transaction_type_id="1"
                 };
-                DataTable dt = CoreCl.fillDtTransferItem(filterTrans, filterItem);
+                DataTable dt = CoreCl.fillDtOrderTransferItem(filterTrans, filterItem);
                 foreach (DataRow dr in dt.Rows)
                 {                   
                     item = new clTransactionItem1{
@@ -688,28 +688,34 @@ namespace Inventorifo.App
         private void HandleTreeViewItemsKeyPressEvent(object sender, KeyPressEventArgs e)
         {
             if (e.Event.Key == Gdk.Key.Delete || e.Event.Key == Gdk.Key.KP_Delete)  // Check if Enter key is pressed
-            {
+            {         
                 TreeSelection selection = _treeViewItems.Selection;
                 TreeIter iter;
                 if(selection.GetSelected( out iter)){
                     Console.WriteLine("Selected Value:"+_lsModelItems.GetValue (iter, 0).ToString()+_lsModelItems.GetValue (iter, 1).ToString());
-                }            
-                Console.WriteLine("state: "+_lsModelItems.GetValue (iter, 13).ToString());
-                if(_lsModelItems.GetValue (iter, 13).ToString()!="0"){
-                    string sql = "delete from stock where id="+_lsModelItems.GetValue (iter, 5).ToString();
-                    Console.WriteLine(sql);
-                    DbCl.ExecuteScalar(DbCl.getConn(), sql);
-                    sql = "delete from transfer_item where id="+_lsModelItems.GetValue (iter, 0).ToString();
-                    Console.WriteLine(sql);
-                    DbCl.ExecuteScalar(DbCl.getConn(), sql);
-                    SetItemModel(Convert.ToDouble(lbTransactionId.Text));
-                    if(GetTotalItem()==0) {
-                        sql = "update transfer set state=1 where id="+lbTransactionId.Text;
-                        Console.WriteLine (sql);
-                        DbCl.ExecuteTrans(DbCl.getConn(), sql);                     
-                    }
-                    ItemTransactionReady(true);
-                }
+                }        
+                
+                string sql = "delete from transfer_order_item where id="+_lsModelItems.GetValue (iter, 0).ToString();
+                Console.WriteLine(sql);
+                DbCl.ExecuteScalar(DbCl.getConn(), sql);
+                SetItemModel(Convert.ToDouble(lbTransactionId.Text));
+                   
+                // Console.WriteLine("state: "+_lsModelItems.GetValue (iter, 13).ToString());
+                // if(_lsModelItems.GetValue (iter, 13).ToString()!="0"){
+                //     string sql = "delete from stock where id="+_lsModelItems.GetValue (iter, 5).ToString();
+                //     Console.WriteLine(sql);
+                //     DbCl.ExecuteScalar(DbCl.getConn(), sql);
+                //     sql = "delete from transfer_item where id="+_lsModelItems.GetValue (iter, 0).ToString();
+                //     Console.WriteLine(sql);
+                //     DbCl.ExecuteScalar(DbCl.getConn(), sql);
+                //     SetItemModel(Convert.ToDouble(lbTransactionId.Text));
+                //     if(GetTotalItem()==0) {
+                //         sql = "update transfer set state=1 where id="+lbTransactionId.Text;
+                //         Console.WriteLine (sql);
+                //         DbCl.ExecuteTrans(DbCl.getConn(), sql);                     
+                //     }
+                //     ItemTransactionReady(true);
+                // }
             }
                       
         }
@@ -725,13 +731,7 @@ namespace Inventorifo.App
 
         private void SelectedItem(string prm)
         {                          
-            // dtItemSelected = new DataTable();
-            // string sql = "SELECT prod.id, prod.short_name, prod.name prod_name, prod.barcode, prod.product_group, prodgr.name product_group_name, prod.price1, prod.price2, prod.price3, prod.last_purchase_price "+
-            //         "FROM product prod, product_group prodgr "+
-            //         "WHERE prod.product_group = prodgr.id and prod.id= "+prm;
-            //         Console.WriteLine(sql);          
-            // dtItemSelected = DbCl.fillDataTable(DbCl.getConn(), sql);   
-
+          
             clStock filterStock = new clStock{product_id=prm};
             dtItemSelected = CoreCl.fillDtProduct(0,filterStock);
 
@@ -753,18 +753,18 @@ namespace Inventorifo.App
             textViewProduct.Buffer.InsertWithTags (ref iter, dtItemSelected.Rows[0].ItemArray[10].ToString(), tag);
         }
         
-        public Response AddItemTransferIn(){
-            Console.WriteLine("======AddItemTransferIn========1===="+ dtItemSelected.Rows[0].ItemArray[0].ToString()); 
+        public Response AddItemTransferIn(string product_id, string qty, string price){
+            Console.WriteLine("======AddItemTransferIn========1===="+ product_id); 
             int transaction_type_id = 20+Convert.ToInt32(cmbTransferType.ActiveText);
             Response resp = new Response();
-            Int64 price_id = InsertPrice();
-            Int64 stock_id = InsertStockIn(price_id.ToString());
+            Int64 price_id = InsertPrice(price);
+            Int64 stock_id = InsertStockIn(product_id, price_id.ToString(), qty);
             string sql = "insert into transfer_item (transaction_id,product_id,quantity,stock_id,purchase_price_id,state,location,condition) "+
-            "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+spnQty.Text+","+ stock_id.ToString() + ","+price_id.ToString()+",1,"+cmbDestinationLocation.ActiveText+","+cmbDestinationCondition.ActiveText+")" ;
+            "values("+lbTransactionId.Text+ ","+product_id + ","+qty+","+ stock_id.ToString() + ","+price_id.ToString()+",1,"+cmbDestinationLocation.ActiveText+","+cmbDestinationCondition.ActiveText+")" ;
             Console.WriteLine (sql);
             DbCl.ExecuteTrans(DbCl.getConn(), sql); 
             
-            CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), dtItemSelected.Rows[0].ItemArray[0].ToString(),stock_id.ToString(),cmbDestinationLocation.ActiveText,cmbDestinationCondition.ActiveText,spnQty.Text);
+            CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), product_id,stock_id.ToString(),cmbDestinationLocation.ActiveText,cmbDestinationCondition.ActiveText,qty);
             sql = "update transaction set state=2 where id="+lbTransactionId.Text;
             Console.WriteLine (sql);
             DbCl.ExecuteTrans(DbCl.getConn(), sql); 
@@ -772,22 +772,22 @@ namespace Inventorifo.App
             return resp;   
         }
 
-        public Int64 InsertPrice(){
+        public Int64 InsertPrice(string price){
             string sql = "insert into purchase_price (input_date,item_price,final_price) "+
-            "values (CURRENT_TIMESTAMP,"+ dtItemSelected.Rows[0].ItemArray[7].ToString() +","+ dtItemSelected.Rows[0].ItemArray[7].ToString()+") returning id";
+            "values (CURRENT_TIMESTAMP,"+ price +","+ price+") returning id";
             Console.WriteLine (sql);
             return DbCl.ExecuteScalar(DbCl.getConn(), sql);
         }
-        public Int64 InsertStockIn(string price_id){
+        public Int64 InsertStockIn(string product_id, string price_id, string qty){
             string sql = "insert into stock (product_id,quantity,input_date,expired_date, price_id, unit, location, condition)"+
-            "values ("+dtItemSelected.Rows[0].ItemArray[0].ToString()+ ","+spnQty.Text+",CURRENT_DATE,CURRENT_DATE,"+price_id+",1,"+cmbDestinationLocation.ActiveText+","+cmbDestinationCondition.ActiveText+") returning id";
+            "values ("+product_id+ ","+qty+",CURRENT_DATE,CURRENT_DATE,"+price_id+",1,"+cmbDestinationLocation.ActiveText+","+cmbDestinationCondition.ActiveText+") returning id";
             Console.WriteLine (sql);
             return DbCl.ExecuteScalar(DbCl.getConn(), sql);
             //tekan kene
         }
         
-        public Response AddItemInternal(){
-            Console.WriteLine("======AddItemInternal========1===="+ dtItemSelected.Rows[0].ItemArray[0].ToString()); 
+        public Response AddItemInternal(string product_id, string qty, string price){
+            Console.WriteLine("======AddItemInternal========1===="+ product_id); 
             int transaction_type_id = 20+Convert.ToInt32(cmbTransferType.ActiveText);
             string sql="";
             Response resp = new Response();
@@ -795,7 +795,7 @@ namespace Inventorifo.App
             double store_quantity = 0;
             double global_quantity = 0;
             //check available product
-            DataTable dts = CoreCl.fillDtProduct(transaction_type_id,new clStock{product_id=dtItemSelected.Rows[0].ItemArray[0].ToString(),location=cmbSourceLocation.ActiveText,condition=cmbSourceCondition.ActiveText});
+            DataTable dts = CoreCl.fillDtProduct(transaction_type_id,new clStock{product_id=product_id,location=cmbSourceLocation.ActiveText,condition=cmbSourceCondition.ActiveText});
             foreach(DataRow drs in dts.Rows){
                 global_quantity = Convert.ToDouble(drs["global_quantity"].ToString());
                 if(Convert.ToDouble(spnQty.Text) > global_quantity ){
@@ -810,10 +810,10 @@ namespace Inventorifo.App
                 //FIFO show all stock in store location
                 //int transaction_type_id = 20+Convert.ToInt32(cmbTransferType.ActiveText);
                 double balance = 0;
-                balance = Convert.ToDouble(spnQty.Text);  
+                balance = Convert.ToDouble(qty);  
                 sql = "select stock.id stock_id,stock.quantity,stock.product_id,stock.price_id,stock.location,TO_CHAR(stock.expired_date,'yyyy-MM-dd') expired_date, stock.unit, stock.condition "+
                 "from stock,location loc,location_group locgr "+
-                "where stock.quantity>0 and state=0 and product_id="+ dtItemSelected.Rows[0].ItemArray[0].ToString() + " "+
+                "where stock.quantity>0 and state=0 and product_id="+ product_id + " "+
                 "and stock.location=loc.id and loc.location_group=locgr.id "+
                 "order by stock.id asc";
                 Console.WriteLine(sql);   
@@ -826,10 +826,10 @@ namespace Inventorifo.App
                         Console.WriteLine (sql);
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);    
                         sql = sql = "insert into transfer_item (transaction_id,product_id,quantity,stock_id,purchase_price_id,state) "+
-                        "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+drs["quantity"].ToString()+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1)" ;
+                        "values("+lbTransactionId.Text+ ","+product_id + ","+drs["quantity"].ToString()+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1)" ;
                         Console.WriteLine (sql); 
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);                          
-                        CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), dtItemSelected.Rows[0].ItemArray[0].ToString(),drs["stock_id"].ToString(),cmbSourceLocation.ActiveText,cmbSourceCondition.ActiveText,"-"+drs["quantity"].ToString());
+                        CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), product_id,drs["stock_id"].ToString(),cmbSourceLocation.ActiveText,cmbSourceCondition.ActiveText,"-"+drs["quantity"].ToString());
                     
                         //destination
                         clStock stodest = new clStock{
@@ -842,7 +842,7 @@ namespace Inventorifo.App
                             location = cmbDestinationLocation.ActiveText,
                         };
                         Int64 stock_id_dest = InsertStock(stodest);
-                        CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), dtItemSelected.Rows[0].ItemArray[0].ToString(),stock_id_dest.ToString(),cmbDestinationLocation.ActiveText,cmbDestinationCondition.ActiveText,drs["quantity"].ToString());
+                        CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), product_id,stock_id_dest.ToString(),cmbDestinationLocation.ActiveText,cmbDestinationCondition.ActiveText,drs["quantity"].ToString());
                         
                         balance = balance-Convert.ToDouble(drs["quantity"].ToString());
                     }else{
@@ -851,10 +851,10 @@ namespace Inventorifo.App
                         Console.WriteLine (sql);
                         DbCl.ExecuteTrans(DbCl.getConn(), sql); 
                         sql = sql = "insert into transfer_item (transaction_id,product_id,quantity,stock_id,purchase_price_id,state) "+
-                        "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+balance.ToString()+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1)" ;
+                        "values("+lbTransactionId.Text+ ","+product_id + ","+balance.ToString()+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1)" ;
                         Console.WriteLine (sql); 
                         DbCl.ExecuteTrans(DbCl.getConn(), sql); 
-                        CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), dtItemSelected.Rows[0].ItemArray[0].ToString(),drs["stock_id"].ToString(),cmbSourceLocation.ActiveText,cmbSourceCondition.ActiveText,"-"+balance.ToString());                      
+                        CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), product_id,drs["stock_id"].ToString(),cmbSourceLocation.ActiveText,cmbSourceCondition.ActiveText,"-"+balance.ToString());                      
                         
                         //destination
                         clStock stodest = new clStock{
@@ -867,7 +867,7 @@ namespace Inventorifo.App
                             location = cmbDestinationLocation.ActiveText,
                         };
                         Int64 stock_id_dest = InsertStock(stodest);                        
-                        CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), dtItemSelected.Rows[0].ItemArray[0].ToString(),stock_id_dest.ToString(),cmbDestinationLocation.ActiveText,cmbDestinationCondition.ActiveText,balance.ToString());
+                        CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), product_id,stock_id_dest.ToString(),cmbDestinationLocation.ActiveText,cmbDestinationCondition.ActiveText,balance.ToString());
 
                         balance = 0;
                     }
@@ -889,8 +889,8 @@ namespace Inventorifo.App
             return DbCl.ExecuteScalar(DbCl.getConn(), sql);
         }
 
-        public Response AddItemTransferOut(){
-            Console.WriteLine("======AddItemTransferOut========1===="+ dtItemSelected.Rows[0].ItemArray[0].ToString()); 
+        public Response AddItemTransferOut(string product_id, string qty, string price){
+            Console.WriteLine("======AddItemTransferOut========1===="+ product_id); 
             int transaction_type_id = 20+Convert.ToInt32(cmbTransferType.ActiveText);
             string sql="";
             Response resp = new Response();
@@ -898,7 +898,7 @@ namespace Inventorifo.App
             double store_quantity = 0;
             double global_quantity = 0;
             //check available product
-            DataTable dts = CoreCl.fillDtProduct(transaction_type_id,new clStock{product_id=dtItemSelected.Rows[0].ItemArray[0].ToString(),location=cmbSourceLocation.ActiveText,condition=cmbSourceCondition.ActiveText});
+            DataTable dts = CoreCl.fillDtProduct(transaction_type_id,new clStock{product_id=product_id,location=cmbSourceLocation.ActiveText,condition=cmbSourceCondition.ActiveText});
             foreach(DataRow drs in dts.Rows){
                 global_quantity = Convert.ToDouble(drs["global_quantity"].ToString());
                 if(Convert.ToDouble(spnQty.Text) > global_quantity ){
@@ -913,10 +913,10 @@ namespace Inventorifo.App
                 //FIFO show all stock in store location
                 //int transaction_type_id = 20+Convert.ToInt32(cmbTransferType.ActiveText);
                 double balance = 0;
-                balance = Convert.ToDouble(spnQty.Text);  
+                balance = Convert.ToDouble(qty);  
                 sql = "select stock.id stock_id,stock.quantity,stock.product_id,stock.price_id,stock.location,TO_CHAR(stock.expired_date,'yyyy-MM-dd') expired_date, stock.unit, stock.condition "+
                 "from stock,location loc,location_group locgr "+
-                "where stock.quantity>0 and state=0 and product_id="+ dtItemSelected.Rows[0].ItemArray[0].ToString() + " "+
+                "where stock.quantity>0 and state=0 and product_id="+ product_id + " "+
                 "and stock.location=loc.id and loc.location_group=locgr.id "+
                 "order by stock.id asc";
                 Console.WriteLine(sql);   
@@ -928,11 +928,11 @@ namespace Inventorifo.App
                         sql = "update stock set quantity=0 where id="+drs["stock_id"].ToString() ;
                         Console.WriteLine (sql);
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);    
-                        sql = sql = "insert into transfer_item (transaction_id,product_id,quantity,stock_id,purchase_price_id,state) "+
-                        "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+drs["quantity"].ToString()+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1)" ;
+                        sql = "insert into transfer_item (transaction_id,product_id,quantity,stock_id,purchase_price_id,state) "+
+                        "values("+lbTransactionId.Text+ ","+product_id + ","+drs["quantity"].ToString()+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1)" ;
                         Console.WriteLine (sql); 
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);                          
-                        CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), dtItemSelected.Rows[0].ItemArray[0].ToString(),drs["stock_id"].ToString(),cmbSourceLocation.ActiveText,cmbSourceCondition.ActiveText,"-"+drs["quantity"].ToString());
+                        CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), product_id,drs["stock_id"].ToString(),cmbSourceLocation.ActiveText,cmbSourceCondition.ActiveText,"-"+drs["quantity"].ToString());
                     
                         balance = balance-Convert.ToDouble(drs["quantity"].ToString());
                     }else{
@@ -940,11 +940,11 @@ namespace Inventorifo.App
                         sql = "update stock set quantity=quantity-"+balance.ToString()+" where id="+drs["stock_id"].ToString() ;
                         Console.WriteLine (sql);
                         DbCl.ExecuteTrans(DbCl.getConn(), sql); 
-                        sql = sql = "insert into transfer_item (transaction_id,product_id,quantity,stock_id,purchase_price_id,state) "+
-                        "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+balance.ToString()+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1)" ;
+                        sql = "insert into transfer_item (transaction_id,product_id,quantity,stock_id,purchase_price_id,state) "+
+                        "values("+lbTransactionId.Text+ ","+product_id+ ","+balance.ToString()+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1)" ;
                         Console.WriteLine (sql); 
                         DbCl.ExecuteTrans(DbCl.getConn(), sql); 
-                        CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), dtItemSelected.Rows[0].ItemArray[0].ToString(),drs["stock_id"].ToString(),cmbSourceLocation.ActiveText,cmbSourceCondition.ActiveText,"-"+balance.ToString());                      
+                        CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), product_id,drs["stock_id"].ToString(),cmbSourceLocation.ActiveText,cmbSourceCondition.ActiveText,"-"+balance.ToString());                      
                        
                         balance = 0;
                     }
@@ -963,33 +963,99 @@ namespace Inventorifo.App
         private void OnSpnQtyKeyPressEvent(object sender, KeyPressEventArgs e)
         {
             if(dtItemSelected is not null){
-               // Console.WriteLine(e.Event.Key);
                 if (e.Event.Key == Gdk.Key.Return)
                 {   
-                    Console.WriteLine("cmbTransferType.ActiveText "+cmbTransferType.ActiveText);
-                    Response resp = new Response();
                     if(cmbTransferType.ActiveText=="1"){
-                        resp  = AddItemTransferIn();
-                    }else if(cmbTransferType.ActiveText=="2"){
-                        resp =  AddItemInternal();
-                    }else if(cmbTransferType.ActiveText=="3"){
-                        resp  = AddItemTransferOut();
+                        Int64 price_id = InsertPrice("0");
+                        //string product_id, string price_id, string qty
+                        Int64 stock_id = InsertStockIn(dtItemSelected.Rows[0].ItemArray[0].ToString(),price_id.ToString(),spnQty.Text);
+                        string sql = "insert into transfer_order_item (transaction_id,product_id,quantity,stock_id,purchase_price_id,state,location,condition) "+
+                        "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+spnQty.Text+","+ stock_id.ToString() + ","+price_id.ToString()+",1,"+cmbDestinationLocation.ActiveText+","+cmbDestinationCondition.ActiveText+")" ;
+                        Console.WriteLine (sql);
+                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                    }else if(cmbTransferType.ActiveText=="2" || cmbTransferType.ActiveText=="3"){
+                        string sql = "select stock.id stock_id,stock.quantity,stock.product_id,stock.price_id,stock.location,TO_CHAR(stock.expired_date,'yyyy-MM-dd') expired_date, stock.unit, stock.condition "+
+                        "from stock,location loc,location_group locgr "+
+                        "where stock.quantity>0 and state=0 and product_id="+ dtItemSelected.Rows[0].ItemArray[0].ToString() + " "+
+                        "and stock.location=loc.id and loc.location_group=locgr.id "+
+                        "order by stock.id asc limit 1";
+                        Console.WriteLine(sql);   
+                        DataTable dts = DbCl.fillDataTable(DbCl.getConn(), sql);
+                        foreach(DataRow drs in dts.Rows){ 
+                            sql = "insert into transfer_order_item (transaction_id,product_id,quantity,stock_id,purchase_price_id,state) "+
+                            "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+spnQty.Text+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1)" ;
+                            Console.WriteLine (sql); 
+                            DbCl.ExecuteTrans(DbCl.getConn(), sql); 
+                        }
                     }
-                    
-                    if(resp.code=="20"){
-                        SetItemModel(Convert.ToDouble(lbTransactionId.Text));
-                        ItemTransactionReady(true);
-                    }else{
-                        string message = resp.description;
-                        MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, message);
-                        md.Run();
-                        md.Destroy();
-                    }
-                    
-                       
+                    SetTransactionModel("",entSearch.Text.Trim());  
+                    SelectedTrans(lbTransactionId.Text);
+                    SetItemModel(Convert.ToDouble(lbTransactionId.Text));
+                    //TransactionReady();                   
                 } 
             }         
         }
+        private Response DoCheckout()
+        {
+            Response resp = new Response();
+            Boolean valid = false;
+            TreeSelection selection = _treeViewTrans.Selection;
+            TreeIter iter;
+            if(selection.GetSelected( out iter)){
+                Console.WriteLine("Selected Value:"+_lsModelTrans.GetValue (iter, 0).ToString()+_lsModelTrans.GetValue (iter, 1).ToString());
+            }              
+            clTransactionItem1 filterItem = new clTransactionItem1{                    
+                    //product_short_name = entSearch.Text.Trim(),
+            };
+            clTransfer filterTrans = new clTransfer {
+                id=lbTransactionId.Text,
+                transaction_date = DateTime.Now.ToString("yyyy-MM-dd"), 
+                transaction_type_id="1"
+            };
+            DataTable dts = CoreCl.fillDtOrderTransferItem(filterTrans, filterItem);
+            string sql;
+            foreach(DataRow drs in dts.Rows){ 
+                Console.WriteLine("cmbTransferType.ActiveText "+cmbTransferType.ActiveText);
+                if(cmbTransferType.ActiveText=="1"){
+                    resp  = AddItemTransferIn(drs["product_id"].ToString(), drs["quantity"].ToString(),drs["purchase_final_price"].ToString());
+                }else if(cmbTransferType.ActiveText=="2"){
+                    resp =  AddItemInternal(drs["product_id"].ToString(), drs["quantity"].ToString(),drs["purchase_final_price"].ToString());
+                }else if(cmbTransferType.ActiveText=="3"){
+                    resp  = AddItemTransferOut(drs["product_id"].ToString(), drs["quantity"].ToString(),drs["purchase_final_price"].ToString());
+                }
+             
+                if(resp.code=="20"){
+                    sql = "update stock set state=0 where id="+drs["stock_id"].ToString();
+                    Console.WriteLine(sql);
+                    DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                }else{
+                    break;
+                } 
+                sql = "update transfer_order_item set state=0 where id="+drs["id"].ToString();
+                Console.WriteLine(sql);
+                DbCl.ExecuteTrans(DbCl.getConn(), sql);
+            }
+            if(resp.code=="20"){                
+                SetItemModel(Convert.ToDouble(lbTransactionId.Text));
+                ItemTransactionReady(true);
+            }else{
+                string message = resp.description;
+                MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, message);
+                md.Run();
+                md.Destroy();
+            }
+            sql = "update transfer set state=0 where id="+lbTransactionId.Text;
+            Console.WriteLine(sql);
+            DbCl.ExecuteTrans(DbCl.getConn(), sql);
+            SetTransactionModel("",entSearch.Text.Trim());  
+            SelectedTrans(lbTransactionId.Text);
+            SetItemModel(Convert.ToDouble(lbTransactionId.Text));
+            TransactionReady();
+            resp = new Response{ code = "20",description = "Success"} ;
+            
+            return resp;
+        }
+
         private static ListStore CreateNumbersModel()
         {
             ListStore model;
@@ -1359,59 +1425,7 @@ namespace Inventorifo.App
                 md.Destroy();
             }
         }
-        private Response DoCheckout()
-        {
-            Response resp = new Response();
-            Boolean valid = false;
-            TreeSelection selection = _treeViewTrans.Selection;
-            TreeIter iter;
-            if(selection.GetSelected( out iter)){
-                Console.WriteLine("Selected Value:"+_lsModelTrans.GetValue (iter, 0).ToString()+_lsModelTrans.GetValue (iter, 1).ToString());
-            }  
-
-            
-            //if(valid){
-                // if(cmbTransferType.ActiveText=="1"){
-                //     resp  = DoCheckoutTransferIn();
-                // }else if(cmbTransferType.ActiveText=="2"){
-                //     resp =  DoCheckoutInternal();
-                // }else if(cmbTransferType.ActiveText=="3"){
-                //     resp  = DoCheckoutTransferOut();
-                // }
-                // string sql = "select ti.*,tr.source_location_id,tr.source_condition_id, tr.destination_location_id, tr.destination_condition_id "+
-                // "from transfer tr, transfer_item ti where tr.id=ti.transaction_id and tr.id="+lbTransactionId.Text;
-                // Console.WriteLine(sql);
-                // DataTable dt =  DbCl.fillDataTable(DbCl.getConn(), sql);
-                // foreach (DataRow dr in dt.Rows)
-                // {                                       
-                //     sql = "update product set is_active=true where id="+dr["product_id"].ToString();
-                //     Console.WriteLine(sql);
-                //     DbCl.ExecuteTrans(DbCl.getConn(), sql);
-
-                //     //kurangi  source
-                //     CoreCl.InsertStockHistory(dr["transaction_id"].ToString(),"6", dr["product_id"].ToString(),dr["stock_id"].ToString(),dr["source_location_id"].ToString(),dr["source_condition_id"].ToString(),"-"+dr["quantity"].ToString());
-                //     sql = "update stock set state=0 where id="+dr["stock_id"].ToString();
-                //     Console.WriteLine(sql);
-                //     DbCl.ExecuteTrans(DbCl.getConn(), sql);
-
-                //     //tambah dest
-                //     CoreCl.InsertStockHistory(dr["transaction_id"].ToString(),"6", dr["product_id"].ToString(),dr["stock_id"].ToString(),dr["destination_location_id"].ToString(),dr["destination_condition_id"].ToString(),dr["quantity"].ToString());
-                //     sql = "update stock set state=0 where id="+dr["stock_id"].ToString();
-                //     Console.WriteLine(sql);
-                //     DbCl.ExecuteTrans(DbCl.getConn(), sql);
-
-                // }
-                string sql = "update transfer_item set state=0 where transaction_id="+lbTransactionId.Text;
-                Console.WriteLine(sql);
-                DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                SetTransactionModel("",entSearch.Text.Trim());  
-                SelectedTrans(lbTransactionId.Text);
-                SetItemModel(Convert.ToDouble(lbTransactionId.Text));
-                TransactionReady();
-                resp = new Response{ code = "20",description = "Success"} ;
-            //}  
-            return resp;
-        }
+        
         
         private void EditingStarted(object o, EditingStartedArgs args)
         {

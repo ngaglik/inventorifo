@@ -261,7 +261,54 @@ namespace Inventorifo.Lib
                 Console.WriteLine(sql);
                 return DbCl.fillDataTable(DbCl.getConn(), sql);
         }
-
+        public DataTable fillDtOrderTransactionItem(clTransaction filterTrans, clTransactionItem1 filterItem){
+            Console.WriteLine("fillDtOrderTransactionItem");
+            string whrfind = "",whrid="",whritemid="", whrdate="",whrtype="";
+            ;
+            if(filterTrans.id is null || filterTrans.id=="") {
+            }else{
+                whrid = "and tr.id = '"+filterTrans.id+"' ";
+            }
+            if(filterTrans.transaction_type_id is null || filterTrans.transaction_type_id=="") {
+            }else{
+                whrtype = "and tr.transaction_type = '"+filterTrans.transaction_type_id+"' ";
+            }
+            if(filterTrans.transaction_date is null || filterTrans.transaction_date=="") {
+            }else{
+                whrdate = "and tr.transaction_date = '"+filterTrans.transaction_date+"' ";
+            }
+            if(filterItem.id is null || filterItem.id=="") {
+            }else{
+                whritemid = "and ti.id = '"+filterItem.id+"' ";
+            }
+            if(filterItem.product_short_name is null || filterItem.product_short_name==""){
+                //return new DataTable();
+            }else{
+                if(filterItem.product_short_name.Length>=2){
+                    whrfind = "and (upper(pr.name) like upper('" + filterItem.product_name + "%') or upper(pr.short_name) like upper('" + filterItem.product_short_name + "%')) ";
+                }
+            }  
+            string whrstate = "";
+            //if(state!="") whrstate = "and ti.state="+state +" ";
+            
+             string sql = "select ti.id, ti.transaction_id, ti.product_id, pr.short_name product_short_name, pr.name product_name,ti.stock_id, "+
+            "case when ti.tax is null then 0 else ti.tax end tax, ti.state, state.name state_name, "+
+            "ti.quantity, st.unit,un.name unit_name, "+
+            "pp.id purchase_price_id, pp.item_price purchase_item_price,pp.main_discount purchase_main_discount, pp.additional_discount purchase_additional_discount, pp.deduction_amount purchase_deduction_amount, pp.final_price purchase_final_price, 0 purchase_subtotal, pp.tax purchase_tax, "+
+            "st.location, lo.name location_name, st.condition, co.name condition_name, "+
+            "pr.price1 item_price, 0 main_discount, 0 additional_discount, 0 deduction_amount, 0 final_price, 0 subtotal, 0 tax "+
+            "from transaction tr, transaction_item_state state, transaction_order_item ti, product pr, stock st "+
+            "LEFT OUTER JOIN purchase_price pp on pp.id = st.price_id "+
+            "left outer join unit un on un.id=st.unit "+
+            "left outer join condition co on st.condition=co.id "+
+            "left outer join location lo on st.location=lo.id "+
+            "where tr.id=ti.transaction_id and ti.product_id=pr.id and ti.stock_id=st.id and state.id=ti.state "+
+             whrid+whrstate+
+            "ORDER by ti.id desc";
+            //tekan kene
+            Console.WriteLine(sql);            
+            return DbCl.fillDataTable(DbCl.getConn(), sql);
+        }
         public DataTable fillDtTransactionItem(clTransaction filterTrans, clTransactionItem1 filterItem){
             Console.WriteLine("fillDtTransactionItem");
             string whrfind = "",whrid="",whritemid="", whrdate="",whrtype="";
@@ -431,8 +478,55 @@ namespace Inventorifo.Lib
                 Console.WriteLine(sql);
                 return DbCl.fillDataTable(DbCl.getConn(), sql);
         }
+        public DataTable fillDtOrderTransferItem(clTransfer filterTrans, clTransactionItem1 filterItem){
+            Console.WriteLine("fillDtOrderTransferItem");
+            string whrfind = "",whrid="",whritemid="", whrdate="",whrtype="";
+            ;
+            if(filterTrans.id is null || filterTrans.id=="") {
+            }else{
+                whrid = "and tr.id = '"+filterTrans.id+"' ";
+            }
+            if(filterTrans.transaction_type_id is null || filterTrans.transaction_type_id=="") {
+            }else{
+                whrtype = "and tr.transaction_type = '"+filterTrans.transaction_type_id+"' ";
+            }
+            if(filterTrans.transaction_date is null || filterTrans.transaction_date=="") {
+            }else{
+                whrdate = "and tr.transaction_date = '"+filterTrans.transaction_date+"' ";
+            }
+            if(filterItem.id is null || filterItem.id=="") {
+            }else{
+                whritemid = "and ti.id = '"+filterItem.id+"' ";
+            }
+            if(filterItem.product_short_name is null || filterItem.product_short_name==""){
+                //return new DataTable();
+            }else{
+                if(filterItem.product_short_name.Length>=2){
+                    whrfind = "and (upper(pr.name) like upper('" + filterItem.product_name + "%') or upper(pr.short_name) like upper('" + filterItem.product_short_name + "%')) ";
+                }
+            }  
+            string whrstate = "";
+            //if(state!="") whrstate = "and ti.state="+state +" ";
+            
+             string sql = "select ti.id, ti.transaction_id, ti.product_id, pr.short_name product_short_name, pr.name product_name,ti.stock_id, "+
+            "case when ti.tax is null then 0 else ti.tax end tax, ti.state, state.name state_name, "+
+            "ti.quantity, st.unit,un.name unit_name, "+
+            "pp.id purchase_price_id, pp.item_price purchase_item_price,pp.main_discount purchase_main_discount, pp.additional_discount purchase_additional_discount, pp.deduction_amount purchase_deduction_amount, pp.final_price purchase_final_price, 0 purchase_subtotal, pp.tax purchase_tax, "+
+            "st.location, lo.name location_name, st.condition, co.name condition_name "+
+            "from transfer tr, transaction_item_state state, transfer_order_item ti, product pr, stock st "+
+            "LEFT OUTER JOIN purchase_price pp on pp.id = st.price_id "+
+            "left outer join unit un on un.id=st.unit "+
+            "left outer join condition co on st.condition=co.id "+
+            "left outer join location lo on st.location=lo.id "+
+            "where tr.id=ti.transaction_id and ti.product_id=pr.id and ti.stock_id=st.id and state.id=ti.state "+
+             whrid+whrstate+
+            "ORDER by ti.id desc";
+            //tekan kene
+            Console.WriteLine(sql);            
+            return DbCl.fillDataTable(DbCl.getConn(), sql);
+        }
         public DataTable fillDtTransferItem(clTransfer filterTrans, clTransactionItem1 filterItem){
-           Console.WriteLine("fillDtTransactionItem");
+           Console.WriteLine("fillDtTransferItem");
             string whrfind = "",whrid="",whritemid="", whrdate="",whrtype="";
             ;
             if(filterTrans.id is null || filterTrans.id=="") {

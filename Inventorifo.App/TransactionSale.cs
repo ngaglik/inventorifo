@@ -89,7 +89,6 @@ namespace Inventorifo.App
         private enum ColumnTrans
         { 
             id,
-            reference_date,
             reference_id,
             customer_id,
             organization_name,
@@ -135,13 +134,7 @@ namespace Inventorifo.App
             unit,
             unit_name,
             purchase_price_id,
-            purchase_item_price,
-            purchase_main_discount,
-            purchase_additional_discount,
-            purchase_deduction_amount,
             purchase_final_price,
-            purchase_subtotal,
-            purchase_tax,
             item_price,
             main_discount,
             additional_discount,
@@ -237,7 +230,7 @@ namespace Inventorifo.App
             _treeViewTrans = (TreeView)builder.GetObject("TreeViewTrans");
             _treeViewTrans.Selection.Mode = SelectionMode.Single;
             textForeground = "green";
-            textBackground = "lightred";
+            textBackground = "white";
             isEditable = true;
             AddColumnsTrans(); 
             _treeViewTrans.Selection.Changed += HandleTreeVewSelectedTrans;
@@ -353,11 +346,16 @@ namespace Inventorifo.App
         }
         private void SelectedTrans(string transaction_id)
         {
-            filterTrans.transaction_date = btnDate.Label;
-            filterTrans.id = transaction_id;
+            // filterTrans.transaction_date = btnDate.Label;
+            // filterTrans.id = transaction_id;
             clTransaction tran;
+            clTransaction filterTrans = new clTransaction {
+                    id=transaction_id.ToString(),
+                    transaction_date = btnDate.Label, 
+                    transaction_type_id="2"
+                };
             DataTable dt =  CoreCl.fillDtTransactionSale(filterTrans);
-            foreach (DataRow dr in dtTransSelected.Rows)
+            foreach (DataRow dr in dt.Rows)
             { 
                 var id = transaction_id;
                 var state = dr["state"].ToString();
@@ -579,30 +577,7 @@ namespace Inventorifo.App
             SelectFirstRow(_lsModelTrans,_treeViewTrans);
             popoverDate.Hide();
         }
-        // private DataTable fillDtTransaction(string transaction_id, string strfind){
-        //     string whrfind = "",whrid="";
-        //     if(transaction_id!="") whrid = "and tr.id="+transaction_id+ " ";
-        //     if(strfind!="") whrfind = "and (upper(sup.organization_name) like upper('" + strfind + "%') or upper(pers.name) like upper('" + strfind + "%') )";
-            
-        //     string sql = "select tr.id,tr.reference_id, "+
-        //         "tr.customer_id,sup.organization_name,sup.organization_address,sup.organization_phone_number,pers.name person_name,pers.phone_number person_phone_number, "+
-        //         "tr.transaction_type transaction_type_id, ty.name transaction_type_name, TO_CHAR(tr.transaction_date,'yyyy-mm-dd') transaction_date, tr.transaction_amount, tr.return_amount, "+
-        //         "tr.payment_group_id, py.name payment_group_name, tr.payment_amount, "+
-        //         "tr.user_id, usr.name user_name,  "+
-        //         "tr.state, st.name state_name, st.fgcolor state_fgcolor, st.bgcolor state_bgcolor,  "+
-        //         "tr.application_id, tr.tax_amount, tr.is_tax "+
-        //         "from transaction tr left outer join customer sup on tr.customer_id=sup.id "+
-        //         "left outer join payment_group py on tr.payment_group_id = py.id "+
-        //         "left outer join person pers on sup.person_id=pers.id, "+
-        //         "transaction_state st, transaction_type ty, "+
-        //         "(select usr.id, pers.name, pers.phone_number from person pers,userlogin usr where usr.person_id=pers.id) usr "+
-        //         "where tr.transaction_type=2 and tr.state=st.id and tr.transaction_type=ty.id "+
-        //         "and tr.transaction_date::date = '"+btnDate.Label+"'::date and usr.id=tr.user_id "+
-        //         whrid+ whrfind+ 
-        //         "ORDER by tr.id desc";
-        //         Console.WriteLine(sql);
-        //         return DbCl.fillDataTable(DbCl.getConn(), sql);
-        // }
+        
         private void SetTransactionModel(string transaction_id, string strfind)
         {                  
                 //ListStore model;
@@ -610,12 +585,17 @@ namespace Inventorifo.App
                 TreeIter iter;
                 /* create array */
                 _clsTrans = new List<clTransaction>();               
-                filterTrans.transaction_date = btnDate.Label;
-                filterTrans.person_name = strfind;
-                filterTrans.id = transaction_id;
+                // filterTrans.transaction_date = btnDate.Label;
+                // filterTrans.person_name = strfind;
+                // filterTrans.id = transaction_id;
+                clTransaction filterTrans = new clTransaction {
+                    id=transaction_id.ToString(),
+                    transaction_date = btnDate.Label, 
+                    transaction_type_id="2"
+                };
                 clTransaction tran;
                 DataTable dt =  CoreCl.fillDtTransactionSale(filterTrans);
-                foreach (DataRow dr in dtTransSelected.Rows)
+                foreach (DataRow dr in dt.Rows)
                 {              
                     tran = new clTransaction{    
                         id=dr["id"].ToString(),
@@ -692,7 +672,7 @@ namespace Inventorifo.App
             clTransactionItem1 filterItem = new clTransactionItem1{                    
                 //product_short_name = entSearch.Text.Trim(),
             };
-            DataTable dt = CoreCl.fillDtTransactionItem(filterTrans, filterItem);
+            DataTable dt = CoreCl.fillDtOrderTransactionItem(filterTrans, filterItem);
             foreach (DataRow dr in dt.Rows)
             {   
                 item = new clTransactionItem1{
@@ -706,13 +686,16 @@ namespace Inventorifo.App
                     unit=dr["unit"].ToString(),
                     unit_name=dr["unit_name"].ToString(),
                     purchase_price_id=dr["purchase_price_id"].ToString(),
-                    purchase_item_price=dr["purchase_item_price"].ToString(),
-                    purchase_main_discount=dr["purchase_main_discount"].ToString(),
-                    purchase_additional_discount=dr["purchase_additional_discount"].ToString(),
-                    purchase_deduction_amount=dr["purchase_deduction_amount"].ToString(),
-                    purchase_final_price= dr["purchase_final_price"].ToString(),
                     purchase_subtotal= (Convert.ToDouble(dr["purchase_final_price"].ToString())*Convert.ToDouble(dr["quantity"].ToString())).ToString(),
-                    purchase_tax=dr["purchase_tax"].ToString(),
+                    
+
+                    item_price=dr["item_price"].ToString(),
+                    main_discount=dr["main_discount"].ToString(),
+                    additional_discount=dr["additional_discount"].ToString(),
+                    deduction_amount=dr["deduction_amount"].ToString(),
+                    final_price= dr["final_price"].ToString(),
+                    subtotal=dr["subtotal"].ToString(), 
+                    tax=dr["tax"].ToString(),
                     state=dr["state"].ToString(), 
                     state_name=dr["state_name"].ToString(), 
                     location=dr["location"].ToString(), 
@@ -723,7 +706,7 @@ namespace Inventorifo.App
                 _clsItems.Add(item);                    
             }
 
-            _lsModelItems = new ListStore(typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string));
+            _lsModelItems = new ListStore(typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string));
 
             /* add items */
             for (int i = 0; i < _clsItems.Count; i++)
@@ -738,9 +721,14 @@ namespace Inventorifo.App
                 _lsModelItems.SetValue(iter, (int)ColumnItems.quantity, _clsItems[i].quantity);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.unit, _clsItems[i].unit);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.unit_name, _clsItems[i].unit_name);
-                _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_final_price, _clsItems[i].purchase_final_price);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_price_id, _clsItems[i].purchase_price_id);
+                _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_final_price, _clsItems[i].purchase_final_price);
+                _lsModelItems.SetValue(iter, (int)ColumnItems.item_price, _clsItems[i].item_price);
+                _lsModelItems.SetValue(iter, (int)ColumnItems.main_discount, _clsItems[i].main_discount);
+                _lsModelItems.SetValue(iter, (int)ColumnItems.additional_discount, _clsItems[i].additional_discount);
+                _lsModelItems.SetValue(iter, (int)ColumnItems.deduction_amount, _clsItems[i].deduction_amount);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.final_price, _clsItems[i].final_price);
+                _lsModelItems.SetValue(iter, (int)ColumnItems.subtotal, _clsItems[i].subtotal);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.tax, _clsItems[i].tax);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.state, _clsItems[i].state);
                 _lsModelItems.SetValue(iter, (int)ColumnItems.state_name, _clsItems[i].state_name);
@@ -767,23 +755,28 @@ namespace Inventorifo.App
                 TreeIter iter;
                 if(selection.GetSelected( out iter)){
                     Console.WriteLine("Selected Value:"+_lsModelItems.GetValue (iter, 0).ToString()+_lsModelItems.GetValue (iter, 1).ToString());
-                }            
-                Console.WriteLine("state: "+_lsModelItems.GetValue (iter, 13).ToString());
-                if(_lsModelItems.GetValue (iter, 13).ToString()!="0"){
-                    string sql = "delete from stock where id="+_lsModelItems.GetValue (iter, 5).ToString();
-                    Console.WriteLine(sql);
-                    DbCl.ExecuteScalar(DbCl.getConn(), sql);
-                    sql = "delete from transaction_item where id="+_lsModelItems.GetValue (iter, 0).ToString();
-                    Console.WriteLine(sql);
-                    DbCl.ExecuteScalar(DbCl.getConn(), sql);
-                    SetItemModel(Convert.ToDouble(lbTransactionId.Text));
-                    if(GetTotalItem()==0) {
-                        sql = "update transaction set state=1 where id="+lbTransactionId.Text;
-                        Console.WriteLine (sql);
-                        DbCl.ExecuteTrans(DbCl.getConn(), sql);                     
-                    }
-                    ItemTransactionReady(true);
-                }
+                }  
+                string sql = "delete from transaction_order_item where id="+_lsModelItems.GetValue (iter, 0).ToString();
+                Console.WriteLine(sql);
+                DbCl.ExecuteScalar(DbCl.getConn(), sql);
+                SetItemModel(Convert.ToDouble(lbTransactionId.Text));
+
+                // Console.WriteLine("state: "+_lsModelItems.GetValue (iter, 13).ToString());
+                // if(_lsModelItems.GetValue (iter, 13).ToString()!="0"){
+                //     string sql = "delete from stock where id="+_lsModelItems.GetValue (iter, 5).ToString();
+                //     Console.WriteLine(sql);
+                //     DbCl.ExecuteScalar(DbCl.getConn(), sql);
+                //     sql = "delete from transaction_item where id="+_lsModelItems.GetValue (iter, 0).ToString();
+                //     Console.WriteLine(sql);
+                //     DbCl.ExecuteScalar(DbCl.getConn(), sql);
+                //     SetItemModel(Convert.ToDouble(lbTransactionId.Text));
+                //     if(GetTotalItem()==0) {
+                //         sql = "update transaction set state=1 where id="+lbTransactionId.Text;
+                //         Console.WriteLine (sql);
+                //         DbCl.ExecuteTrans(DbCl.getConn(), sql);                     
+                //     }
+                //     ItemTransactionReady(true);
+                // }
             }
                       
         }
@@ -824,22 +817,22 @@ namespace Inventorifo.App
             textViewProduct.Buffer.InsertWithTags (ref iter, dtItemSelected.Rows[0].ItemArray[5].ToString(), tag);
         }
        
-        public Response AddItem(){
-            Console.WriteLine("==============1===="+ dtItemSelected.Rows[0].ItemArray[0].ToString()); 
+        public Response AddItem(string product_id, string quantity){
+            Console.WriteLine("==============1===="+ product_id); 
             string sql="";
             Response resp = new Response();
             Boolean valid=false; 
             double store_quantity = 0;
             double global_quantity = 0;
             //check available product
-            DataTable dts = CoreCl.fillDtProduct(2,new clStock{product_id=dtItemSelected.Rows[0].ItemArray[0].ToString()});
+            DataTable dts = CoreCl.fillDtProduct(2,new clStock{product_id=product_id});
             foreach(DataRow drs in dts.Rows){
                 Console.WriteLine(drs["short_name"].ToString()+"======2======== "+drs["store_quantity"].ToString()+"===="); 
                 store_quantity =  Convert.ToDouble(drs["store_quantity"].ToString()); 
                 global_quantity = Convert.ToDouble(drs["global_quantity"].ToString());
-                if(Convert.ToDouble(spnQty.Text) > store_quantity  && Convert.ToDouble(spnQty.Text) < global_quantity ){
+                if(Convert.ToDouble(quantity) > store_quantity  && Convert.ToDouble(quantity) < global_quantity ){
                     resp = new Response{ code = "21",description = "Failed "+drs["short_name"].ToString()+" out of stock, but available on other location"} ;
-                }else if(Convert.ToDouble(spnQty.Text) > store_quantity ){
+                }else if(Convert.ToDouble(quantity) > store_quantity ){
                     resp = new Response{ code = "22",description = "Failed, "+drs["short_name"].ToString()+" out of stock on store"} ;
                 }else{
                     resp = new Response{ code = "20",description = "Success"} ;
@@ -854,32 +847,30 @@ namespace Inventorifo.App
                 //FIFO show all stock in store location
                 sql = "select stock.id stock_id,stock.quantity,stock.product_id,stock.price_id,stock.location, stock.condition "+
                 "from stock,location loc,location_group locgr "+
-                "where stock.quantity>0 and state=0 and locgr.id=2 and product_id="+ dtItemSelected.Rows[0].ItemArray[0].ToString() + " "+
+                "where stock.quantity>0 and state=0 and locgr.id=2 and product_id="+ product_id + " "+
                 "and stock.location=loc.id and loc.location_group=locgr.id "+
                 "order by stock.id asc";
                 Console.WriteLine(sql);   
                 double balance = 0;
                 dts = DbCl.fillDataTable(DbCl.getConn(), sql);
-                balance = Convert.ToDouble(spnQty.Text);  
+                balance = Convert.ToDouble(quantity);  
                 foreach(DataRow drs in dts.Rows){                    
-                    if(Convert.ToDouble(balance) > Convert.ToDouble(drs["quantity"].ToString()) ){
-                        
+                    if(Convert.ToDouble(balance) > Convert.ToDouble(drs["quantity"].ToString()) ){                        
                         sql = "insert into transaction_item (transaction_id,product_id,quantity,stock_id,price_id,state, location, condition) "+
-                        "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+drs["quantity"].ToString()+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1,"+ drs["location"].ToString() + ","+drs["condition"].ToString()+")" ;
+                        "values("+lbTransactionId.Text+ ","+product_id + ","+drs["quantity"].ToString()+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1,"+ drs["location"].ToString() + ","+drs["condition"].ToString()+")" ;
                         Console.WriteLine (sql); 
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);  
-                        CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), dtItemSelected.Rows[0].ItemArray[0].ToString(), drs["stock_id"].ToString(),drs["location"].ToString(),drs["condition"].ToString(),"-"+drs["quantity"].ToString());
+                        CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), product_id, drs["stock_id"].ToString(),drs["location"].ToString(),drs["condition"].ToString(),"-"+drs["quantity"].ToString());
                         sql = "update stock set quantity=0 where id="+drs["stock_id"].ToString() ;
                         Console.WriteLine (sql);
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);
                         balance = balance-Convert.ToDouble(drs["quantity"].ToString());
-                    }else{
-                        
+                    }else{                        
                         sql = "insert into transaction_item (transaction_id,product_id,quantity,stock_id,price_id,state, location, condition) "+
-                        "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+balance.ToString()+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1,"+ drs["location"].ToString() + ","+drs["condition"].ToString()+")" ;
+                        "values("+lbTransactionId.Text+ ","+product_id + ","+balance.ToString()+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1,"+ drs["location"].ToString() + ","+drs["condition"].ToString()+")" ;
                         Console.WriteLine (sql); 
                         DbCl.ExecuteTrans(DbCl.getConn(), sql); 
-                        CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), dtItemSelected.Rows[0].ItemArray[0].ToString(), drs["stock_id"].ToString(),drs["location"].ToString(),drs["condition"].ToString(),"-"+balance.ToString());
+                        CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), product_id, drs["stock_id"].ToString(),drs["location"].ToString(),drs["condition"].ToString(),"-"+balance.ToString());
                         sql = "update stock set quantity=quantity-"+balance.ToString()+" where id="+drs["stock_id"].ToString() ;
                         Console.WriteLine (sql);
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);
@@ -903,21 +894,88 @@ namespace Inventorifo.App
                // Console.WriteLine(e.Event.Key);
                 if (e.Event.Key == Gdk.Key.Return)
                 {    
-                    Response resp = AddItem();
-                    if(resp.code=="20"){
-                        SetItemModel(Convert.ToDouble(lbTransactionId.Text));
-                        ItemTransactionReady(true);
-                    }else{
-                        string message = resp.description;
-                        MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, message);
-                        md.Run();
-                        md.Destroy();
+                    string sql = "select stock.id stock_id,stock.quantity,stock.product_id,stock.price_id,stock.location,TO_CHAR(stock.expired_date,'yyyy-MM-dd') expired_date, stock.unit, stock.condition "+
+                    "from stock,location loc,location_group locgr "+
+                    "where stock.quantity>0 and state=0 and product_id="+ dtItemSelected.Rows[0].ItemArray[0].ToString() + " "+
+                    "and stock.location=loc.id and loc.location_group=locgr.id "+
+                    "order by stock.id asc limit 1";
+                    Console.WriteLine(sql);   
+                    DataTable dts = DbCl.fillDataTable(DbCl.getConn(), sql);
+                    foreach(DataRow drs in dts.Rows){ 
+                        sql = "insert into transaction_order_item (transaction_id,product_id,quantity,stock_id,purchase_price_id,state) "+
+                        "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+spnQty.Text+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1)" ;
+                        Console.WriteLine (sql); 
+                        DbCl.ExecuteTrans(DbCl.getConn(), sql); 
                     }
-                    
-                       
+                    SetItemModel(Convert.ToDouble(lbTransactionId.Text));
+                    ItemTransactionReady(true);
+                    // Response resp = AddItem();
+                    // if(resp.code=="20"){
+                    //     SetItemModel(Convert.ToDouble(lbTransactionId.Text));
+                    //     ItemTransactionReady(true);
+                    // }else{
+                    //     string message = resp.description;
+                    //     MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, message);
+                    //     md.Run();
+                    //     md.Destroy();
+                    // }
                 } 
             }         
         }
+
+        private Response DoCheckout()
+        {
+            Response resp = new Response();
+            Boolean valid = false;           
+
+            if( Convert.ToInt32(cmbPaymentMethod.ActiveText) < 5){
+                if(Convert.ToInt32(entAmountPayment.Text) < Convert.ToInt32(entTransactionAmount.Text)){
+                    resp = new Response{ code = "23",description = "Oh sorry, payment amount less than total Sale price"};
+                    valid=false;
+                }else{
+                    valid = true;
+                }
+            }else{
+                valid=true;
+            }
+            if(valid){
+                clTransactionItem1 filterItem = new clTransactionItem1{                    
+                    //product_short_name = entSearch.Text.Trim(),
+                };
+                clTransaction filterTrans = new clTransaction {
+                    id=lbTransactionId.Text,
+                    transaction_date = DateTime.Now.ToString("yyyy-MM-dd"), 
+                    transaction_type_id="1"
+                };
+                DataTable dts = CoreCl.fillDtOrderTransactionItem(filterTrans, filterItem);
+                string sql;
+                foreach(DataRow drs in dts.Rows){
+                    resp  = AddItem(drs["product_id"].ToString(), drs["quantity"].ToString());
+                    
+                    sql = "update transaction_order_item set state=0 where id="+drs["id"].ToString();
+                    Console.WriteLine(sql);
+                    DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                }
+               
+                 sql = "update transaction_item set state=0 where transaction_id="+lbTransactionId.Text;
+                Console.WriteLine(sql);
+                DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                sql = "insert into payment (transaction_id,payment_date,amount,user_id) values ("+lbTransactionId.Text+",CURRENT_TIMESTAMP,"+entAmountPayment.Text.Trim()+","+this.parent.user.id+")";
+                Console.WriteLine(sql);
+                DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                sql = "update transaction set transaction_amount="+entTransactionAmount.Text.Trim()+", payment_amount=" + CoreCl.GetPaymentAmount(lbTransactionId.Text)+", payment_group_id="+cmbPaymentMethod.ActiveText+", state=0 where id="+lbTransactionId.Text;
+                Console.WriteLine(sql);
+                DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                SetTransactionModel("",entSearch.Text.Trim());  
+                SelectedTrans(lbTransactionId.Text);
+                SetItemModel(Convert.ToDouble(lbTransactionId.Text));
+                //ItemTransactionReady(false);
+                TransactionReady();
+                resp = new Response{ code = "20",description = "Success"} ;
+            }  
+            return resp;
+        }
+
         private static ListStore CreateNumbersModel()
         {
             ListStore model;
@@ -1283,42 +1341,7 @@ namespace Inventorifo.App
                 md.Destroy();
             }
         }
-        private Response DoCheckout()
-        {
-            Response resp = new Response();
-            Boolean valid = false;
-           
-
-            if( Convert.ToInt32(cmbPaymentMethod.ActiveText) < 5){
-                if(Convert.ToInt32(entAmountPayment.Text) < Convert.ToInt32(entTransactionAmount.Text)){
-                    resp = new Response{ code = "23",description = "Oh sorry, payment amount less than total Sale price"};
-                    valid=false;
-                }else{
-                    valid = true;
-                }
-            }else{
-                valid=true;
-            }
-            if(valid){
-               
-                string sql = "update transaction_item set state=0 where transaction_id="+lbTransactionId.Text;
-                Console.WriteLine(sql);
-                DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                sql = "insert into payment (transaction_id,payment_date,amount,user_id) values ("+lbTransactionId.Text+",CURRENT_TIMESTAMP,"+entAmountPayment.Text.Trim()+","+this.parent.user.id+")";
-                Console.WriteLine(sql);
-                DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                sql = "update transaction set transaction_amount="+entTransactionAmount.Text.Trim()+", payment_amount=" + CoreCl.GetPaymentAmount(lbTransactionId.Text)+", payment_group_id="+cmbPaymentMethod.ActiveText+", state=0 where id="+lbTransactionId.Text;
-                Console.WriteLine(sql);
-                DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                SetTransactionModel("",entSearch.Text.Trim());  
-                SelectedTrans(lbTransactionId.Text);
-                SetItemModel(Convert.ToDouble(lbTransactionId.Text));
-                //ItemTransactionReady(false);
-                TransactionReady();
-                resp = new Response{ code = "20",description = "Success"} ;
-            }  
-            return resp;
-        }
+        
         
         private void EditingStarted(object o, EditingStartedArgs args)
         {

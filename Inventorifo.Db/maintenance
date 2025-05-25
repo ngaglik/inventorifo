@@ -1,5 +1,7 @@
+truncate table transaction_order_item;
 truncate table transaction_item;
 truncate table transaction;
+truncate table transfer_order_item;
 truncate table transfer_item;
 truncate table transfer;
 truncate table payment;
@@ -63,6 +65,46 @@ CREATE TABLE "public"."transfer_item" (
   "condition" INTEGER NULL,
   CONSTRAINT "PK_transfer_item" PRIMARY KEY ("id")
 );
+
+CREATE TABLE "public"."transfer_order_item" ( 
+  "id" BIGSERIAL,
+  "transaction_id" BIGINT NULL,
+  "product_id" BIGINT NULL,
+  "stock_id" BIGINT NULL,
+  "quantity" DOUBLE PRECISION NULL DEFAULT 0 ,
+  "unit" INTEGER NULL DEFAULT 0 ,
+  "purchase_price_id" BIGINT NULL,
+  "item_price" DOUBLE PRECISION NULL DEFAULT 0 ,
+  "main_discount" INTEGER NULL DEFAULT 0 ,
+  "additional_discount" INTEGER NULL DEFAULT 0 ,
+  "deduction_amount" DOUBLE PRECISION NULL DEFAULT 0 ,
+  "final_price" DOUBLE PRECISION NULL DEFAULT 0 ,
+  "tax" DOUBLE PRECISION NULL DEFAULT 0 ,
+  "state" INTEGER NULL DEFAULT 1 ,
+  "location" INTEGER NULL,
+  "condition" INTEGER NULL,
+  CONSTRAINT "PK_transfer_order_item" PRIMARY KEY ("id")
+);
+CREATE TABLE "public"."transaction_order_item" ( 
+  "id" BIGSERIAL,
+  "transaction_id" BIGINT NULL,
+  "product_id" BIGINT NULL,
+  "stock_id" BIGINT NULL,
+  "quantity" DOUBLE PRECISION NULL DEFAULT 0 ,
+  "unit" INTEGER NULL DEFAULT 0 ,
+  "purchase_price_id" BIGINT NULL,
+  "item_price" DOUBLE PRECISION NULL DEFAULT 0 ,
+  "main_discount" INTEGER NULL DEFAULT 0 ,
+  "additional_discount" INTEGER NULL DEFAULT 0 ,
+  "deduction_amount" DOUBLE PRECISION NULL DEFAULT 0 ,
+  "final_price" DOUBLE PRECISION NULL DEFAULT 0 ,
+  "tax" DOUBLE PRECISION NULL DEFAULT 0 ,
+  "state" INTEGER NULL DEFAULT 1 ,
+  "location" INTEGER NULL,
+  "condition" INTEGER NULL,
+  CONSTRAINT "PK_transaction_order_item" PRIMARY KEY ("id")
+);
+
 
 /opt/PostgreSQL/10/bin/pg_dump -h localhost -p 5432 -U postgres -F c -b -v -f  "inventorifo.backup" -d inventorifo
 
