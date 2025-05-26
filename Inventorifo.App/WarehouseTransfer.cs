@@ -988,8 +988,8 @@ namespace Inventorifo.App
                             DbCl.ExecuteTrans(DbCl.getConn(), sql); 
                         }
                     }
-                    SetTransactionModel("",entSearch.Text.Trim());  
-                    SelectedTrans(lbTransactionId.Text);
+                   // SetTransactionModel("",entSearch.Text.Trim());  
+                    //SelectedTrans(lbTransactionId.Text);
                     SetItemModel(Convert.ToDouble(lbTransactionId.Text));
                     //TransactionReady();                   
                 } 

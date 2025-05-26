@@ -125,15 +125,15 @@ namespace Inventorifo.App
         }
         private void SaleMenuItem_Activated(object sender, EventArgs a)
         {
-            // string message = "Oh sorry, UNDER CONSTRUCTION MENU ";
-            // MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, message);
-            // md.Run();
-            // md.Destroy();
-            ClearMainBox();
-            clTransaction filterTrans = new clTransaction {transaction_date = DateTime.Now.ToString("yyyy-MM-dd"), transaction_type_id="2"};
-            TransactionSale transWidget = new TransactionSale(this,filterTrans);
-            mainBox.PackStart(transWidget, false, true, 5);
-            transWidget.ShowAll();
+            string message = "Oh sorry, UNDER CONSTRUCTION MENU ";
+            MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, message);
+            md.Run();
+            md.Destroy();
+            // ClearMainBox();
+            // clTransaction filterTrans = new clTransaction {transaction_date = DateTime.Now.ToString("yyyy-MM-dd"), transaction_type_id="2"};
+            // TransactionSale transWidget = new TransactionSale(this,filterTrans);
+            // mainBox.PackStart(transWidget, false, true, 5);
+            // transWidget.ShowAll();
         }
         private void SaleReturnMenuItem_Activated(object sender, EventArgs a){
             string message = "Oh sorry, UNDER CONSTRUCTION MENU ";
