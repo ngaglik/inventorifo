@@ -687,8 +687,6 @@ namespace Inventorifo.App
                     unit_name=dr["unit_name"].ToString(),
                     purchase_price_id=dr["purchase_price_id"].ToString(),
                     purchase_subtotal= (Convert.ToDouble(dr["purchase_final_price"].ToString())*Convert.ToDouble(dr["quantity"].ToString())).ToString(),
-                    
-
                     item_price=dr["item_price"].ToString(),
                     main_discount=dr["main_discount"].ToString(),
                     additional_discount=dr["additional_discount"].ToString(),
@@ -755,28 +753,13 @@ namespace Inventorifo.App
                 TreeIter iter;
                 if(selection.GetSelected( out iter)){
                     Console.WriteLine("Selected Value:"+_lsModelItems.GetValue (iter, 0).ToString()+_lsModelItems.GetValue (iter, 1).ToString());
-                }  
-                string sql = "delete from transaction_order_item where id="+_lsModelItems.GetValue (iter, 0).ToString();
-                Console.WriteLine(sql);
-                DbCl.ExecuteScalar(DbCl.getConn(), sql);
-                SetItemModel(Convert.ToDouble(lbTransactionId.Text));
-
-                // Console.WriteLine("state: "+_lsModelItems.GetValue (iter, 13).ToString());
-                // if(_lsModelItems.GetValue (iter, 13).ToString()!="0"){
-                //     string sql = "delete from stock where id="+_lsModelItems.GetValue (iter, 5).ToString();
-                //     Console.WriteLine(sql);
-                //     DbCl.ExecuteScalar(DbCl.getConn(), sql);
-                //     sql = "delete from transaction_item where id="+_lsModelItems.GetValue (iter, 0).ToString();
-                //     Console.WriteLine(sql);
-                //     DbCl.ExecuteScalar(DbCl.getConn(), sql);
-                //     SetItemModel(Convert.ToDouble(lbTransactionId.Text));
-                //     if(GetTotalItem()==0) {
-                //         sql = "update transaction set state=1 where id="+lbTransactionId.Text;
-                //         Console.WriteLine (sql);
-                //         DbCl.ExecuteTrans(DbCl.getConn(), sql);                     
-                //     }
-                //     ItemTransactionReady(true);
-                // }
+                } 
+                if(_lsModelItems.GetValue (iter, 18).ToString()!="0"){ 
+                    string sql = "delete from transaction_order_item where id="+_lsModelItems.GetValue (iter, 0).ToString();
+                    Console.WriteLine(sql);
+                    DbCl.ExecuteScalar(DbCl.getConn(), sql);
+                    SetItemModel(Convert.ToDouble(lbTransactionId.Text));
+                }
             }
                       
         }
@@ -818,21 +801,17 @@ namespace Inventorifo.App
         }
        
         public Response AddItem(string product_id, string quantity){
-            Console.WriteLine("==============1===="+ product_id); 
+            Console.WriteLine("========AddItem======1===="+ product_id); 
             string sql="";
             Response resp = new Response();
             Boolean valid=false; 
-            double store_quantity = 0;
+            //double store_quantity = 0;
             double global_quantity = 0;
             //check available product
-            DataTable dts = CoreCl.fillDtProduct(2,new clStock{product_id=product_id});
+            DataTable dts = CoreCl.fillDtProduct(transaction_type_id,new clStock{product_id=product_id});
             foreach(DataRow drs in dts.Rows){
-                Console.WriteLine(drs["short_name"].ToString()+"======2======== "+drs["store_quantity"].ToString()+"===="); 
-                store_quantity =  Convert.ToDouble(drs["store_quantity"].ToString()); 
                 global_quantity = Convert.ToDouble(drs["global_quantity"].ToString());
-                if(Convert.ToDouble(quantity) > store_quantity  && Convert.ToDouble(quantity) < global_quantity ){
-                    resp = new Response{ code = "21",description = "Failed "+drs["short_name"].ToString()+" out of stock, but available on other location"} ;
-                }else if(Convert.ToDouble(quantity) > store_quantity ){
+                if(Convert.ToDouble(spnQty.Text) > global_quantity ){
                     resp = new Response{ code = "22",description = "Failed, "+drs["short_name"].ToString()+" out of stock on store"} ;
                 }else{
                     resp = new Response{ code = "20",description = "Success"} ;
@@ -894,9 +873,10 @@ namespace Inventorifo.App
                // Console.WriteLine(e.Event.Key);
                 if (e.Event.Key == Gdk.Key.Return)
                 {    
+                    Console.WriteLine("=OnSpnQtyKeyPressEvent=======");
                     string sql = "select stock.id stock_id,stock.quantity,stock.product_id,stock.price_id,stock.location,TO_CHAR(stock.expired_date,'yyyy-MM-dd') expired_date, stock.unit, stock.condition "+
                     "from stock,location loc,location_group locgr "+
-                    "where stock.quantity>0 and state=0 and product_id="+ dtItemSelected.Rows[0].ItemArray[0].ToString() + " "+
+                    "where stock.quantity>0 and state=0 and locgr.id=2 and product_id="+ dtItemSelected.Rows[0].ItemArray[0].ToString() + " "+
                     "and stock.location=loc.id and loc.location_group=locgr.id "+
                     "order by stock.id asc limit 1";
                     Console.WriteLine(sql);   
@@ -1129,16 +1109,36 @@ namespace Inventorifo.App
             _treeViewItems.InsertColumn(-1, "Unit", rendererText, "text", (int)ColumnItems.unit_name);
 
             rendererText = new CellRendererText();
-            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_final_price);
-            _treeViewItems.InsertColumn(-1, "Purchase final price", rendererText, "text", (int)ColumnItems.purchase_final_price);
-
-            rendererText = new CellRendererText();
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_price_id);
             _treeViewItems.InsertColumn(-1, "Purchase Price ID", rendererText, "text", (int)ColumnItems.purchase_price_id);
 
+            rendererText = new CellRendererText();
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.purchase_final_price);
+            _treeViewItems.InsertColumn(-1, "Purchase final price", rendererText, "text", (int)ColumnItems.purchase_final_price);
+            
+            rendererText = new CellRendererText();   
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.item_price);
+            _treeViewItems.InsertColumn(-1, "Item Price", rendererText, "text", (int)ColumnItems.item_price);
+
+            rendererText = new CellRendererText();   
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.main_discount);
+            _treeViewItems.InsertColumn(-1, "Main discount", rendererText, "text", (int)ColumnItems.main_discount);
+
+            rendererText = new CellRendererText();   
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.additional_discount);
+            _treeViewItems.InsertColumn(-1, "Additional discount", rendererText, "text", (int)ColumnItems.additional_discount);
+
+            rendererText = new CellRendererText();   
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.deduction_amount);
+            _treeViewItems.InsertColumn(-1, "Deduction price", rendererText, "text", (int)ColumnItems.deduction_amount);
+
             rendererText = new CellRendererText();   
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.final_price);
-            _treeViewItems.InsertColumn(-1, "Sale Price", rendererText, "text", (int)ColumnItems.final_price);
+            _treeViewItems.InsertColumn(-1, "Final Price", rendererText, "text", (int)ColumnItems.final_price);
+
+            rendererText = new CellRendererText();   
+            _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.subtotal);
+            _treeViewItems.InsertColumn(-1, "Subtotal", rendererText, "text", (int)ColumnItems.subtotal);
 
             rendererText = new CellRendererText();
             _cellColumnsRenderItems.Add(rendererText, (int)ColumnItems.tax);

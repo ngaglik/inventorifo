@@ -18,7 +18,7 @@ namespace Inventorifo.Lib
             NpgsqlConnection conn = null;
             try
             {
-                conn = new NpgsqlConnection(CONNSTR);
+                conn = new NpgsqlConnection(CONNSTR2);
                 conn.Open();
             }
             catch (Exception ex)

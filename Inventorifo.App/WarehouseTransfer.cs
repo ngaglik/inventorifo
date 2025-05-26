@@ -694,28 +694,12 @@ namespace Inventorifo.App
                 if(selection.GetSelected( out iter)){
                     Console.WriteLine("Selected Value:"+_lsModelItems.GetValue (iter, 0).ToString()+_lsModelItems.GetValue (iter, 1).ToString());
                 }        
-                
-                string sql = "delete from transfer_order_item where id="+_lsModelItems.GetValue (iter, 0).ToString();
-                Console.WriteLine(sql);
-                DbCl.ExecuteScalar(DbCl.getConn(), sql);
-                SetItemModel(Convert.ToDouble(lbTransactionId.Text));
-                   
-                // Console.WriteLine("state: "+_lsModelItems.GetValue (iter, 13).ToString());
-                // if(_lsModelItems.GetValue (iter, 13).ToString()!="0"){
-                //     string sql = "delete from stock where id="+_lsModelItems.GetValue (iter, 5).ToString();
-                //     Console.WriteLine(sql);
-                //     DbCl.ExecuteScalar(DbCl.getConn(), sql);
-                //     sql = "delete from transfer_item where id="+_lsModelItems.GetValue (iter, 0).ToString();
-                //     Console.WriteLine(sql);
-                //     DbCl.ExecuteScalar(DbCl.getConn(), sql);
-                //     SetItemModel(Convert.ToDouble(lbTransactionId.Text));
-                //     if(GetTotalItem()==0) {
-                //         sql = "update transfer set state=1 where id="+lbTransactionId.Text;
-                //         Console.WriteLine (sql);
-                //         DbCl.ExecuteTrans(DbCl.getConn(), sql);                     
-                //     }
-                //     ItemTransactionReady(true);
-                // }
+                if(_lsModelItems.GetValue (iter, 17).ToString()!="0"){
+                    string sql = "delete from transfer_order_item where id="+_lsModelItems.GetValue (iter, 0).ToString();
+                    Console.WriteLine(sql);
+                    DbCl.ExecuteScalar(DbCl.getConn(), sql);
+                    SetItemModel(Convert.ToDouble(lbTransactionId.Text));
+                }
             }
                       
         }
@@ -765,7 +749,7 @@ namespace Inventorifo.App
             DbCl.ExecuteTrans(DbCl.getConn(), sql); 
             
             CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), product_id,stock_id.ToString(),cmbDestinationLocation.ActiveText,cmbDestinationCondition.ActiveText,qty);
-            sql = "update transaction set state=2 where id="+lbTransactionId.Text;
+            sql = "update transfer set state=2 where id="+lbTransactionId.Text;
             Console.WriteLine (sql);
             DbCl.ExecuteTrans(DbCl.getConn(), sql); 
             resp = new Response{ code = "20",description = "Success"} ;                     
@@ -847,15 +831,16 @@ namespace Inventorifo.App
                         balance = balance-Convert.ToDouble(drs["quantity"].ToString());
                     }else{
                         //source
-                        sql = "update stock set quantity=quantity-"+balance.ToString()+" where id="+drs["stock_id"].ToString() ;
-                        Console.WriteLine (sql);
-                        DbCl.ExecuteTrans(DbCl.getConn(), sql); 
+                        
                         sql = sql = "insert into transfer_item (transaction_id,product_id,quantity,stock_id,purchase_price_id,state) "+
                         "values("+lbTransactionId.Text+ ","+product_id + ","+balance.ToString()+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1)" ;
                         Console.WriteLine (sql); 
                         DbCl.ExecuteTrans(DbCl.getConn(), sql); 
                         CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), product_id,drs["stock_id"].ToString(),cmbSourceLocation.ActiveText,cmbSourceCondition.ActiveText,"-"+balance.ToString());                      
-                        
+                        sql = "update stock set quantity=quantity-"+balance.ToString()+" where id="+drs["stock_id"].ToString() ;
+                        Console.WriteLine (sql);
+                        DbCl.ExecuteTrans(DbCl.getConn(), sql); 
+
                         //destination
                         clStock stodest = new clStock{
                             product_id = drs["product_id"].ToString(),
@@ -874,7 +859,7 @@ namespace Inventorifo.App
                     if (balance==0) break;
                 }
                 Console.WriteLine("=======internal =======4====");
-                sql = "update transaction set state=2 where id="+lbTransactionId.Text;
+                sql = "update transfer set state=2 where id="+lbTransactionId.Text;
                 Console.WriteLine(sql);
                 DbCl.ExecuteTrans(DbCl.getConn(), sql);
                 resp = new Response{ code = "20",description = "Success"} ;
@@ -883,8 +868,8 @@ namespace Inventorifo.App
         }
 
         public Int64 InsertStock(clStock sto){
-            string sql = "insert into stock (product_id,quantity,input_date,expired_date, price_id, unit, condition, location)"+
-            "values ("+sto.product_id+ ","+ sto.quantity+",CURRENT_DATE,'"+sto.expired_date+"',"+sto.price_id+","+sto.unit+","+sto.condition+","+sto.location+") returning id";
+            string sql = "insert into stock (product_id,quantity,input_date, state, expired_date, price_id, unit, condition, location)"+
+            "values ("+sto.product_id+ ","+ sto.quantity+",CURRENT_DATE,0,'"+sto.expired_date+"',"+sto.price_id+","+sto.unit+","+sto.condition+","+sto.location+") returning id";
             Console.WriteLine (sql);
             return DbCl.ExecuteScalar(DbCl.getConn(), sql);
         }
@@ -925,15 +910,16 @@ namespace Inventorifo.App
                    
                     if(Convert.ToDouble(balance) > Convert.ToDouble(drs["quantity"].ToString()) ){
                         //source
-                        sql = "update stock set quantity=0 where id="+drs["stock_id"].ToString() ;
-                        Console.WriteLine (sql);
-                        DbCl.ExecuteTrans(DbCl.getConn(), sql);    
+                          
                         sql = "insert into transfer_item (transaction_id,product_id,quantity,stock_id,purchase_price_id,state) "+
                         "values("+lbTransactionId.Text+ ","+product_id + ","+drs["quantity"].ToString()+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",1)" ;
                         Console.WriteLine (sql); 
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);                          
                         CoreCl.InsertStockHistory(lbTransactionId.Text,transaction_type_id.ToString(), product_id,drs["stock_id"].ToString(),cmbSourceLocation.ActiveText,cmbSourceCondition.ActiveText,"-"+drs["quantity"].ToString());
-                    
+                        sql = "update stock set quantity=0 where id="+drs["stock_id"].ToString() ;
+                        Console.WriteLine (sql);
+                        DbCl.ExecuteTrans(DbCl.getConn(), sql);  
+
                         balance = balance-Convert.ToDouble(drs["quantity"].ToString());
                     }else{
                         //source
@@ -951,7 +937,7 @@ namespace Inventorifo.App
                     if (balance==0) break;
                 }
                 Console.WriteLine("=======AddItemTransferOut =======4====");
-                sql = "update transaction set state=2 where id="+lbTransactionId.Text;
+                sql = "update transfer set state=2 where id="+lbTransactionId.Text;
                 Console.WriteLine(sql);
                 DbCl.ExecuteTrans(DbCl.getConn(), sql);
                 resp = new Response{ code = "20",description = "Success"} ;
@@ -966,7 +952,7 @@ namespace Inventorifo.App
                 if (e.Event.Key == Gdk.Key.Return)
                 {   
                     if(cmbTransferType.ActiveText=="1"){
-                        Int64 price_id = InsertPrice("0");
+                        Int64 price_id = InsertPrice(dtItemSelected.Rows[0].ItemArray[7].ToString());
                         //string product_id, string price_id, string qty
                         Int64 stock_id = InsertStockIn(dtItemSelected.Rows[0].ItemArray[0].ToString(),price_id.ToString(),spnQty.Text);
                         string sql = "insert into transfer_order_item (transaction_id,product_id,quantity,stock_id,purchase_price_id,state,location,condition) "+
@@ -988,8 +974,6 @@ namespace Inventorifo.App
                             DbCl.ExecuteTrans(DbCl.getConn(), sql); 
                         }
                     }
-                   // SetTransactionModel("",entSearch.Text.Trim());  
-                    //SelectedTrans(lbTransactionId.Text);
                     SetItemModel(Convert.ToDouble(lbTransactionId.Text));
                     //TransactionReady();                   
                 } 
@@ -1031,11 +1015,14 @@ namespace Inventorifo.App
                 }else{
                     break;
                 } 
-                sql = "update transfer_order_item set state=0 where id="+drs["id"].ToString();
+                sql = "update transfer_order_item set state=0 where id="+lbTransactionId.Text;
                 Console.WriteLine(sql);
                 DbCl.ExecuteTrans(DbCl.getConn(), sql);
             }
-            if(resp.code=="20"){                
+            if(resp.code=="20"){      
+                sql = "update transfer set state=0 where id="+lbTransactionId.Text;
+                Console.WriteLine(sql);
+                DbCl.ExecuteTrans(DbCl.getConn(), sql);          
                 SetItemModel(Convert.ToDouble(lbTransactionId.Text));
                 ItemTransactionReady(true);
             }else{
@@ -1044,9 +1031,7 @@ namespace Inventorifo.App
                 md.Run();
                 md.Destroy();
             }
-            sql = "update transfer set state=0 where id="+lbTransactionId.Text;
-            Console.WriteLine(sql);
-            DbCl.ExecuteTrans(DbCl.getConn(), sql);
+            
             SetTransactionModel("",entSearch.Text.Trim());  
             SelectedTrans(lbTransactionId.Text);
             SetItemModel(Convert.ToDouble(lbTransactionId.Text));

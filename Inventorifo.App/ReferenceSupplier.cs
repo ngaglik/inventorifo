@@ -361,7 +361,7 @@ namespace Inventorifo.App
         private void AddItem(object sender, EventArgs e)
         {
             GuiCl.RemoveAllWidgets(popover);        
-            ReferencePerson widgetPerson = new ReferencePerson(this,"dialog","supplier");
+            ReferenceOrganization widgetPerson = new ReferenceOrganization(this,"dialog","supplier");
             popover.Add(widgetPerson);
             popover.SetSizeRequest(800, 400);
             widgetPerson.Show();          

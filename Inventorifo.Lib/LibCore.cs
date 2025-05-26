@@ -14,6 +14,22 @@ namespace Inventorifo.Lib
         public LibCore(){
 
         }
+        public double CalculateSubtotal(string quantity, string final_price){
+            double subtotal = 0;
+            subtotal = Convert.ToDouble(quantity)*Convert.ToDouble(final_price);
+            return subtotal;
+        }
+        public double CalculateFinalPrice(string item_price, string main_discount, string additional_discount, string deduction_amount){
+            double final_price = 0;
+            double ditem_price = Convert.ToDouble(item_price);
+            double imain_discount = Convert.ToDouble(main_discount)/100;
+            double iadditional_discount = Convert.ToDouble(additional_discount)/100;
+            double ddeduction_amount = Convert.ToDouble(deduction_amount);            
+            double discounted_main = ditem_price-(imain_discount*ditem_price);
+            double discounted_additional = discounted_main-(iadditional_discount*discounted_main);
+            final_price = discounted_additional-ddeduction_amount;
+            return final_price;
+        } 
         public void InsertStockHistory(string transaction_id,string transaction_type, string product_id, string stock_id, string location, string condition, string quantity ){
             double quantity_before = getQuantity(product_id,location,condition);
             double quantity_after = quantity_before + Convert.ToDouble(quantity);
@@ -67,23 +83,23 @@ namespace Inventorifo.Lib
                     if(filter.is_active=="01") whractive = "and prod.is_active = false ";
                     if(filter.is_active=="10") whractive = "";
                 }
-                Console.WriteLine("2 "+filter.barcode);
+                Console.WriteLine("2 filter.barcode "+filter.barcode);
                 if(filter.barcode is null || filter.barcode=="") {
                 }else{
                     whrbarcode = "and prod.barcode =  '" + filter.barcode + "' ";
                 }
-                Console.WriteLine("3 "+filter.location);
+                Console.WriteLine("3 filter.location "+filter.location);
                 if(filter.location is null || filter.location=="") {
                 }else{
                     whrlocation = "and stock.location =  '" + filter.location + "' ";
                 }
-                Console.WriteLine("4 "+filter.condition);
+                Console.WriteLine("4 filter.condition "+filter.condition);
                 if(filter.condition is null || filter.condition=="") {
                 }else{
                     whrcondition = "and stock.condition =  '" + filter.condition + "' ";
                 }
                 Console.WriteLine("transaction_type "+transaction_type.ToString());
-                if(transaction_type==21 || transaction_type==21 ) { // transfer internal || trasnfer out
+                if(transaction_type==21 || transaction_type==22 ) { // transfer internal || trasnfer out
                     whrlocgroup = "and (case when global_quantity is null then 0 else global_quantity end) >0 ";
                 }else if(transaction_type==2 ) {
                     whrlocgroup = "and locgr.id=2 ";
@@ -108,9 +124,9 @@ namespace Inventorifo.Lib
                 "case when global_quantity is null then 0 else global_quantity end global_quantity,  "+
                 "prod.product_group, prodgr.name product_group_name "+
                 "FROM product_group prodgr, product prod "+
-                "left outer join (select sum(quantity) global_quantity,product_id from stock where state=0 group by product_id) prglobal  on prglobal.product_id=prod.id "+
-                "WHERE prod.product_group = prodgr.id "+ whrfind + whrbarcode + whrtype +whrid+whractive+
-                "ORDER by prod.id desc";
+                "left outer join (select sum(quantity) global_quantity,product_id from stock where state=0 "+whrlocation + whrcondition +" group by product_id) prglobal  on prglobal.product_id=prod.id "+
+                "WHERE prod.product_group = prodgr.id "+ whrfind + whrbarcode + whrtype +whrid+whractive+ 
+                " ORDER by prod.id desc";
                 Console.WriteLine(sql);
                 dtout = DbCl.fillDataTable(DbCl.getConn(), sql);
                 return dtout;
@@ -593,7 +609,7 @@ namespace Inventorifo.Lib
         }
         public double GetLastPurchasePrice(string product_id){
             double purchase_price = 0;
-            string sql = "select purchase_price from stock, price where stock.price_id=price.id and stock.product_id="+product_id + " order by price.id desc limit 1";
+            string sql = "select purchase_price from stock, price where stock.purchase_price_id=purchase_price.id and stock.product_id="+product_id + " order by purchase_price.id desc limit 1";
             DataTable dt =  DbCl.fillDataTable(DbCl.getConn(), sql);
             foreach (DataRow dr in dt.Rows)
             { 

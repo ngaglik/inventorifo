@@ -281,22 +281,7 @@ namespace Inventorifo.App
             TransactionReady();       
         }        
 
-        private double CalculateSubtotal(string quantity, string final_price){
-            double subtotal = 0;
-            subtotal = Convert.ToDouble(quantity)*Convert.ToDouble(final_price);
-            return subtotal;
-        }
-        private double CalculateFinalPrice(string item_price, string main_discount, string additional_discount, string deduction_amount){
-            double final_price = 0;
-            double ditem_price = Convert.ToDouble(item_price);
-            double imain_discount = Convert.ToDouble(main_discount)/100;
-            double iadditional_discount = Convert.ToDouble(additional_discount)/100;
-            double ddeduction_amount = Convert.ToDouble(deduction_amount);            
-            double discounted_main = ditem_price-(imain_discount*ditem_price);
-            double discounted_additional = discounted_main-(iadditional_discount*discounted_main);
-            final_price = discounted_additional-ddeduction_amount;
-            return final_price;
-        }        
+               
         private int GetTotalItem(){
             int total = 0;
             for (int i = 0; i < _clsItems.Count; i++)
@@ -1211,7 +1196,7 @@ namespace Inventorifo.App
                     _lsModelItems.SetValue(iter, column, _clsItems[i].purchase_item_price);
 
                     //calculate final price
-                    double purchase_final_price = CalculateFinalPrice(_clsItems[i].purchase_item_price, _clsItems[i].purchase_main_discount, _clsItems[i].purchase_additional_discount, _clsItems[i].purchase_deduction_amount);
+                    double purchase_final_price = CoreCl.CalculateFinalPrice(_clsItems[i].purchase_item_price, _clsItems[i].purchase_main_discount, _clsItems[i].purchase_additional_discount, _clsItems[i].purchase_deduction_amount);
                     _clsItems[i].purchase_final_price = purchase_final_price.ToString();
                     _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_final_price, _clsItems[i].purchase_final_price);
 
@@ -1235,7 +1220,7 @@ namespace Inventorifo.App
                     _lsModelItems.SetValue(iter, column, _clsItems[i].purchase_main_discount);
 
                     //calculate final price
-                    double purchase_final_price = CalculateFinalPrice(_clsItems[i].purchase_item_price, _clsItems[i].purchase_main_discount, _clsItems[i].purchase_additional_discount, _clsItems[i].purchase_deduction_amount);
+                    double purchase_final_price = CoreCl.CalculateFinalPrice(_clsItems[i].purchase_item_price, _clsItems[i].purchase_main_discount, _clsItems[i].purchase_additional_discount, _clsItems[i].purchase_deduction_amount);
                     _clsItems[i].purchase_final_price = purchase_final_price.ToString();
                     _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_final_price, _clsItems[i].purchase_final_price);
 
@@ -1259,7 +1244,7 @@ namespace Inventorifo.App
                     _lsModelItems.SetValue(iter, column, _clsItems[i].purchase_additional_discount);
 
                     //calculate final price
-                    double purchase_final_price = CalculateFinalPrice(_clsItems[i].purchase_item_price, _clsItems[i].purchase_main_discount, _clsItems[i].purchase_additional_discount, _clsItems[i].purchase_deduction_amount);
+                    double purchase_final_price = CoreCl.CalculateFinalPrice(_clsItems[i].purchase_item_price, _clsItems[i].purchase_main_discount, _clsItems[i].purchase_additional_discount, _clsItems[i].purchase_deduction_amount);
                     _clsItems[i].purchase_final_price = purchase_final_price.ToString();
                     _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_final_price, _clsItems[i].purchase_final_price);
 
@@ -1283,7 +1268,7 @@ namespace Inventorifo.App
                     _lsModelItems.SetValue(iter, column, _clsItems[i].purchase_deduction_amount);
 
                     //calculate final price
-                    double purchase_final_price = CalculateFinalPrice(_clsItems[i].purchase_item_price, _clsItems[i].purchase_main_discount, _clsItems[i].purchase_additional_discount, _clsItems[i].purchase_deduction_amount);
+                    double purchase_final_price = CoreCl.CalculateFinalPrice(_clsItems[i].purchase_item_price, _clsItems[i].purchase_main_discount, _clsItems[i].purchase_additional_discount, _clsItems[i].purchase_deduction_amount);
                     _clsItems[i].purchase_final_price = purchase_final_price.ToString();
                     _lsModelItems.SetValue(iter, (int)ColumnItems.purchase_final_price, _clsItems[i].purchase_final_price);
 
