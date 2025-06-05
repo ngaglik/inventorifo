@@ -35,6 +35,19 @@ namespace Inventorifo.Lib.Model
         public string is_active { get; set; }
         public string tax_id_number { get; set; }
     }
+    public class clsSupplier{
+        public string id { get; set; }
+        public string organization_id { get; set; }
+        public string organization_name { get; set; }
+        public string organization_address { get; set; }
+        public string organization_phone_number { get; set; }
+        public string organization_tax_id_number { get; set; }
+        public string person_id { get; set; }
+        public string person_name { get; set; }
+        public string person_address { get; set; }
+        public string person_phone_number { get; set; }
+        public string is_active { get; set; }
+    }
 	public class UserLogin
     { //
         public UserLogin(string id, string person_id,string person_name, string person_address,string person_phone_number, string level,string level_name,string is_active,string application_id, string privilege){

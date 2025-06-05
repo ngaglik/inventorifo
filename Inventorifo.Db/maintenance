@@ -105,6 +105,11 @@ CREATE TABLE "public"."transaction_order_item" (
   CONSTRAINT "PK_transaction_order_item" PRIMARY KEY ("id")
 );
 
+ALTER TABLE "public"."supplier" DROP COLUMN "organization_name";
+ALTER TABLE "public"."supplier" DROP COLUMN "organization_address";
+ALTER TABLE "public"."supplier" DROP COLUMN "organization_phone_number";
+ALTER TABLE "public"."supplier" DROP COLUMN "organization_tax_id_number";
+ALTER TABLE "public"."supplier" ADD  "organization_id" BIGINT NULL;
 
 /opt/PostgreSQL/10/bin/pg_dump -h localhost -p 5432 -U postgres -F c -b -v -f  "inventorifo.backup" -d inventorifo
 

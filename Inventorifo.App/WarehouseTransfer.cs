@@ -369,6 +369,26 @@ namespace Inventorifo.App
             if(showpopup) ShowProductPopup(new object(),new EventArgs());                       
             spnQty.Text = "1";        
             textViewProduct.Buffer.Text = "";
+            switch (cmbTransferType.ActiveText){
+                case "1":
+                {
+                    btnSourceOrganization.Sensitive = true;
+                    btnDestinationOrganization.Sensitive = false;
+                }
+                break;
+                case "2":
+                {
+                    btnSourceOrganization.Sensitive = false;
+                    btnDestinationOrganization.Sensitive = false;
+                }
+                break;
+                case "3":
+                {
+                    btnSourceOrganization.Sensitive = false;
+                    btnDestinationOrganization.Sensitive = true;
+                }
+                break;
+            }
         }
         private void HandleTreeVewSelectedTrans(object sender, EventArgs e)
         {

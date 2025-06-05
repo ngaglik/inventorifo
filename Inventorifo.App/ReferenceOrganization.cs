@@ -250,7 +250,10 @@ namespace Inventorifo.App
             }else if(this.prm=="destination"){
                 WarehouseTransfer o = (WarehouseTransfer)this.parent;
                 o.doChildDestinationOrganization(null,new clsOrganization{id=_itemsModel.GetValue (iter, 0).ToString(), name=_itemsModel.GetValue (iter, 1).ToString()});
-            }            
+            }else if(this.prm=="supplier"){
+                ReferenceSupplier o = (ReferenceSupplier)this.parent;
+                o.doChildOrganization(null,new clsOrganization{id=_itemsModel.GetValue (iter, 0).ToString(), name=_itemsModel.GetValue (iter, 1).ToString()});
+            }              
         }
         [GLib.ConnectBefore]
         private void HandleTreeViewKeyPressEvent(object sender, KeyPressEventArgs e)
@@ -269,7 +272,10 @@ namespace Inventorifo.App
                     }else if(this.prm=="destination"){
                         WarehouseTransfer o = (WarehouseTransfer)this.parent;
                         o.doChildDestinationOrganization(null,new clsOrganization{id=_itemsModel.GetValue (iter, 0).ToString(), name=_itemsModel.GetValue (iter, 1).ToString()});
-                    }  
+                    }else if(this.prm=="supplier"){
+                        ReferenceSupplier o = (ReferenceSupplier)this.parent;
+                        o.doChildOrganization(null,new clsOrganization{id=_itemsModel.GetValue (iter, 0).ToString(), name=_itemsModel.GetValue (iter, 1).ToString()});
+                    }   
                 }
             }
 

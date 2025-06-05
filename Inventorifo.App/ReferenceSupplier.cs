@@ -4,6 +4,7 @@ using Gtk;
 using Gdk;
 using System.Data;
 using Pango;
+using Inventorifo.Lib.Model;
 
 namespace Inventorifo.App
 {
@@ -18,7 +19,7 @@ namespace Inventorifo.App
         private ListStore _itemsModel;
         //private ListStore numbers_model;
         private Dictionary<CellRenderer, int> _cellColumnsRender;
-        private List<Item> _articles;
+        private List<clsSupplier> _articles;
         private Popover popover ;
         private Entry entSearch;
 
@@ -85,7 +86,7 @@ namespace Inventorifo.App
             _treeView.KeyPressEvent += HandleTreeViewKeyPressEvent;
               
             AddColumns();
-            _treeView.Columns[1].Visible = false;
+            //_treeView.Columns[1].Visible = false;
 
             CreateItemsModel(true,"");
             sw.Add(_treeView);            
@@ -95,45 +96,20 @@ namespace Inventorifo.App
             entSearch.Changed += HandleEntSearchChanged;
             entSearch.GrabFocus();
         }
-
-        private class Item
-        { //
-            public Item(string id, string person_id,string person_name, string person_address,string person_phone_number, string organization_name, string organization_address, string organization_phone_number, string is_active, string organization_tax_id_number){
-                this.id = id;
-                this.person_id = person_id;
-                this.person_name = person_name;
-                this.person_address = person_address;
-                this.person_phone_number = person_phone_number;
-                this.organization_name = organization_name;
-                this.organization_address = organization_address;
-                this.organization_phone_number = organization_phone_number;
-                this.is_active = is_active;
-                this.organization_tax_id_number = organization_tax_id_number;
-            }
-            public string id;
-            public string person_id;
-            public string person_name;
-            public string person_address;
-            public string person_phone_number;
-            public string organization_name;
-            public string organization_address;
-            public string organization_phone_number;
-            public string is_active;
-            public string organization_tax_id_number;
-        }
-
+      
         private enum ColumnItem
         { //
             id,
+            organization_id,            
+            organization_name,
+            organization_address,
+            organization_phone_number,
+            organization_tax_id_number,
             person_id,
             person_name,
             person_address,
             person_phone_number,
-            organization_name,
-            organization_address,
-            organization_phone_number,
             is_active,
-            organization_tax_id_number,
             Num
         };
 
@@ -156,52 +132,55 @@ namespace Inventorifo.App
                 _itemsModel = null;
                 TreeIter iter;
                 /* create array */
-                _articles = new List<Item>();
+                _articles = new List<clsSupplier>();
 
                 string whrfind = "";
                 if(strfind!="") whrfind = "and (upper(pers.name) like upper('" + strfind + "%') OR upper(supp.organization_name) like upper('" + strfind + "%')   )";
 
-                string sql = "SELECT supp.id ,pers.id person_id, pers.name person_name, pers.address person_address,  pers.phone_number person_phone_number, supp.organization_name, supp.organization_address, supp.organization_phone_number, supp.is_active, supp.organization_tax_id_number "+
-                        "FROM supplier supp left outer join person pers on supp.person_id=pers.id "+
+                string sql = "SELECT supp.id ,pers.id person_id, pers.name person_name, pers.address person_address,  pers.phone_number person_phone_number, org.id organization_id, org.name organization_name, org.address organization_address, org.phone_number organization_phone_number, org.is_active, org.tax_id_number organization_tax_id_number "+
+                        "FROM supplier supp left outer join person pers on supp.person_id=pers.id left outer join organization org on supp.organization_id=org.id "+
                         "WHERE 1=1 "+ whrfind +
                         "ORDER by pers.name asc";
                         Console.WriteLine(sql);
-              
+                clsSupplier sto;
                 DataTable dttv = DbCl.fillDataTable(DbCl.getConn(), sql);
                 foreach (DataRow dr in dttv.Rows)
-                {                    
-                    string id=dr[0].ToString();
-                    string person_id=dr[1].ToString();
-                    string person_name=dr[2].ToString();
-                    string person_address=dr[3].ToString();
-                    string person_phone_number=dr[4].ToString();
-                    string organization_name=dr[5].ToString();
-                    string organization_address=dr[6].ToString();
-                    string organization_phone_number=dr[7].ToString();
-                    string is_active=dr[8].ToString();
-                    string organization_tax_id_number=dr[9].ToString();
-                                    
-                    _articles.Add(new Item(id, person_id, person_name, person_address,person_phone_number, organization_name, organization_address, organization_phone_number, is_active, organization_tax_id_number ));
+                {           
+                    sto = new clsSupplier{          
+                        id=dr["id"].ToString(),
+                        organization_id=dr["organization_id"].ToString(),
+                        organization_name=dr["organization_name"].ToString(),
+                        organization_address=dr["organization_address"].ToString(),
+                        organization_phone_number=dr["organization_phone_number"].ToString(),
+                        organization_tax_id_number=dr["organization_tax_id_number"].ToString(),
+                        person_id=dr["person_id"].ToString(),
+                        person_name=dr["person_name"].ToString(),
+                        person_address=dr["person_address"].ToString(),
+                        person_phone_number=dr["person_phone_number"].ToString(),
+                        is_active=dr["is_active"].ToString(),
+                    };
+                    _articles.Add(sto);             
                 }
 
                 /* create list store */
                 //
-                _itemsModel = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+                _itemsModel = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
 
                 /* add items */
                 for (int i = 0; i < _articles.Count; i++)
                 {
                     iter = _itemsModel.Append();
                     _itemsModel.SetValue(iter, (int)ColumnItem.id, _articles[i].id);
+                    _itemsModel.SetValue(iter, (int)ColumnItem.organization_id, _articles[i].organization_id);
+                    _itemsModel.SetValue(iter, (int)ColumnItem.organization_name, _articles[i].organization_name);
+                    _itemsModel.SetValue(iter, (int)ColumnItem.organization_address, _articles[i].organization_address);
+                    _itemsModel.SetValue(iter, (int)ColumnItem.organization_phone_number, _articles[i].organization_phone_number); 
+                    _itemsModel.SetValue(iter, (int)ColumnItem.organization_tax_id_number, _articles[i].organization_tax_id_number);      
                     _itemsModel.SetValue(iter, (int)ColumnItem.person_id, _articles[i].person_id);
                     _itemsModel.SetValue(iter, (int)ColumnItem.person_name, _articles[i].person_name);
                     _itemsModel.SetValue(iter, (int)ColumnItem.person_address, _articles[i].person_address);
-                    _itemsModel.SetValue(iter, (int)ColumnItem.person_phone_number, _articles[i].person_phone_number);
-                    _itemsModel.SetValue(iter, (int)ColumnItem.organization_name, _articles[i].organization_name);
-                    _itemsModel.SetValue(iter, (int)ColumnItem.organization_address, _articles[i].organization_address);
-                    _itemsModel.SetValue(iter, (int)ColumnItem.organization_phone_number, _articles[i].organization_phone_number);                    
+                    _itemsModel.SetValue(iter, (int)ColumnItem.person_phone_number, _articles[i].person_phone_number);             
                     _itemsModel.SetValue(iter, (int)ColumnItem.is_active, _articles[i].is_active);
-                    _itemsModel.SetValue(iter, (int)ColumnItem.organization_tax_id_number, _articles[i].organization_tax_id_number);
                 }
                 _treeView.Model = _itemsModel;      
             }
@@ -231,9 +210,40 @@ namespace Inventorifo.App
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.id);
             _treeView.InsertColumn(-1, "ID", rendererText, "text", (int)ColumnItem.id);
 
+            rendererText = new CellRendererText();
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.organization_id);
+            _treeView.InsertColumn(-1, "Organization ID", rendererText, "text", (int)ColumnItem.organization_id);
+            
+            rendererText = new CellRendererText
+            {
+                Editable = isEditable
+            };
+            rendererText.Foreground = textForground;
+            rendererText.Edited += CellEdited;
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.organization_name);
+            _treeView.InsertColumn(-1, "Organization Name", rendererText, "text", (int)ColumnItem.organization_name);
+
+            rendererText = new CellRendererText
+            {
+                Editable = isEditable
+            };
+            rendererText.Foreground = textForground;
+            rendererText.Edited += CellEdited;
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.organization_address);
+            _treeView.InsertColumn(-1, "Organization Address", rendererText, "text", (int)ColumnItem.organization_address);
+
+            rendererText = new CellRendererText
+            {
+                Editable = isEditable
+            };
+            rendererText.Foreground = textForground;
+            rendererText.Edited += CellEdited;
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.organization_phone_number);
+            _treeView.InsertColumn(-1, "Organization Phone Number", rendererText, "text", (int)ColumnItem.organization_phone_number);
+            
              rendererText = new CellRendererText();
-            _cellColumnsRender.Add(rendererText, (int)ColumnItem.id);
-            _treeView.InsertColumn(-1, "PersonID", rendererText, "text", (int)ColumnItem.id);
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.person_id);
+            _treeView.InsertColumn(-1, "PersonID", rendererText, "text", (int)ColumnItem.person_id);
 
             rendererText = new CellRendererText
             {
@@ -262,32 +272,7 @@ namespace Inventorifo.App
             _cellColumnsRender.Add(rendererText, (int)ColumnItem.person_phone_number);
             _treeView.InsertColumn(-1, "Person Phone Number", rendererText, "text", (int)ColumnItem.person_phone_number);
 
-            rendererText = new CellRendererText
-            {
-                Editable = isEditable
-            };
-            rendererText.Foreground = textForground;
-            rendererText.Edited += CellEdited;
-            _cellColumnsRender.Add(rendererText, (int)ColumnItem.organization_name);
-            _treeView.InsertColumn(-1, "Organization Name", rendererText, "text", (int)ColumnItem.organization_name);
 
-            rendererText = new CellRendererText
-            {
-                Editable = isEditable
-            };
-            rendererText.Foreground = textForground;
-            rendererText.Edited += CellEdited;
-            _cellColumnsRender.Add(rendererText, (int)ColumnItem.organization_address);
-            _treeView.InsertColumn(-1, "Organization Address", rendererText, "text", (int)ColumnItem.organization_address);
-
-            rendererText = new CellRendererText
-            {
-                Editable = isEditable
-            };
-            rendererText.Foreground = textForground;
-            rendererText.Edited += CellEdited;
-            _cellColumnsRender.Add(rendererText, (int)ColumnItem.organization_phone_number);
-            _treeView.InsertColumn(-1, "Organization Phone Number", rendererText, "text", (int)ColumnItem.organization_phone_number);
             ListStore lstModelCombo = new ListStore(typeof(string), typeof(string));
             lstModelCombo.AppendValues("true","true");
             lstModelCombo.AppendValues("false","false");
@@ -358,6 +343,23 @@ namespace Inventorifo.App
             });
         }
 
+        public void doChildOrganization(object o, clsOrganization prm){
+            GLib.Timeout.Add(0, () =>
+            {
+                GuiCl.RemoveAllWidgets(popover);
+                Label popoverLabel = new Label(prm.name);
+                popover.Add(popoverLabel);
+                popover.SetSizeRequest(400, 20);
+                popoverLabel.Show();
+
+                string sql = "insert into supplier (organization_id) values ('"+prm.id+"') ";
+                Console.WriteLine (sql);
+                DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                CreateItemsModel(true,entSearch.Text.Trim());
+                return false;
+            });
+        }
+
         private void AddItem(object sender, EventArgs e)
         {
             GuiCl.RemoveAllWidgets(popover);        
@@ -380,7 +382,47 @@ namespace Inventorifo.App
             _itemsModel.GetIter(out TreeIter iter, path);
 
             switch (column)
-            {
+            {                
+                case (int)ColumnItem.organization_name:
+                    {
+                        int i = path.Indices[0];
+                        _articles[i].organization_name = args.NewText;
+                        _itemsModel.SetValue(iter, column, _articles[i].organization_name);
+                        string sql = "update organization set name = '"+args.NewText+"' where id='"+_articles[i].organization_id+"' ";
+                        Console.WriteLine (sql);
+                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                    }
+                    break;
+                case (int)ColumnItem.organization_address:
+                    {
+                        int i = path.Indices[0];
+                        _articles[i].organization_address = args.NewText;
+                        _itemsModel.SetValue(iter, column, _articles[i].organization_address);
+                        string sql = "update organization set address = '"+args.NewText+"' where id='"+_articles[i].organization_id+"' ";
+                        Console.WriteLine (sql);
+                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                    }
+                    break;
+                case (int)ColumnItem.organization_phone_number:
+                    {
+                        int i = path.Indices[0];
+                        _articles[i].organization_phone_number = args.NewText;
+                        _itemsModel.SetValue(iter, column, _articles[i].organization_phone_number);
+                        string sql = "update organization set phone_number = '"+args.NewText+"' where id='"+_articles[i].organization_id+"' ";
+                        Console.WriteLine (sql);
+                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                    }
+                    break;
+                case (int)ColumnItem.organization_tax_id_number:
+                    {
+                        int i = path.Indices[0];
+                        _articles[i].organization_tax_id_number = args.NewText;
+                        _itemsModel.SetValue(iter, column, _articles[i].organization_tax_id_number);
+                        string sql = "update organization set tax_id_number = '"+args.NewText+"' where id='"+_articles[i].organization_id+"' ";
+                        Console.WriteLine (sql);
+                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                    }
+                    break;
                 case (int)ColumnItem.person_name:
                     {
                         int i = path.Indices[0];
@@ -407,46 +449,6 @@ namespace Inventorifo.App
                         _articles[i].person_phone_number = args.NewText;
                         _itemsModel.SetValue(iter, column, _articles[i].person_phone_number);
                         string sql = "update person set phone_number = '"+args.NewText+"' where id='"+_articles[i].person_id+"' ";
-                        Console.WriteLine (sql);
-                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                    }
-                    break;
-                case (int)ColumnItem.organization_name:
-                    {
-                        int i = path.Indices[0];
-                        _articles[i].organization_name = args.NewText;
-                        _itemsModel.SetValue(iter, column, _articles[i].organization_name);
-                        string sql = "update supplier set organization_name = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
-                        Console.WriteLine (sql);
-                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                    }
-                    break;
-                case (int)ColumnItem.organization_address:
-                    {
-                        int i = path.Indices[0];
-                        _articles[i].organization_address = args.NewText;
-                        _itemsModel.SetValue(iter, column, _articles[i].organization_address);
-                        string sql = "update supplier set organization_address = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
-                        Console.WriteLine (sql);
-                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                    }
-                    break;
-                case (int)ColumnItem.organization_phone_number:
-                    {
-                        int i = path.Indices[0];
-                        _articles[i].organization_phone_number = args.NewText;
-                        _itemsModel.SetValue(iter, column, _articles[i].organization_phone_number);
-                        string sql = "update supplier set organization_phone_number = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
-                        Console.WriteLine (sql);
-                        DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                    }
-                    break;
-                case (int)ColumnItem.organization_tax_id_number:
-                    {
-                        int i = path.Indices[0];
-                        _articles[i].organization_tax_id_number = args.NewText;
-                        _itemsModel.SetValue(iter, column, _articles[i].organization_tax_id_number);
-                        string sql = "update supplier set organization_tax_id_number = '"+args.NewText+"' where id='"+_articles[i].id+"' ";
                         Console.WriteLine (sql);
                         DbCl.ExecuteTrans(DbCl.getConn(), sql);
                     }

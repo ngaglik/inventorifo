@@ -219,13 +219,14 @@ namespace Inventorifo.Lib
             }
 
             string sql = "select tr.id,tr.reference_id, TO_CHAR(tr.reference_date, 'yyyy-mm-dd') reference_date,"+
-            "tr.supplier_id,sup.organization_name,sup.organization_address,sup.organization_phone_number,pers.name person_name,pers.phone_number person_phone_number, "+
+            "tr.supplier_id, org.name organization_name, org.address organization_address, org.phone_number organization_phone_number, pers.name person_name,pers.phone_number person_phone_number, "+
             "tr.transaction_type transaction_type_id, ty.name transaction_type_name, TO_CHAR(tr.transaction_date,'yyyy-mm-dd') transaction_date, tr.transaction_amount, tr.return_amount, "+
             "tr.payment_group_id, py.name payment_group_name, tr.payment_amount, "+
             "tr.user_id, usr.name user_name,  "+
             "tr.state, st.name state_name, st.fgcolor state_fgcolor, st.bgcolor state_bgcolor,  "+
             "tr.application_id, tr.tax_amount, tr.is_tax "+
             "from transaction tr left outer join supplier sup on tr.supplier_id=sup.id "+
+            "left outer join organization org on org.id=sup.organization_id "+
             "left outer join payment_group py on tr.payment_group_id = py.id "+
             "left outer join person pers on sup.person_id=pers.id, "+
             "transaction_state st, transaction_type ty, "+
@@ -259,7 +260,7 @@ namespace Inventorifo.Lib
                 whrdate = "and tr.transaction_date = '"+filterTrans.transaction_date+"' ";
             }
             string sql = "select tr.id,tr.reference_id, "+
-                "tr.customer_id,cus.organization_name,cus.organization_address,cus.organization_phone_number,pers.name person_name,pers.phone_number person_phone_number, "+
+                "tr.customer_id, cus.organization_name,cus.organization_address,cus.organization_phone_number,pers.name person_name,pers.phone_number person_phone_number, "+
                 "tr.transaction_type transaction_type_id, ty.name transaction_type_name, TO_CHAR(tr.transaction_date,'yyyy-mm-dd') transaction_date, tr.transaction_amount, tr.return_amount, "+
                 "tr.payment_group_id, py.name payment_group_name, tr.payment_amount, "+
                 "tr.user_id, usr.name user_name,  "+
@@ -421,17 +422,18 @@ namespace Inventorifo.Lib
             Console.WriteLine("fillDtTransactionPurchaseReturn");
             string whrfind = "",whrid="", whrdate="";
             if(transaction_id!="") whrid = "and tr.id="+transaction_id+ " ";
-            if(strfind!="") whrfind = "and (upper(sup.organization_name) like upper('" + strfind + "%') or upper(pers.name) like upper('" + strfind + "%') )";
+            if(strfind!="") whrfind = "and (upper(org.name) like upper('" + strfind + "%') or upper(pers.name) like upper('" + strfind + "%') )";
             if(date!="") whrdate = "and tr.transaction_date::date = '"+date+"'::date ";
 
             string sql = "select tr.id,tr.reference_id, "+
-            "tr.supplier_id,sup.organization_name,sup.organization_address,sup.organization_phone_number,pers.name person_name,pers.phone_number person_phone_number, "+
+            "tr.supplier_id, org.name organization_name, org.address organization_address, org.phone_number organization_phone_number, pers.name person_name,pers.phone_number person_phone_number, "+
             "tr.transaction_type transaction_type_id, ty.name transaction_type_name, TO_CHAR(tr.transaction_date,'yyyy-mm-dd') transaction_date, tr.transaction_amount, tr.return_amount, "+
             "tr.payment_group_id, py.name payment_group_name, tr.payment_amount, "+
             "tr.user_id, usr.name user_name,  "+
             "tr.state, st.name state_name, st.fgcolor state_fgcolor, st.bgcolor state_bgcolor,  "+
             "tr.application_id, tr.tax_amount, tr.is_tax "+
             "from transaction tr left outer join supplier sup on tr.supplier_id=sup.id "+
+            "left outer join organization org on org.id=sup.organization_id "+
             "left outer join payment_group py on tr.payment_group_id = py.id "+
             "left outer join person pers on sup.person_id=pers.id, "+
             "transaction_state st, transaction_type ty, "+
@@ -451,7 +453,7 @@ namespace Inventorifo.Lib
             if(date!="") whrdate = "and tr.transaction_date::date = '"+date+"'::date ";
 
             string sql = "select tr.id,tr.reference_id, "+
-                "tr.customer_id,cus.organization_name,cus.organization_address,cus.organization_phone_number,pers.name person_name,pers.phone_number person_phone_number, "+
+                "tr.customer_id,cus.organization_name, cus.organization_address,cus.organization_phone_number,pers.name person_name,pers.phone_number person_phone_number, "+
                 "tr.transaction_type transaction_type_id, ty.name transaction_type_name, TO_CHAR(tr.transaction_date,'yyyy-mm-dd') transaction_date, tr.transaction_amount, tr.return_amount, "+
                 "tr.payment_group_id, py.name payment_group_name, tr.payment_amount, "+
                 "tr.user_id, usr.name user_name,  "+
