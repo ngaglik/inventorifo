@@ -10,6 +10,9 @@ namespace Inventorifo.Lib.Model
         public string tax { get; set; }
         public string person_id { get; set; }
         public string organization_id { get; set; }
+        public string organization_name { get; set; }
+        public string organization_address { get; set; }
+        public string organization_phone_number { get; set; }
     }
 	public class Response
 	{
@@ -158,6 +161,7 @@ namespace Inventorifo.Lib.Model
         public string reference_date { get; set; }
         public string supplier_id { get; set; }
         public string customer_id { get; set; }
+        public string organization_id { get; set; }
         public string organization_name { get; set; }
         public string organization_address { get; set; }
         public string organization_phone_number { get; set; }
@@ -180,6 +184,22 @@ namespace Inventorifo.Lib.Model
         public string application_id { get; set; }
         public string tax_amount { get; set; }
         public string is_tax { get; set; }
+
+    }
+
+    public class clJournal
+    {    
+        public string id { get; set; }
+        public string account_id { get; set; }
+        public string account_name { get; set; }
+        public string transaction_date { get; set; }
+        public string reference_id { get; set; }
+        public string description { get; set; }
+        public string debet_amount { get; set; }
+        public string credit_amount { get; set; }
+        public string user_id { get; set; }
+        public string person_name { get; set; }
+        public string application_id { get; set; }
     }
 
     public class clTransactionItem1

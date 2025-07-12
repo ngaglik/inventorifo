@@ -133,7 +133,7 @@ namespace Inventorifo.App
                         
                 string sql = "SELECT stock.id, prod.id product_id, prod.short_name, prod.name product_name, prod.barcode, "+
                         "stock.quantity, stock.unit, unit.name unit_name, TO_CHAR(stock.expired_date, 'yyyy-mm-dd') expired_date, "+
-                        "price.id price_id, price.purchase_price, prod.price1 price, "+
+                        "price.id price_id, price.final_price purchase_price, prod.price1 price, "+
                         "prodgr.id product_group_id, prodgr.name product_group_name, "+
                         "stock.location, loc.name location_name, "+
                         "loc.location_group, locgr.name location_group_name "+
@@ -141,7 +141,7 @@ namespace Inventorifo.App
                         "LEFT OUTER JOIN stock on prod.id = stock.product_id "+
                         "LEFT OUTER JOIN location loc on stock.location = loc.id "+
                         "LEFT OUTER JOIN location_group locgr on loc.location_group = locgr.id "+
-                        "LEFT OUTER JOIN price on price.id = stock.price_id "+
+                        "LEFT OUTER JOIN purchase_price price on price.id = stock.price_id "+
                         "left outer join unit on stock.unit = unit.id, product_group prodgr "+
                         "WHERE prod.is_active is true and stock.state=0 and stock.quantity>0 and prod.product_group = prodgr.id "+ whrfind +whrbarcode +
                         "ORDER by prod.name asc, stock.id desc ";

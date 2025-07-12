@@ -38,12 +38,16 @@ namespace Inventorifo.App
                 tax="12",
                 person_id="1",
                 organization_id="1",
+                organization_name="Apotek Enggal Sehat",
+                organization_address="Jl. Pisang No1 Majenang",
+                organization_phone_number="01923932939"
             };
 
             MenuItem purchaseMenuItem = (MenuItem)builder.GetObject("PurchaseMenuItem");
             MenuItem purchaseReturnMenuItem = (MenuItem)builder.GetObject("PurchaseReturnMenuItem");
             MenuItem saleMenuItem = (MenuItem)builder.GetObject("SaleMenuItem");
             MenuItem saleReturnMenuItem = (MenuItem)builder.GetObject("SaleReturnMenuItem");
+            MenuItem cashDrawerMenuItem = (MenuItem)builder.GetObject("CashDrawerMenuItem");
 
             MenuItem transferMenuItem = (MenuItem)builder.GetObject("TransferMenuItem");
             MenuItem stockHistoryMenuItem = (MenuItem)builder.GetObject("StockHistoryMenuItem");
@@ -69,6 +73,7 @@ namespace Inventorifo.App
             
             
             DeleteEvent += Window_DeleteEvent;
+            cashDrawerMenuItem.Activated += CashDrawerMenuItem_Activated;
             purchaseMenuItem.Activated += PurchaseMenuItem_Activated;
             purchaseReturnMenuItem.Activated += PurchaseReturnMenuItem_Activated;
             saleMenuItem.Activated += SaleMenuItem_Activated;
@@ -104,6 +109,18 @@ namespace Inventorifo.App
         {
             Application.Quit();
         }
+
+        private void CashDrawerMenuItem_Activated(object sender, EventArgs a)
+        {
+            Gtk.Application.Invoke(delegate
+            {
+                ClearMainBox();
+                CashDrawer refWidget = new CashDrawer(this);
+                mainBox.PackStart(refWidget, true, true, 5);
+                refWidget.ShowAll();
+            });
+        }
+        
         private void PurchaseMenuItem_Activated(object sender, EventArgs a)
         {
             ClearMainBox();
@@ -231,6 +248,8 @@ namespace Inventorifo.App
                 refWidget.ShowAll();
             });
         }
+        
+
         private void reportPurchaseMenuItem_Activated(object sender, EventArgs a)
         {
             Gtk.Application.Invoke(delegate

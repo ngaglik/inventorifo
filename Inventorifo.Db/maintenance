@@ -31,7 +31,30 @@ ALTER TABLE "public"."transaction_item" ADD  "state" INT NULL DEFAULT 1 ;
 ALTER TABLE "public"."transaction_item" ADD  "location" INT NULL;
 ALTER TABLE "public"."transaction_item" ADD  "condition" INT NULL;
 
+CREATE TABLE "public"."account_type" ( 
+  "id" SERIAL,
+  "name" VARCHAR(250) NULL,
+  CONSTRAINT "PK_account_type" PRIMARY KEY ("id")
+);
 
+CREATE TABLE "public"."account" ( 
+  "id" INT,
+  "name" VARCHAR(250) NULL,
+  "account_type" int,
+  CONSTRAINT "PK_account" PRIMARY KEY ("id")
+);
+
+CREATE TABLE "public"."journal" ( 
+  "id" BIGSERIAL,
+  "account_id" INT,
+  "description" VARCHAR(250) NULL,
+  "reference_id" bigint,
+  "debet_amount" double precision,
+  "credit_amount" double precision,
+  "user_id" bigint,
+  "application_id" VARCHAR(250) NULL,
+  CONSTRAINT "PK_journal" PRIMARY KEY ("id")
+);
 
 ALTER TABLE "public"."price" RENAME TO "purchase_price";
 ALTER TABLE "public"."purchase_price" RENAME COLUMN "purchase_price" TO "item_price";
@@ -44,6 +67,29 @@ ALTER TABLE "public"."purchase_price" ADD  "additional_discount" INT NULL DEFAUL
 ALTER TABLE "public"."purchase_price" ADD  "deduction_amount" DOUBLE PRECISION NULL DEFAULT 0 ;
 ALTER TABLE "public"."purchase_price" ADD  "final_price" DOUBLE PRECISION NULL DEFAULT 0 ;
 ALTER TABLE "public"."purchase_price" ADD  "tax" DOUBLE PRECISION NULL DEFAULT 0 ;
+
+ALTER TABLE "public"."discount_group" ADD  "discount" DOUBLE PRECISION NULL DEFAULT 0 ;
+
+
+
+CREATE OR REPLACE FUNCTION calculate_final_price(
+    item_price DOUBLE PRECISION,
+    main_discount INTEGER,
+    additional_discount INTEGER,
+    deduction_amount DOUBLE PRECISION
+)
+RETURNS DECIMAL AS $$
+DECLARE
+    discounted_main DOUBLE PRECISION;
+    discounted_additional DOUBLE PRECISION;
+BEGIN
+    discounted_main := item_price-(main_discount*item_price);
+    discounted_additional := discounted_main-(additional_discount*discounted_main);
+    RETURN (discounted_additional-deduction_amount);
+END;
+$$ LANGUAGE plpgsql;
+
+
 
 DROP TABLE "public"."transfer_item";
 CREATE TABLE "public"."transfer_item" ( 
