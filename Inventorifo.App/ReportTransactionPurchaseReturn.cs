@@ -86,6 +86,7 @@ namespace Inventorifo.App
         private enum ColumnItems
         { //
             id,
+            input_date,
             transaction_id,
             product_id,
             product_short_name,
@@ -94,8 +95,8 @@ namespace Inventorifo.App
             quantity,
             unit,
             unit_name,
-            price_id,
-            purchase_price,
+            purchase_price_id,
+            purchase_item_price,
             price,
             tax,
             state,
@@ -104,6 +105,7 @@ namespace Inventorifo.App
             location_name,
             condition,
             condition_name,
+            expired_date,
             Num
         };
 
@@ -130,7 +132,7 @@ namespace Inventorifo.App
                     transaction_type_id = "3",
                     transaction_date = btnDate.Label,
                 };
-                clTransactionItem filterItem = new clTransactionItem{                    
+                clTransactionItem1 filterItem = new clTransactionItem1{                    
                     product_short_name = entSearch.Text.Trim(),
                 };
                 _articles = new List<clReportTransaction>();
@@ -147,8 +149,8 @@ namespace Inventorifo.App
                         stock_id=dr["stock_id"].ToString(),
                         unit=dr["unit"].ToString(),
                         unit_name=dr["unit_name"].ToString(),
-                        price_id=dr["price_id"].ToString(),
-                        purchase_price=dr["purchase_price"].ToString(),
+                        purchase_price_id=dr["purchase_price_id"].ToString(),
+                        purchase_item_price=dr["purchase_item_price"].ToString(),
                         tax=dr["tax"].ToString(),
                         state=dr["state"].ToString(),
                         state_name=dr["state_name"].ToString(),
@@ -177,8 +179,8 @@ namespace Inventorifo.App
                     _itemsModel.SetValue(iter, (int)ColumnItems.quantity, _articles[i].quantity);
                     _itemsModel.SetValue(iter, (int)ColumnItems.unit, _articles[i].unit);
                     _itemsModel.SetValue(iter, (int)ColumnItems.unit_name, _articles[i].unit_name);
-                    _itemsModel.SetValue(iter, (int)ColumnItems.price_id, _articles[i].price_id);
-                    _itemsModel.SetValue(iter, (int)ColumnItems.purchase_price, _articles[i].purchase_price);
+                    _itemsModel.SetValue(iter, (int)ColumnItems.purchase_price_id, _articles[i].purchase_price_id);
+                    _itemsModel.SetValue(iter, (int)ColumnItems.purchase_item_price, _articles[i].purchase_item_price);
                     _itemsModel.SetValue(iter, (int)ColumnItems.price, _articles[i].price);
                     _itemsModel.SetValue(iter, (int)ColumnItems.tax, _articles[i].tax);
                     _itemsModel.SetValue(iter, (int)ColumnItems.state, _articles[i].state);
@@ -263,14 +265,15 @@ namespace Inventorifo.App
 
             rendererText = new CellRendererText();
             rendererText.Foreground = textForground;
-            _cellColumnsRender.Add(rendererText, (int)ColumnItems.price_id);
-            _treeView.InsertColumn(-1, "price_id", rendererText, "text", (int)ColumnItems.price_id);
+            _cellColumnsRender.Add(rendererText, (int)ColumnItems.purchase_price_id);
+            _treeView.InsertColumn(-1, "purchase_price_id", rendererText, "text", (int)ColumnItems.purchase_price_id);
 
             
             rendererText = new CellRendererText();
             rendererText.Foreground = textForground;
-            _cellColumnsRender.Add(rendererText, (int)ColumnItems.purchase_price);
-            _treeView.InsertColumn(-1, "purchase_price", rendererText, "text", (int)ColumnItems.purchase_price);
+            _cellColumnsRender.Add(rendererText, (int)ColumnItems.purchase_item_price);
+            _treeView.InsertColumn(-1, "purchase_item_price", rendererText, "text", (int)ColumnItems.purchase_item_price);
+            
             
             rendererText = new CellRendererText();
             rendererText.Foreground = textForground;

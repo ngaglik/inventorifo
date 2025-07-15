@@ -584,7 +584,7 @@ namespace Inventorifo.App
             TreePath path = _lsModelItems.GetPath(it);
             var id = (string)_lsModelItems.GetValue(it, (int)ColumnItems.id);
             var product_id = (string)_lsModelItems.GetValue(it, (int)ColumnItems.product_id);            
-            dtAddItemSelected = CoreCl.fillDtReportTransaction(new clTransaction{id=lbReferenceId.Text}, new clTransactionItem{id=id});
+            dtAddItemSelected = CoreCl.fillDtReportTransaction(new clTransaction{id=lbReferenceId.Text}, new clTransactionItem1{id=id});
             fillTextViewProduct(product_id);
         }
         private void fillTextViewProduct(string prm){
@@ -949,7 +949,7 @@ namespace Inventorifo.App
                 Console.WriteLine(sql);
                 DbCl.ExecuteTrans(DbCl.getConn(), sql);
                 clTransaction filterTrans = new clTransaction{id=prm.transaction_id.ToString()};
-                clTransactionItem filterItem = new clTransactionItem{id=prm.id.ToString()};
+                clTransactionItem1 filterItem = new clTransactionItem1{id=prm.id.ToString()};
                 dtAddItemSelected = CoreCl.fillDtReportTransaction( filterTrans, filterItem);
                 fillTextViewProduct(prm.product_id.ToString());
 

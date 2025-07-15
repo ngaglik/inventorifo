@@ -6,6 +6,8 @@
 # Node artifact files
 Inventorifo.Lib/bin/
 Inventorifo.Lib/obj/
+Inventorifo.Lib/LibDB.cs
+
 #Inventorifo.Db/
 .vs/
 # Compiled Java class files

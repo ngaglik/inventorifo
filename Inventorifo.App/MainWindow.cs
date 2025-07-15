@@ -99,6 +99,8 @@ namespace Inventorifo.App
             Maximize();
             //( id,  person_id, person_name,  person_address, person_phone_number,  level, is_active
             Login();
+
+           // kene CoreCl.InsertJournal(4,2000,200,"11","description","application_id","user_id");
         }
 
         private void Login(){

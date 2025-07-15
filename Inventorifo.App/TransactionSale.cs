@@ -1001,8 +1001,7 @@ namespace Inventorifo.App
                 DataTable dts = CoreCl.fillDtOrderTransactionItem(filterTrans, filterItem);
                 string sql;
                 foreach(DataRow drs in dts.Rows){
-                    resp  = AddItem(drs["product_id"].ToString(), drs["quantity"].ToString());
-                    
+                    resp  = AddItem(drs["product_id"].ToString(), drs["quantity"].ToString());                    
                     sql = "update transaction_order_item set state=0 where id="+drs["id"].ToString();
                     Console.WriteLine(sql);
                     DbCl.ExecuteTrans(DbCl.getConn(), sql);
@@ -1017,18 +1016,35 @@ namespace Inventorifo.App
                 sql = "update transaction_item set state=0 where transaction_id="+lbTransactionId.Text;
                 Console.WriteLine(sql);
                 DbCl.ExecuteTrans(DbCl.getConn(), sql);
+
                 double paymentAmount = Convert.ToDouble(entAmountPayment.Text.Trim());
                 if(paymentAmount>Convert.ToDouble(entTransactionAmount.Text)) paymentAmount = Convert.ToDouble(entTransactionAmount.Text);
                 sql = "insert into payment (transaction_id,payment_date,amount,user_id) values ("+lbTransactionId.Text+",CURRENT_TIMESTAMP,"+paymentAmount.ToString()+","+this.parent.user.id+")";
                 Console.WriteLine(sql);
                 DbCl.ExecuteTrans(DbCl.getConn(), sql);
-                sql = "update transaction set is_tax = '"+ (chkTax.Active).ToString() +"', tax_amount='"+entTaxAmount.Text.Trim()+"', transaction_amount="+entTransactionAmount.Text.Trim()+", payment_amount=" + CoreCl.GetPaymentAmount(lbTransactionId.Text)+", payment_group_id="+cmbPaymentMethod.ActiveText+", state=0 where id="+lbTransactionId.Text;
+                sql = "update transaction set is_tax = '"+ chkTax.Active.ToString() +"', tax_amount='"+entTaxAmount.Text.Trim()+"', transaction_amount="+entTransactionAmount.Text.Trim()+", payment_amount=" + CoreCl.GetPaymentAmount(lbTransactionId.Text)+", payment_group_id="+cmbPaymentMethod.ActiveText+", state=0 where id="+lbTransactionId.Text;
                 Console.WriteLine(sql);
-                DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                DbCl.ExecuteTrans(DbCl.getConn(), sql);   
+                            
+                //insert journal sale                
+                if(Convert.ToInt32(cmbPaymentMethod.ActiveText)>5 ) // account rechievable
+                    if(lbBillCalculated.Text=="0") { 
+                         // sale rechievable 
+                        CoreCl.InsertJournal(5, Convert.ToDouble(entTransactionAmount.Text.Trim())- Convert.ToDouble(entTaxAmount.Text.Trim()), Convert.ToDouble(entTaxAmount.Text.Trim()), lbTransactionId.Text, "Transaction sale installments paid", this.parent.user.id, this.parent.application_id );
+                         // install payment 
+                        CoreCl.InsertJournal(6,paymentAmount, 0, lbTransactionId.Text, "Payment sale", this.parent.user.id, this.parent.application_id );
+                    }else{ // install payment 
+                        CoreCl.InsertJournal(6,paymentAmount, 0, lbTransactionId.Text, "Payment sale", this.parent.user.id, this.parent.application_id );
+                    }                    
+                else{ //cash payment
+                    CoreCl.InsertJournal(4, Convert.ToDouble(entTransactionAmount.Text.Trim())- Convert.ToDouble(entTaxAmount.Text.Trim()), Convert.ToDouble(entTaxAmount.Text.Trim()), lbTransactionId.Text, "Transaction sale rechieved payment", this.parent.user.id, this.parent.application_id );
+                }
+
+                
                 SetTransactionModel("",entSearch.Text.Trim());  
                 SelectedTrans(lbTransactionId.Text);
-                SetItemModel(Convert.ToDouble(lbTransactionId.Text));
-                //ItemTransactionReady(false);
+                SetItemModel(Convert.ToDouble(lbTransactionId.Text));                 
+
                 TransactionReady();
                 resp = new Response{ code = "20",description = "Success"} ;
             }  

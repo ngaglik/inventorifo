@@ -271,7 +271,7 @@ namespace Inventorifo.Lib.Model
         public string quantity { get; set; }
         public string unit { get; set; }
         public string unit_name { get; set; }
-        public string purchase_price { get; set; }
+        public string purchase_item_price { get; set; }
         public string purchase_price_id { get; set; }
         public string price_id { get; set; }
         public string price { get; set; }

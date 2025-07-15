@@ -31,6 +31,16 @@ ALTER TABLE "public"."transaction_item" ADD  "state" INT NULL DEFAULT 1 ;
 ALTER TABLE "public"."transaction_item" ADD  "location" INT NULL;
 ALTER TABLE "public"."transaction_item" ADD  "condition" INT NULL;
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE TABLE "public"."account_journal_template" ( 
+  "id" SERIAL,
+  "name" VARCHAR(250) NULL,
+  "journal_account" VARCHAR(250) NULL,
+  "journal_description" VARCHAR(250) NULL,
+  CONSTRAINT "PK_account_journal_template" PRIMARY KEY ("id")
+);
+
 CREATE TABLE "public"."account_type" ( 
   "id" SERIAL,
   "name" VARCHAR(250) NULL,
@@ -53,6 +63,7 @@ CREATE TABLE "public"."journal" (
   "credit_amount" double precision,
   "user_id" bigint,
   "application_id" VARCHAR(250) NULL,
+  "transaction_date" TIMESTAMP WITHOUT TIMEZONE NULL,
   CONSTRAINT "PK_journal" PRIMARY KEY ("id")
 );
 

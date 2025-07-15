@@ -5,6 +5,7 @@ using Gtk;
 using Gdk;
 using Pango;
 using Inventorifo.Lib.Model;
+using BCrypt.Net;
 
 namespace Inventorifo.Lib
 {
@@ -13,6 +14,72 @@ namespace Inventorifo.Lib
         LibDb DbCl = new LibDb ();
         public LibCore(){
 
+        }
+        public void InsertJournal(int idJurnal, double totalFinalPrice, double totalTax, string reference_id, string description, string user_id,  string application_id){
+            string[] arrTax = { "210000", "700000", "701000" };
+            string sql = "select journal_account from account_journal_template where id= "+idJurnal.ToString();
+            DataTable dt = DbCl.fillDataTable(DbCl.getConn(), sql);
+            foreach(DataRow dr in dt.Rows){
+                string[] strAcc = dr["journal_account"].ToString().Split("><");
+                string strD = strAcc[0].ToString();
+                bool containsPlusD = strD.Contains("+");
+                if(containsPlusD){
+                    string[] arrAccD = strD.Split("+");
+                    foreach (string accD in arrAccD)
+                    {
+                        if(arrTax.Contains(accD)){
+                            Console.WriteLine("D:"+accD +" = " +totalTax.ToString());
+                            sql = "insert into journal (transaction_date, account_id, description, reference_id, debet_amount, credit_amount, user_id, application_id) values "+
+                            "(CURRENT_TIMESTAMP, '"+accD+"', '"+description+"', '"+reference_id+"', '"+totalTax.ToString()+"',0, '"+user_id+"', '"+application_id+"') ";
+                            Console.WriteLine(sql);
+                            DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                        }else{
+                            Console.WriteLine("D:"+accD +" = " +totalFinalPrice.ToString());
+                            sql = "insert into journal (transaction_date, account_id, description, reference_id, debet_amount, credit_amount, user_id, application_id) values "+
+                            "(CURRENT_TIMESTAMP, '"+accD+"', '"+description+"', '"+reference_id+"', '"+totalFinalPrice.ToString()+"',0, '"+user_id+"', '"+application_id+"') ";
+                            Console.WriteLine(sql);
+                            DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                        }                        
+                    }
+                }else{
+                    Console.WriteLine("D:"+strD +" = " + (totalFinalPrice+totalTax).ToString() );
+                    sql = "insert into journal (transaction_date, account_id, description, reference_id, debet_amount, credit_amount, user_id, application_id) values "+
+                            "(CURRENT_TIMESTAMP, '"+strD+"', '"+description+"', '"+reference_id+"', '"+(totalFinalPrice+totalTax).ToString()+"',0, '"+user_id+"', '"+application_id+"') ";
+                            Console.WriteLine(sql);
+                            DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                }
+
+                string strC = strAcc[1].ToString();
+                bool containsPlusC = strC.Contains("+");
+                if(containsPlusC){
+                    string[] arrAccC = strC.Split("+");
+                    foreach (string accC in arrAccC)
+                    {
+                        if(arrTax.Contains(accC)){
+                            Console.WriteLine("C:"+accC +" = " +totalTax.ToString());
+                            sql = "insert into journal (transaction_date, account_id, description, reference_id, debet_amount, credit_amount, user_id, application_id) values "+
+                            "(CURRENT_TIMESTAMP, '"+accC+"', '"+description+"', '"+reference_id+"',0, '"+totalTax.ToString()+"', '"+user_id+"', '"+application_id+"') ";
+                            Console.WriteLine(sql);
+                            DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                        }else{
+                            Console.WriteLine("C:"+accC +" = " +totalFinalPrice.ToString());
+                            sql = "insert into journal (transaction_date, account_id, description, reference_id, debet_amount, credit_amount, user_id, application_id) values "+
+                            "(CURRENT_TIMESTAMP, '"+accC+"', '"+description+"', '"+reference_id+"',0, '"+totalFinalPrice.ToString()+"', '"+user_id+"', '"+application_id+"') ";
+                            Console.WriteLine(sql);
+                            DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                        }
+                        
+                    }
+                }else{
+                    Console.WriteLine("C:"+strC +" = " + (totalFinalPrice+totalTax).ToString() );
+                    sql = "insert into journal (transaction_date, account_id, description, reference_id, debet_amount, credit_amount, user_id, application_id) values "+
+                            "(CURRENT_TIMESTAMP, '"+strC+"', '"+description+"', '"+reference_id+"',0, '"+(totalFinalPrice+totalTax).ToString()+"', '"+user_id+"', '"+application_id+"') ";
+                            Console.WriteLine(sql);
+                            DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                }
+
+                
+            }
         }
         public double GetOutstandingBalance(string transaction_amount, string payment_amount){
             double total = 0;
@@ -380,7 +447,7 @@ namespace Inventorifo.Lib
             Console.WriteLine(sql);            
             return DbCl.fillDataTable(DbCl.getConn(), sql);
         }
-        public DataTable fillDtReportTransaction(clTransaction filterTrans, clTransactionItem filterItem){
+        public DataTable fillDtReportTransaction(clTransaction filterTrans, clTransactionItem1 filterItem){
             Console.WriteLine("fillDtReportTransaction");
             string whrfind = "",whrid="",whritemid="", whrdate="",whrtype="";
             ;
@@ -626,4 +693,19 @@ namespace Inventorifo.Lib
             return purchase_price;
         }
     }
+
+
+    public static class PasswordHasher
+    {
+        public static string Hash(string password)
+        {
+            return BCrypt.Net.BCrypt.HashPassword(password);
+        }
+
+        public static bool Verify(string password, string hashedPassword)
+        {
+            return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
+        }
+    }
+
 }
