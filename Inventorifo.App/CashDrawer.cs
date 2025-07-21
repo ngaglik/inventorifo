@@ -109,7 +109,7 @@ namespace Inventorifo.App
                 clJournal item;
                 string sql = "select jl.id, account_id, acc.name account_name, account_type, acct.name account_type_name, reference_id, description, TO_CHAR(transaction_date, 'yyyy-mm-dd') transaction_date, debet_amount, credit_amount, user_id, pers.name person_name, application_id "+
                 "from journal jl, account acc, account_type acct, userlogin us, person pers "+
-                "where jl.account_id = acc.id and acc.account_type = acct.id and jl.user_id=us.id and us.person_id = pers.id ";
+                "where jl.account_id = acc.id and acc.account_type = acct.id and jl.user_id=us.id and us.person_id = pers.id order by jl.id asc ";
                 Console.WriteLine(sql);              
                 DataTable dttv = DbCl.fillDataTable(DbCl.getConn(), sql);
                 foreach (DataRow dr in dttv.Rows)

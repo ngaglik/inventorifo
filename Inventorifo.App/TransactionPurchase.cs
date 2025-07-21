@@ -379,7 +379,7 @@ namespace Inventorifo.App
         private void SelectedTrans(string transaction_id)
         {
             this.filterTrans.id = transaction_id;                
-            DataTable dtTransSelected = CoreCl.fillDtTransactionPurchase(this.filterTrans);
+            dtTransSelected = CoreCl.fillDtTransactionPurchase(this.filterTrans);
             foreach (DataRow dr in dtTransSelected.Rows)
             { 
                 var id = transaction_id;
@@ -540,16 +540,27 @@ namespace Inventorifo.App
 
         private void HandlechkTaxChanged(object sender, EventArgs e)
         {
-            
-            UpdateItemTax();
+            foreach (DataRow dr in dtTransSelected.Rows)
+            {
+                if(dr["state"].ToString()=="1") {
+                    UpdateItemTax();                    
+                }
+            }
             SetItemModel(Convert.ToDouble(lbTransactionId.Text) );
             SetTotalCalculation();
+
             // if(chkTax.Active){
             //     entTaxAmount.Text = CalculateTax(GetTotalPurchasePrice()).ToString();
             //     entTransactionAmount.Text = (GetTotalPurchasePrice()+CalculateTax(GetTotalPurchasePrice())).ToString();
+            //     // string sql = "update transaction_order_item set tax = final_price*"+this.parent.conf.tax+" where transaction_id="+lbTransactionId.Text ;
+            //     // Console.WriteLine (sql);
+            //     // DbCl.ExecuteTrans(DbCl.getConn(), sql);
             // }else{
             //     entTaxAmount.Text = "0";
             //     entTransactionAmount.Text = (GetTotalPurchasePrice()).ToString();
+            //     // string sql = "update transaction_order_item set tax = 0 where transaction_id="+lbTransactionId.Text ;
+            //     // Console.WriteLine (sql);
+            //     // DbCl.ExecuteTrans(DbCl.getConn(), sql);
             // }
         }
         private void UpdateItemTax(){
@@ -782,22 +793,25 @@ namespace Inventorifo.App
                 if(selection.GetSelected( out iter)){
                     Console.WriteLine("Selected Value:"+_lsModelItems.GetValue (iter, 0).ToString()+_lsModelItems.GetValue (iter, 1).ToString());
                 }        
-                Console.WriteLine("state: "+_lsModelItems.GetValue (iter, 13).ToString());
-                if(_lsModelItems.GetValue (iter, 13).ToString()!="0"){
-                    string sql = "delete from stock where id="+_lsModelItems.GetValue (iter, 5).ToString();
-                    Console.WriteLine(sql);
-                    DbCl.ExecuteScalar(DbCl.getConn(), sql);
-                    sql = "delete from transaction_item where id="+_lsModelItems.GetValue (iter, 0).ToString();
-                    Console.WriteLine(sql);
-                    DbCl.ExecuteScalar(DbCl.getConn(), sql);
-                    SetItemModel(Convert.ToDouble(lbTransactionId.Text));
-                    if(GetTotalItem()==0) {
-                        sql = "update transaction set state=1 where id="+lbTransactionId.Text;
-                        Console.WriteLine (sql);
-                        DbCl.ExecuteTrans(DbCl.getConn(), sql);                     
+                //Console.WriteLine("state: "+_lsModelItems.GetValue (iter, 13).ToString());
+                foreach (DataRow dr in dtTransSelected.Rows)
+                {
+                    if(dr["state"].ToString()!="0"){
+                        string sql = "delete from stock where id="+_lsModelItems.GetValue (iter, 5).ToString();
+                        Console.WriteLine(sql);
+                        DbCl.ExecuteScalar(DbCl.getConn(), sql);
+                        sql = "delete from transaction_item where id="+_lsModelItems.GetValue (iter, 0).ToString();
+                        Console.WriteLine(sql);
+                        DbCl.ExecuteScalar(DbCl.getConn(), sql);
+                        SetItemModel(Convert.ToDouble(lbTransactionId.Text));
+                        if(GetTotalItem()==0) {
+                            sql = "update transaction set state=1 where id="+lbTransactionId.Text;
+                            Console.WriteLine (sql);
+                            DbCl.ExecuteTrans(DbCl.getConn(), sql);                     
+                        }
+                        ItemTransactionReady(true);
                     }
-                    ItemTransactionReady(true);
-                }    
+                }
                 
             }
                       
@@ -1529,6 +1543,21 @@ namespace Inventorifo.App
                 sql = "update transaction set is_tax="+chkTax.Active.ToString()+",tax_amount='"+entTaxAmount.Text.Trim()+"', transaction_amount="+entTransactionAmount.Text.Trim()+", payment_amount=" + CoreCl.GetPaymentAmount(lbTransactionId.Text)+", payment_group_id="+cmbPaymentMethod.ActiveText+", state=0 where id="+lbTransactionId.Text;
                 Console.WriteLine(sql);
                 DbCl.ExecuteTrans(DbCl.getConn(), sql);
+
+                 //insert journal sale                
+                if(Convert.ToInt32(cmbPaymentMethod.ActiveText)>5 ) // account rechievable
+                    if(lbBillCalculated.Text=="0") { 
+                         // sale rechievable 
+                        CoreCl.InsertJournal(2, Convert.ToDouble(entTransactionAmount.Text.Trim())- Convert.ToDouble(entTaxAmount.Text.Trim()), Convert.ToDouble(entTaxAmount.Text.Trim()), lbTransactionId.Text, "Transaction purchase installments paid", this.parent.user.id, this.parent.application_id );
+                         // install payment 
+                        CoreCl.InsertJournal(3,paymentAmount, 0, lbTransactionId.Text, "Payment purchase", this.parent.user.id, this.parent.application_id );
+                    }else{ // install payment 
+                        CoreCl.InsertJournal(3,paymentAmount, 0, lbTransactionId.Text, "Payment purchase", this.parent.user.id, this.parent.application_id );
+                    }                    
+                else{ //cash payment
+                    CoreCl.InsertJournal(1, Convert.ToDouble(entTransactionAmount.Text.Trim())- Convert.ToDouble(entTaxAmount.Text.Trim()), Convert.ToDouble(entTaxAmount.Text.Trim()), lbTransactionId.Text, "Transaction purchase rechieved payment", this.parent.user.id, this.parent.application_id );
+                }
+
                 SetTransactionModel("",entSearch.Text.Trim());  
                 SelectedTrans(lbTransactionId.Text);
                 SetItemModel(Convert.ToDouble(lbTransactionId.Text));

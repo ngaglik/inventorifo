@@ -432,9 +432,10 @@ namespace Inventorifo.Lib
             
              string sql = "select ti.id, ti.transaction_id, ti.product_id, pr.short_name product_short_name, pr.name product_name,ti.stock_id, "+
             "case when ti.tax is null then 0 else ti.tax end tax, ti.state, state.name state_name, "+
-            "st.quantity, st.unit,un.name unit_name, "+
+            "ti.quantity, st.unit,un.name unit_name, "+
             "pp.id purchase_price_id, pp.item_price purchase_item_price,pp.main_discount purchase_main_discount, pp.additional_discount purchase_additional_discount, pp.deduction_amount purchase_deduction_amount, pp.final_price purchase_final_price, 0 purchase_subtotal, pp.tax purchase_tax, "+
-            "st.location, lo.name location_name, st.condition, co.name condition_name "+
+            "st.location, lo.name location_name, st.condition, co.name condition_name, "+
+            "ti.item_price item_price, ti.main_discount, COALESCE(ti.additional_discount, 0) additional_discount, COALESCE(ti.deduction_amount, 0)  deduction_amount, ROUND(get_final_price(pr.price1::numeric,ti.main_discount::numeric,ti.additional_discount::numeric, ti.deduction_amount::numeric )) final_price, 0 subtotal, ti.tax "+
             "from transaction tr, transaction_item_state state, transaction_item ti, product pr, stock st "+
             "LEFT OUTER JOIN purchase_price pp on pp.id = st.price_id "+
             "left outer join unit un on un.id=st.unit "+

@@ -308,8 +308,28 @@ namespace Inventorifo.App
 
         private void btnProcessCheckoutPrintClicked(object sender, EventArgs e)
         {
-            PrintingSaleInvoice clPrinting = new PrintingSaleInvoice(this, dtTransSelected, dtItems);
-            clPrinting.DoPrint(true);
+            foreach (DataRow dr in dtTransSelected.Rows)
+            {
+                if(dr["state"].ToString()!="0") {
+                    Response resp = DoCheckout();
+                    if(resp.code=="20"){
+                        PrintingSaleInvoice clPrinting = new PrintingSaleInvoice(this, dtTransSelected, dtItems);
+                        clPrinting.DoPrint(true);
+                        SetItemModel(Convert.ToDouble(lbTransactionId.Text));
+                        ItemTransactionReady(true);
+                    }else{
+                        string message = resp.description;
+                        MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, message);
+                        md.Run();
+                        md.Destroy();
+                    }
+                }else{
+                    PrintingSaleInvoice clPrinting = new PrintingSaleInvoice(this, dtTransSelected, dtItems);
+                    clPrinting.DoPrint(true);
+                }   
+            }
+            
+            
         }
         
         // private void PrintButton_Clicked(object sender, EventArgs e)
@@ -517,8 +537,9 @@ namespace Inventorifo.App
                             entTaxAmount.Sensitive = false;
                             cmbPaymentMethod.Sensitive = false;
                             entAmountPayment.Sensitive = false;
-                            btnProcessCheckout.Sensitive = false;
+                            btnProcessCheckout.Sensitive = false;                            
                     }
+                    btnProcessCheckoutPrint.Label = "Print\n[F5]";
                 }else{
                  
                     GuiCl.SensitiveAllWidgets(boxItem,true);
@@ -536,6 +557,7 @@ namespace Inventorifo.App
                     cmbPaymentMethod.Sensitive = true;
                     entAmountPayment.Sensitive = true;
                     btnProcessCheckout.Sensitive = true;
+                    btnProcessCheckoutPrint.Label = "Checkout\nPrint\n[F5]";
                 }
                 ItemTransactionReady(false);
                 SetItemModel(Convert.ToDouble(lbTransactionId.Text)); 
@@ -741,7 +763,14 @@ namespace Inventorifo.App
             clTransactionItem1 filterItem = new clTransactionItem1{                    
                 //product_short_name = entSearch.Text.Trim(),
             };
+            DataTable dts = CoreCl.fillDtOrderTransactionItem(filterTrans, filterItem);
+
             dtItems = CoreCl.fillDtOrderTransactionItem(filterTrans, filterItem);
+            foreach (DataRow dr in dtTransSelected.Rows)
+            {
+                if(dr["state"].ToString()=="0") dtItems = CoreCl.fillDtTransactionItem(filterTrans, filterItem);
+            }
+            
             foreach (DataRow dr in dtItems.Rows)
             {   
                 //double final_price = CoreCl.CalculateFinalPrice(dr["item_price"].ToString(), dr["main_discount"].ToString(), dr["additionl_discount"].ToString(), dr["deduction_amount"].ToString());
@@ -996,7 +1025,7 @@ namespace Inventorifo.App
                 clTransaction filterTrans = new clTransaction {
                     id=lbTransactionId.Text,
                     transaction_date = DateTime.Now.ToString("yyyy-MM-dd"), 
-                    transaction_type_id="1"
+                    transaction_type_id="2"
                 };
                 DataTable dts = CoreCl.fillDtOrderTransactionItem(filterTrans, filterItem);
                 string sql;
