@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Gtk;
 using System.Data;
 using Pango;
+using Inventorifo.Lib.Model;
 
 namespace Inventorifo.App
 {
@@ -17,7 +18,7 @@ namespace Inventorifo.App
         private ListStore _itemsModel;
         //private ListStore numbers_model;
         private Dictionary<CellRenderer, int> _cellColumnsRender;
-        private List<Item> _articles;
+        private List<clsProductGroup> _articles;
 
         private Entry entSearch;
         private Entry entBarcode;
@@ -68,16 +69,7 @@ namespace Inventorifo.App
             entSearch.Changed += HandleEntSearchChanged;
         }
 
-        private class Item
-        { //
-            public Item(string id, string name){
-                this.id = id;
-                this.name = name;
-            }
-            public string id;
-            public string name;
-        }
-
+        
         private enum ColumnItem
         { //
             id,
@@ -104,7 +96,8 @@ namespace Inventorifo.App
                 _itemsModel = null;
                 TreeIter iter;
                 /* create array */
-                _articles = new List<Item>();
+                _articles = new List<clsProductGroup>();
+                clsProductGroup pers;
 
                 string whrfind = "";
                 if(strfind!="") whrfind = "and upper(prodgr.name) like upper('" + strfind + "%')  ";
@@ -118,10 +111,11 @@ namespace Inventorifo.App
                 DataTable dttv = DbCl.fillDataTable(DbCl.getConn(), sql);
                 foreach (DataRow dr in dttv.Rows)
                 {                    
-                    string id=dr[0].ToString();
-                    string name=dr[1].ToString();
-                                    
-                    _articles.Add(new Item(id, name));
+                    pers = new clsProductGroup{
+                        id=dr[0].ToString(),
+                        name=dr[1].ToString(),
+                    } ; 
+                    _articles.Add(pers);  
                 }
 
                 /* create list store */

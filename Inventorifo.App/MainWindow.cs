@@ -62,6 +62,7 @@ namespace Inventorifo.App
             MenuItem reportPurchaseReturnMenuItem = (MenuItem)builder.GetObject("ReportPurchaseReturnMenuItem");
 
             MenuItem customerMenuItem = (MenuItem)builder.GetObject("CustomerMenuItem");
+            MenuItem priceRoleMenuItem = (MenuItem)builder.GetObject("PriceRoleMenuItem");
             MenuItem supplierMenuItem = (MenuItem)builder.GetObject("SupplierMenuItem");
             MenuItem personMenuItem = (MenuItem)builder.GetObject("PersonMenuItem");
             MenuItem organizationMenuItem = (MenuItem)builder.GetObject("OrganizationMenuItem");
@@ -92,6 +93,7 @@ namespace Inventorifo.App
             organizationMenuItem.Activated += OrganizationMenuItem_Activated;
             supplierMenuItem.Activated += SupplierMenuItemActivated;
             customerMenuItem.Activated += CustomerMenuItem_Activated;
+            priceRoleMenuItem.Activated += PriceRoleMenuItem_Activated;
 
             aboutMenuItem.Activated += AboutMenuItem_Activated;
             //_button1.Clicked += Button1_Clicked;     
@@ -299,6 +301,17 @@ namespace Inventorifo.App
             {
                 ClearMainBox();
                 ReferenceCustomer refWidget = new ReferenceCustomer(this,"widget",null);
+                mainBox.PackStart(refWidget, true, true, 5);
+                refWidget.ShowAll();
+            });
+
+        }
+        private void PriceRoleMenuItem_Activated(object sender, EventArgs a)
+        {
+            Gtk.Application.Invoke(delegate
+            {
+                ClearMainBox();
+                ReferencePriceRole refWidget = new ReferencePriceRole(this,null);
                 mainBox.PackStart(refWidget, true, true, 5);
                 refWidget.ShowAll();
             });

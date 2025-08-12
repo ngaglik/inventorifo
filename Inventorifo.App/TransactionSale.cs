@@ -67,6 +67,7 @@ namespace Inventorifo.App
         private TextView textViewProduct;
 
         DataTable dtTransSelected;
+        DataTable dtCustSelected;
         DataTable dtItems;
         DataTable dtItemSelected;
 
@@ -443,6 +444,11 @@ namespace Inventorifo.App
             dtTransSelected =  CoreCl.fillDtTransactionSale(filterTrans);
             foreach (DataRow dr in dtTransSelected.Rows)
             { 
+                clsCustomer filterCust = new clsCustomer{
+                    id=dr["customer_id"].ToString()
+                };
+                dtCustSelected = CoreCl.fillDtCustomer(filterCust);
+
                 var id = transaction_id;
                 var state = dr["state"].ToString();
                 var customer_id = dr["customer_id"].ToString();
@@ -472,21 +478,26 @@ namespace Inventorifo.App
                 textViewCustomer.Buffer.TagTable.Add (tag);
                 tag.Weight = Pango.Weight.Bold;
 
-                textViewCustomer.Buffer.Text = "\nOrganization name:\n\nOrganization address:\n\nPhone number:\n\nPerson name:\n\nPhone number:\n\n";
+                textViewCustomer.Buffer.Text = "\nPerson name:\n\nPhone number:\n\nCustomer group:\n\nPrice group:\n\nTax:\n\n";
+                
                 var iter = textViewCustomer.Buffer.GetIterAtLine (2);
-                textViewCustomer.Buffer.InsertWithTags (ref iter, organization_name, tag);
+                foreach (DataRow drcust in dtCustSelected.Rows)
+                { 
+                    textViewCustomer.Buffer.InsertWithTags (ref iter, drcust["person_name"].ToString(), tag);
 
-                iter = textViewCustomer.Buffer.GetIterAtLine (4);
-                textViewCustomer.Buffer.InsertWithTags (ref iter, organization_address, tag);
+                    iter = textViewCustomer.Buffer.GetIterAtLine (4);
+                    textViewCustomer.Buffer.InsertWithTags (ref iter, drcust["person_phone_number"].ToString(), tag);
 
-                iter = textViewCustomer.Buffer.GetIterAtLine (6);
-                textViewCustomer.Buffer.InsertWithTags (ref iter, organization_phone_number, tag);
+                    iter = textViewCustomer.Buffer.GetIterAtLine (6);
+                    textViewCustomer.Buffer.InsertWithTags (ref iter, drcust["customer_group_name"].ToString(), tag);
 
-                iter = textViewCustomer.Buffer.GetIterAtLine (8);
-                textViewCustomer.Buffer.InsertWithTags (ref iter, person_name, tag);
+                    iter = textViewCustomer.Buffer.GetIterAtLine (8);
+                    textViewCustomer.Buffer.InsertWithTags (ref iter, drcust["price"].ToString(), tag);
 
-                iter = textViewCustomer.Buffer.GetIterAtLine (10);
-                textViewCustomer.Buffer.InsertWithTags (ref iter, person_phone_number, tag);
+                    iter = textViewCustomer.Buffer.GetIterAtLine (10);
+                    textViewCustomer.Buffer.InsertWithTags (ref iter, drcust["tax_group_name"].ToString(), tag);
+
+                }
                 lbTransactionId.Text = id;
                 CellRendererText retrievedRenderer = GuiCl.GetCellRendererText(_treeViewItems, 2);
                 
@@ -563,7 +574,7 @@ namespace Inventorifo.App
                 SetItemModel(Convert.ToDouble(lbTransactionId.Text)); 
                 chkTax.Active = is_tax;
             }                              
-            
+            SetTax();
         }       
         
         public void setActivePaymentMethod(string pattern){
@@ -627,7 +638,20 @@ namespace Inventorifo.App
         }
         private void HandlechkTaxChanged(object sender, EventArgs e)
         {
-            if(chkTax.Active){
+           SetTax();
+        }
+
+        private void SetTax(){
+            string item_price = "0";  
+            foreach(DataRow drcust in dtCustSelected.Rows){    
+                if(drcust["tax_group_name"].ToString()=="0")
+                    chkTax.Active = false;
+                else 
+                    chkTax.Active = true;
+                
+            }
+
+             if(chkTax.Active){
                 entTaxAmount.Text = CalculateTax(GetTotalSalePrice()).ToString();
                 entTransactionAmount.Text = (GetTotalSalePrice()+CalculateTax(GetTotalSalePrice())).ToString();
                 // string sql = "update transaction_order_item set tax = final_price*"+this.parent.conf.tax+" where transaction_id="+lbTransactionId.Text ;
@@ -875,7 +899,7 @@ namespace Inventorifo.App
         private void SelectedItem(string prm)
         {                          
             dtItemSelected = new DataTable();
-            string sql = "SELECT prod.id, prod.short_name, prod.name prod_name, prod.barcode, prod.product_group, prodgr.name product_group_name "+
+            string sql = "SELECT prod.id, prod.short_name, prod.name prod_name, prod.barcode, prod.product_group, prodgr.name product_group_name, prod.price1, prod.price2, prod.price3, prod.last_purchase_price "+
                     "FROM product prod, product_group prodgr "+
                     "WHERE prod.product_group = prodgr.id and prod.id= "+prm;
                     Console.WriteLine(sql);          
@@ -885,7 +909,7 @@ namespace Inventorifo.App
             textViewProduct.Buffer.TagTable.Add (tag);
             tag.Weight = Pango.Weight.Bold;
 
-            textViewProduct.Buffer.Text = "\nShort:\n\nName:\n\nBarcode:\n\nGroup:\n\n";
+            textViewProduct.Buffer.Text = "\nShort:\n\nName:\n\nBarcode:\n\nGroup:\n\nPrice\n\n";
             var iter = textViewProduct.Buffer.GetIterAtLine (2);
             textViewProduct.Buffer.InsertWithTags (ref iter, dtItemSelected.Rows[0].ItemArray[1].ToString(), tag);
 
@@ -897,6 +921,24 @@ namespace Inventorifo.App
             
             iter = textViewProduct.Buffer.GetIterAtLine (8);
             textViewProduct.Buffer.InsertWithTags (ref iter, dtItemSelected.Rows[0].ItemArray[5].ToString(), tag);
+
+            string item_price = "0";  
+            foreach(DataRow drcust in dtCustSelected.Rows){                 
+                foreach(DataRow drit in dtItemSelected.Rows){ 
+                    if(drcust["customer_group"].ToString()=="8")
+                        item_price = drit["last_purchase_price"].ToString();
+                    else if(drcust["price"].ToString()=="1")
+                        item_price = drit["price1"].ToString();
+                    else if(drcust["price"].ToString()=="2")
+                        item_price = drit["price2"].ToString();
+                    else 
+                        item_price = drit["price3"].ToString();
+                }
+            }
+
+            iter = textViewProduct.Buffer.GetIterAtLine (10);
+            textViewProduct.Buffer.InsertWithTags (ref iter, item_price, tag);
+
         }
        
         public Response AddItem(string product_id, string quantity){
@@ -971,8 +1013,22 @@ namespace Inventorifo.App
             if(dtItemSelected is not null){
                // Console.WriteLine(e.Event.Key);
                 if (e.Event.Key == Gdk.Key.Return)
-                {    
-                    Console.WriteLine("=OnSpnQtyKeyPressEvent=======");
+                {   
+
+                    Console.WriteLine("=OnSpnQtyKeyPressEvent======="); 
+                    string item_price = "0";  
+                    foreach(DataRow drcust in dtCustSelected.Rows){                 
+                        foreach(DataRow drit in dtItemSelected.Rows){ 
+                            if(drcust["customer_group"].ToString()=="8")
+                                item_price = drit["last_purchase_price"].ToString();
+                            else if(drcust["price"].ToString()=="1")
+                                item_price = drit["price1"].ToString();
+                            else if(drcust["price"].ToString()=="2")
+                                item_price = drit["price2"].ToString();
+                            else 
+                                item_price = drit["price3"].ToString();
+                        }
+                    }
                     string sql = "select stock.id stock_id,stock.quantity,stock.product_id,stock.price_id,stock.location,TO_CHAR(stock.expired_date,'yyyy-MM-dd') expired_date, stock.unit, stock.condition "+
                     "from stock,location loc,location_group locgr "+
                     "where stock.quantity>0 and state=0 and locgr.id=2 and product_id="+ dtItemSelected.Rows[0].ItemArray[0].ToString() + " "+
@@ -981,24 +1037,16 @@ namespace Inventorifo.App
                     Console.WriteLine(sql);   
                     DataTable dts = DbCl.fillDataTable(DbCl.getConn(), sql);
                     foreach(DataRow drs in dts.Rows){ 
-                        sql = "insert into transaction_order_item (transaction_id,product_id,quantity,stock_id,purchase_price_id,main_discount, additional_discount,deduction_amount, state) "+
-                        "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+spnQty.Text+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",0,0,0,1)" ;
+                        // jika brach item_price ambil dari tabel price
+                        sql = "insert into transaction_order_item (transaction_id,product_id, item_price, quantity,stock_id,purchase_price_id,main_discount, additional_discount,deduction_amount, state) "+
+                        "values("+lbTransactionId.Text+ ","+dtItemSelected.Rows[0].ItemArray[0].ToString() + ","+item_price+","+spnQty.Text+","+ drs["stock_id"].ToString() + ","+drs["price_id"].ToString()+",0,0,0,1)" ;
                         Console.WriteLine (sql); 
                         DbCl.ExecuteTrans(DbCl.getConn(), sql); 
                     }
                     SetItemModel(Convert.ToDouble(lbTransactionId.Text));
                     ItemTransactionReady(true);
                     SetTotalCalculation();
-                    // Response resp = AddItem();
-                    // if(resp.code=="20"){
-                    //     SetItemModel(Convert.ToDouble(lbTransactionId.Text));
-                    //     ItemTransactionReady(true);
-                    // }else{
-                    //     string message = resp.description;
-                    //     MessageDialog md = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Error, ButtonsType.Close, message);
-                    //     md.Run();
-                    //     md.Destroy();
-                    // }
+                    SetTax();
                 } 
             }         
         }
@@ -1464,6 +1512,7 @@ namespace Inventorifo.App
                 SetTransactionModel("",entSearch.Text.Trim());
                 SelectedTrans(lbTransactionId.Text);
                 ItemTransactionReady(false);
+                SetTax();
                 return false;
             });
            // SetTransactionModel(true,entSearch.Text.Trim());
@@ -1489,7 +1538,7 @@ namespace Inventorifo.App
                 GuiCl.RemoveAllWidgets(popoverCustomer);        
                 ReferenceCustomer refWidget = new ReferenceCustomer(this,"dialog","Sale");
                 popoverCustomer.Add(refWidget);
-                popoverCustomer.SetSizeRequest(200, 400);
+                popoverCustomer.SetSizeRequest(700, 400);
                 refWidget.Show();          
                 popoverCustomer.ShowAll();
                 return false;

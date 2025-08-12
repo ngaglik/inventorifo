@@ -171,6 +171,177 @@
           "bin/placeholder/Inventorifo.Lib.dll": {}
         }
       }
+    },
+    "net9.0/linux-x64": {
+      "AtkSharp/3.24.24.95": {
+        "type": "package",
+        "dependencies": {
+          "GLibSharp": "3.24.24.95"
+        },
+        "compile": {
+          "lib/net6.0/AtkSharp.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/AtkSharp.dll": {}
+        }
+      },
+      "BCrypt.Net-Next/4.0.3": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/BCrypt.Net-Next.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/BCrypt.Net-Next.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "CairoSharp/3.24.24.95": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/CairoSharp.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/CairoSharp.dll": {}
+        }
+      },
+      "GdkSharp/3.24.24.95": {
+        "type": "package",
+        "dependencies": {
+          "CairoSharp": "3.24.24.95",
+          "GLibSharp": "3.24.24.95",
+          "GioSharp": "3.24.24.95",
+          "PangoSharp": "3.24.24.95"
+        },
+        "compile": {
+          "lib/net6.0/GdkSharp.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/GdkSharp.dll": {}
+        }
+      },
+      "GioSharp/3.24.24.95": {
+        "type": "package",
+        "dependencies": {
+          "GLibSharp": "3.24.24.95"
+        },
+        "compile": {
+          "lib/net6.0/GioSharp.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/GioSharp.dll": {}
+        }
+      },
+      "GLibSharp/3.24.24.95": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/GLibSharp.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/GLibSharp.dll": {}
+        }
+      },
+      "GtkSharp/3.24.24.95": {
+        "type": "package",
+        "dependencies": {
+          "AtkSharp": "3.24.24.95",
+          "CairoSharp": "3.24.24.95",
+          "GLibSharp": "3.24.24.95",
+          "GdkSharp": "3.24.24.95",
+          "GioSharp": "3.24.24.95",
+          "PangoSharp": "3.24.24.95"
+        },
+        "compile": {
+          "lib/net6.0/GtkSharp.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/GtkSharp.dll": {}
+        },
+        "build": {
+          "build/GtkSharp.targets": {}
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net6.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions/8.0.2": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net6.0/Microsoft.Extensions.Logging.Abstractions.targets": {}
+        }
+      },
+      "Npgsql/9.0.3": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "8.0.2"
+        },
+        "compile": {
+          "lib/net8.0/Npgsql.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Npgsql.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "PangoSharp/3.24.24.95": {
+        "type": "package",
+        "dependencies": {
+          "CairoSharp": "3.24.24.95",
+          "GLibSharp": "3.24.24.95"
+        },
+        "compile": {
+          "lib/net6.0/PangoSharp.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/PangoSharp.dll": {}
+        }
+      },
+      "Inventorifo.Lib/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "BCrypt.Net-Next": "4.0.3",
+          "gtksharp": "3.24.24.95",
+          "npgsql": "9.0.3"
+        },
+        "compile": {
+          "bin/placeholder/Inventorifo.Lib.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Inventorifo.Lib.dll": {}
+        }
+      }
     }
   },
   "libraries": {
@@ -501,6 +672,11 @@
           }
         },
         "runtimeIdentifierGraphPath": "/home/alisalatiga/.dotnet/sdk/9.0.203/PortableRuntimeIdentifierGraph.json"
+      }
+    },
+    "runtimes": {
+      "linux-x64": {
+        "#import": []
       }
     }
   }

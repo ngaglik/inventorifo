@@ -97,6 +97,11 @@
     <property name="can-focus">False</property>
     <property name="stock">gtk-missing-image</property>
   </object>
+  <object class="GtkImage" id="image27">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-missing-image</property>
+  </object>
   <object class="GtkImage" id="image3">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -378,6 +383,15 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="image">image9</property>
+                        <property name="use-stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="PriceRoleMenuItem">
+                        <property name="label" translatable="yes">Customer Price Role</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="image">image27</property>
                         <property name="use-stock">False</property>
                       </object>
                     </child>

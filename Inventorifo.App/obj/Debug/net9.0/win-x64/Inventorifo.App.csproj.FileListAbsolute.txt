@@ -87,3 +87,5 @@
 /home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.App/Inventorifo.lin/Npgsql.dll
 /home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.App/Inventorifo.lin/PangoSharp.dll
 /home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.App/Inventorifo.lin/Inventorifo.Lib.pdb
+/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.App/Inventorifo.lin/BCrypt.Net-Next.dll
+/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.App/Inventorifo.win/BCrypt.Net-Next.dll

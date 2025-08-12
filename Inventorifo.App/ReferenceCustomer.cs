@@ -4,6 +4,7 @@ using Gtk;
 using Gdk;
 using System.Data;
 using Pango;
+using Inventorifo.Lib.Model;
 
 namespace Inventorifo.App
 {
@@ -18,7 +19,7 @@ namespace Inventorifo.App
         private ListStore _itemsModel;
         //private ListStore numbers_model;
         private Dictionary<CellRenderer, int> _cellColumnsRender;
-        private List<Item> _articles;
+        private List<clsCustomer> _articles;
         private Entry entSearch;
         private Popover popover ;
         
@@ -104,37 +105,7 @@ namespace Inventorifo.App
             entSearch.GrabFocus();
         }
 
-        private class Item
-        { //
-            public Item(string id, string person_id,string person_name, string person_address,string person_phone_number, string customer_group, string customer_group_name,string is_active, string organization_name, string organization_address, string organization_phone_number,  string organization_tax_id_number){
-                this.id = id;
-                this.person_id = person_id;
-                this.person_name = person_name;
-                this.person_address = person_address;
-                this.person_phone_number = person_phone_number;
-                this.organization_name = organization_name;
-                this.organization_address = organization_address;
-                this.organization_phone_number = organization_phone_number;
-                this.is_active = is_active;
-                this.organization_tax_id_number = organization_tax_id_number;
-                this.customer_group = customer_group;
-                this.customer_group_name = customer_group_name;
-            }
-            public string id;
-            public string person_id;
-            public string person_name;
-            public string person_address;
-            public string person_phone_number;
-            public string is_active;
-            public string customer_group;
-            public string customer_group_name;
-            public string organization_name;
-            public string organization_address;
-            public string organization_phone_number;
-            public string organization_tax_id_number;
-        }
-
-        private enum ColumnItem
+       private enum ColumnItem
         { //
             id,
             person_id,
@@ -143,6 +114,11 @@ namespace Inventorifo.App
             person_phone_number,
             customer_group,      
             customer_group_name,
+            price,
+            tax_group_id,
+            tax_group_name,
+            discount_group_id,      
+            discount_group_name,
             is_active,
             organization_name,
             organization_address,
@@ -199,39 +175,40 @@ namespace Inventorifo.App
                 _itemsModel = null;
                 TreeIter iter;
                 /* create array */
-                _articles = new List<Item>();
-
-                string whrfind = "";
-                if(strfind!="") whrfind = "and (upper(pers.name) like upper('" + strfind + "%') OR upper(cust.organization_name) like upper('" + strfind + "%')   )";
-
-                string sql = "SELECT cust.id ,pers.id person_id, pers.name person_name, pers.address person_address,  pers.phone_number person_phone_number, cust.customer_group , custgr.name customer_group_name, cust.is_active, cust.organization_name, cust.organization_address, cust.organization_phone_number, cust.organization_tax_id_number "+
-                        "FROM customer cust left outer join person pers on cust.person_id=pers.id, customer_group custgr "+
-                        "WHERE cust.customer_group=custgr.id "+ whrfind +
-                        "ORDER by pers.name asc";
-                        Console.WriteLine(sql);
-              
-                DataTable dttv = DbCl.fillDataTable(DbCl.getConn(), sql);
+                _articles = new List<clsCustomer>();
+                clsCustomer pers;
+                clsCustomer filterCust = new clsCustomer{
+                    id=null,
+                    person_name = strfind,
+                };
+                DataTable dttv = CoreCl.fillDtCustomer(filterCust);
                 foreach (DataRow dr in dttv.Rows)
                 {                    
-                    string id=dr[0].ToString();
-                    string person_id=dr[1].ToString();
-                    string person_name=dr[2].ToString();
-                    string person_address=dr[3].ToString();
-                    string person_phone_number=dr[4].ToString();
-                    string customer_group=dr[5].ToString();
-                    string customer_group_name=dr[6].ToString();
-                    string is_active=dr[7].ToString();
-                    string organization_name=dr[8].ToString();
-                    string organization_address=dr[9].ToString();
-                    string organization_phone_number=dr[10].ToString();
-                    string organization_tax_id_number=dr[11].ToString();
-                                    
-                    _articles.Add(new Item(id, person_id, person_name, person_address,person_phone_number, customer_group, customer_group_name,is_active,  organization_name, organization_address, organization_phone_number, organization_tax_id_number ));
+                    pers = new clsCustomer{
+                        id=dr["id"].ToString(),
+                        person_id=dr["person_id"].ToString(),
+                        person_name=dr["person_name"].ToString(),
+                        person_address=dr["person_address"].ToString(),
+                        person_phone_number=dr["person_phone_number"].ToString(),
+                        customer_group=dr["customer_group"].ToString(),
+                        customer_group_name=dr["customer_group_name"].ToString(),
+                        price=dr["price"].ToString(),
+                        tax_group_id=dr["tax_group_id"].ToString(),
+                        tax_group_name=dr["tax_group_name"].ToString(),
+                        discount_group_id=dr["discount_group_id"].ToString(),
+                        discount_group_name=dr["discount_group_name"].ToString(),
+                        is_active=dr["is_active"].ToString(),
+                        organization_name=dr["organization_name"].ToString(),
+                        organization_address=dr["organization_address"].ToString(),
+                        organization_phone_number=dr["organization_phone_number"].ToString(),
+                        organization_tax_id_number=dr["organization_tax_id_number"].ToString(),
+                    } ; 
+                    _articles.Add(pers);   
                 }
 
                 /* create list store */
                 //
-                _itemsModel = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+                _itemsModel = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(string),typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
 
                 /* add items */
                 for (int i = 0; i < _articles.Count; i++)
@@ -243,7 +220,12 @@ namespace Inventorifo.App
                     _itemsModel.SetValue(iter, (int)ColumnItem.person_address, _articles[i].person_address);
                     _itemsModel.SetValue(iter, (int)ColumnItem.person_phone_number, _articles[i].person_phone_number);                 
                     _itemsModel.SetValue(iter, (int)ColumnItem.customer_group, _articles[i].customer_group);
-                    _itemsModel.SetValue(iter, (int)ColumnItem.customer_group_name, _articles[i].customer_group_name);            
+                    _itemsModel.SetValue(iter, (int)ColumnItem.customer_group_name, _articles[i].customer_group_name);    
+                    _itemsModel.SetValue(iter, (int)ColumnItem.price, _articles[i].price);
+                    _itemsModel.SetValue(iter, (int)ColumnItem.tax_group_id, _articles[i].tax_group_id);
+                    _itemsModel.SetValue(iter, (int)ColumnItem.tax_group_name, _articles[i].tax_group_name);                 
+                    _itemsModel.SetValue(iter, (int)ColumnItem.discount_group_id, _articles[i].discount_group_id);
+                    _itemsModel.SetValue(iter, (int)ColumnItem.discount_group_name, _articles[i].discount_group_name);          
                     _itemsModel.SetValue(iter, (int)ColumnItem.is_active, _articles[i].is_active);
                     _itemsModel.SetValue(iter, (int)ColumnItem.organization_name, _articles[i].organization_name);
                     _itemsModel.SetValue(iter, (int)ColumnItem.organization_address, _articles[i].organization_address);
@@ -329,8 +311,27 @@ namespace Inventorifo.App
             _cellColumnsRender.Add(rendererCombo, (int)ColumnItem.customer_group_name);
             _treeView.InsertColumn(-1, "Customer group", rendererCombo, "text", (int)ColumnItem.customer_group_name);
 
+            rendererText = new CellRendererText();
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.price);
+            _treeView.InsertColumn(-1, "Price Group", rendererText, "text", (int)ColumnItem.price);
 
-             lstModelCombo = new ListStore(typeof(string), typeof(string));
+            // rendererText = new CellRendererText();
+            // _cellColumnsRender.Add(rendererText, (int)ColumnItem.tax_group_id);
+            // _treeView.InsertColumn(-1, "Tax Group ID", rendererText, "text", (int)ColumnItem.tax_group_id);
+
+            rendererText = new CellRendererText();
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.tax_group_name);
+            _treeView.InsertColumn(-1, "Tax Group Name", rendererText, "text", (int)ColumnItem.tax_group_name);
+
+            // rendererText = new CellRendererText();
+            // _cellColumnsRender.Add(rendererText, (int)ColumnItem.discount_group_id);
+            // _treeView.InsertColumn(-1, "Discount Group ID", rendererText, "text", (int)ColumnItem.discount_group_id);
+
+            rendererText = new CellRendererText();
+            _cellColumnsRender.Add(rendererText, (int)ColumnItem.discount_group_name);
+            _treeView.InsertColumn(-1, "Discount Group Name", rendererText, "text", (int)ColumnItem.discount_group_name);
+
+            lstModelCombo = new ListStore(typeof(string), typeof(string));
             lstModelCombo.AppendValues("true","true");
             lstModelCombo.AppendValues("false","false");
              rendererCombo = new CellRendererCombo
@@ -524,6 +525,7 @@ namespace Inventorifo.App
                             string sql = "update customer set customer_group = '"+arr[0].Trim()+"' where id='"+_articles[i].id+"' ";
                             Console.WriteLine (sql);
                             DbCl.ExecuteTrans(DbCl.getConn(), sql);
+                            CreateItemsModel(true,entSearch.Text.Trim());
                         }
                     }
                     break;
