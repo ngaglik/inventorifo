@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.App/Inventorifo.App.csproj": {}
+    "/home/alisalatiga/Documents/DotnetProjects/inventorifo/Inventorifo.App/Inventorifo.App.csproj": {}
   },
   "projects": {
-    "/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.App/Inventorifo.App.csproj": {
+    "/home/alisalatiga/Documents/DotnetProjects/inventorifo/Inventorifo.App/Inventorifo.App.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.App/Inventorifo.App.csproj",
+        "projectUniqueName": "/home/alisalatiga/Documents/DotnetProjects/inventorifo/Inventorifo.App/Inventorifo.App.csproj",
         "projectName": "Inventorifo.App",
-        "projectPath": "/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.App/Inventorifo.App.csproj",
+        "projectPath": "/home/alisalatiga/Documents/DotnetProjects/inventorifo/Inventorifo.App/Inventorifo.App.csproj",
         "packagesPath": "/home/alisalatiga/.nuget/packages/",
-        "outputPath": "/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.App/obj/",
+        "outputPath": "/home/alisalatiga/Documents/DotnetProjects/inventorifo/Inventorifo.App/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/alisalatiga/.nuget/NuGet/NuGet.Config"
@@ -27,8 +27,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj": {
-                "projectPath": "/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj"
+              "/home/alisalatiga/Documents/DotnetProjects/inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj": {
+                "projectPath": "/home/alisalatiga/Documents/DotnetProjects/inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj"
               }
             }
           }
@@ -72,21 +72,16 @@
           },
           "runtimeIdentifierGraphPath": "/home/alisalatiga/.dotnet/sdk/9.0.203/PortableRuntimeIdentifierGraph.json"
         }
-      },
-      "runtimes": {
-        "linux-x64": {
-          "#import": []
-        }
       }
     },
-    "/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj": {
+    "/home/alisalatiga/Documents/DotnetProjects/inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj",
+        "projectUniqueName": "/home/alisalatiga/Documents/DotnetProjects/inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj",
         "projectName": "Inventorifo.Lib",
-        "projectPath": "/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj",
+        "projectPath": "/home/alisalatiga/Documents/DotnetProjects/inventorifo/Inventorifo.Lib/Inventorifo.Lib.csproj",
         "packagesPath": "/home/alisalatiga/.nuget/packages/",
-        "outputPath": "/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.Lib/obj/",
+        "outputPath": "/home/alisalatiga/Documents/DotnetProjects/inventorifo/Inventorifo.Lib/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/alisalatiga/.nuget/NuGet/NuGet.Config"
@@ -150,11 +145,6 @@
             }
           },
           "runtimeIdentifierGraphPath": "/home/alisalatiga/.dotnet/sdk/9.0.203/PortableRuntimeIdentifierGraph.json"
-        }
-      },
-      "runtimes": {
-        "linux-x64": {
-          "#import": []
         }
       }
     }

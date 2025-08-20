@@ -18,7 +18,7 @@ namespace Inventorifo.App
         private ListStore _itemsModel;
         //private ListStore numbers_model;
         private Dictionary<CellRenderer, int> _cellColumnsRender;
-        private List<clReportTransaction> _articles;
+        private List<clTransactionItem1> _articles;
         public object parent;
         private Entry entSearch;
         Button btnDate = new Button();
@@ -74,13 +74,13 @@ namespace Inventorifo.App
             _treeView.KeyPressEvent += HandleTreeViewKeyPressEvent;
 
             AddColumns(); //0,3,8,10,14,16,18
-            _treeView.Columns[0].Visible = false;
-            _treeView.Columns[3].Visible = false;
-            _treeView.Columns[8].Visible = false;
-            _treeView.Columns[10].Visible = false;
-            _treeView.Columns[14].Visible = false;
-            _treeView.Columns[16].Visible = false;
-            _treeView.Columns[18].Visible = false;
+             _treeView.Columns[0].Visible = false;
+             _treeView.Columns[2].Visible = false;
+             _treeView.Columns[5].Visible = false;
+            // _treeView.Columns[10].Visible = false;
+            // _treeView.Columns[14].Visible = false;
+            // _treeView.Columns[16].Visible = false;
+            // _treeView.Columns[18].Visible = false;
 
             CreateItemsModel(true);
             sw.Add(_treeView); 
@@ -92,7 +92,6 @@ namespace Inventorifo.App
         private enum ColumnItems
         { //
             id,
-            input_date,
             transaction_id,
             product_id,
             product_short_name,
@@ -103,7 +102,18 @@ namespace Inventorifo.App
             unit_name,
             purchase_price_id,
             purchase_item_price,
-            price,
+            purchase_main_discount,
+            purchase_additional_discount,
+            purchase_deduction_amount,
+            purchase_final_price,
+            purchase_subtotal,
+            purchase_tax,
+            item_price,
+            main_discount,
+            additional_discount,
+            deduction_amount,
+            final_price,
+            subtotal,
             tax,
             state,
             state_name,
@@ -111,9 +121,9 @@ namespace Inventorifo.App
             location_name,
             condition,
             condition_name,
-            expired_date,
             Num
         };
+
 
         private enum ColumnNumber
         {
@@ -140,14 +150,14 @@ namespace Inventorifo.App
                 clTransactionItem1 filterItem = new clTransactionItem1{                    
                     product_short_name = entSearch.Text.Trim(),
                 };
-                _articles = new List<clReportTransaction>();
-                clReportTransaction rpt;
-                DataTable dttv = CoreCl.fillDtReportTransaction(filterTrans, filterItem);
+                _articles = new List<clTransactionItem1>();
+                clTransactionItem1 rpt;
+                //DataTable dttv = CoreCl.fillDtReportTransaction(filterTrans, filterItem);
+                DataTable dttv =  CoreCl.fillDtTransactionItem(filterTrans, filterItem);
                 foreach (DataRow dr in dttv.Rows)
                 {            
-                    rpt = new clReportTransaction{ 
+                    rpt = new clTransactionItem1{ 
                         id=dr["id"].ToString(), 
-                        input_date=dr["input_date"].ToString(),
                         transaction_id=dr["transaction_id"].ToString(),        
                         product_id=dr["product_id"].ToString(),
                         product_short_name=dr["product_short_name"].ToString(),
@@ -157,7 +167,13 @@ namespace Inventorifo.App
                         unit=dr["unit"].ToString(),
                         unit_name=dr["unit_name"].ToString(),
                         purchase_price_id=dr["purchase_price_id"].ToString(),
-                        purchase_item_price=dr["purchase_item_price"].ToString(),
+                        purchase_item_price=dr["purchase_item_price"].ToString(),                        
+                        item_price=dr["item_price"].ToString(),
+                        main_discount=dr["main_discount"].ToString(),
+                        additional_discount=dr["additional_discount"].ToString(),
+                        deduction_amount=dr["deduction_amount"].ToString(),
+                        final_price= dr["final_price"].ToString(),
+                        subtotal= (Convert.ToDouble(dr["final_price"].ToString())*Convert.ToDouble(dr["quantity"].ToString())).ToString(),
                         tax=dr["tax"].ToString(),
                         state=dr["state"].ToString(),
                         state_name=dr["state_name"].ToString(),
@@ -171,14 +187,13 @@ namespace Inventorifo.App
 
                 /* create list store */
                 //
-                _itemsModel = new ListStore(typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string));
+                _itemsModel = new ListStore(typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string),typeof(string));
 
                 /* add items */
                 for (int i = 0; i < _articles.Count; i++)
                 {
                     iter = _itemsModel.Append();
                     _itemsModel.SetValue(iter, (int)ColumnItems.id, _articles[i].id);
-                    _itemsModel.SetValue(iter, (int)ColumnItems.input_date, _articles[i].input_date);
                     _itemsModel.SetValue(iter, (int)ColumnItems.transaction_id, _articles[i].transaction_id);
                     _itemsModel.SetValue(iter, (int)ColumnItems.product_id, _articles[i].product_id);
                     _itemsModel.SetValue(iter, (int)ColumnItems.product_short_name, _articles[i].product_short_name);
@@ -189,7 +204,12 @@ namespace Inventorifo.App
                     _itemsModel.SetValue(iter, (int)ColumnItems.unit_name, _articles[i].unit_name);
                     _itemsModel.SetValue(iter, (int)ColumnItems.purchase_price_id, _articles[i].purchase_price_id);
                     _itemsModel.SetValue(iter, (int)ColumnItems.purchase_item_price, _articles[i].purchase_item_price);
-                    _itemsModel.SetValue(iter, (int)ColumnItems.price, _articles[i].price);
+                    _itemsModel.SetValue(iter, (int)ColumnItems.item_price, _articles[i].item_price);
+                    _itemsModel.SetValue(iter, (int)ColumnItems.main_discount, _articles[i].main_discount);
+                    _itemsModel.SetValue(iter, (int)ColumnItems.additional_discount, _articles[i].additional_discount);
+                    _itemsModel.SetValue(iter, (int)ColumnItems.deduction_amount, _articles[i].deduction_amount);
+                    _itemsModel.SetValue(iter, (int)ColumnItems.final_price, _articles[i].final_price);
+                    _itemsModel.SetValue(iter, (int)ColumnItems.subtotal, _articles[i].subtotal);
                     _itemsModel.SetValue(iter, (int)ColumnItems.tax, _articles[i].tax);
                     _itemsModel.SetValue(iter, (int)ColumnItems.state, _articles[i].state);
                     _itemsModel.SetValue(iter, (int)ColumnItems.state_name, _articles[i].state_name);
@@ -226,10 +246,6 @@ namespace Inventorifo.App
             CellRendererText rendererText = new CellRendererText();
             _cellColumnsRender.Add(rendererText, (int)ColumnItems.id);
             _treeView.InsertColumn(-1, "ID", rendererText, "text", (int)ColumnItems.id);
-
-            rendererText = new CellRendererText();
-            _cellColumnsRender.Add(rendererText, (int)ColumnItems.input_date);
-            _treeView.InsertColumn(-1, "date", rendererText, "text", (int)ColumnItems.input_date);
 
             rendererText = new CellRendererText();
             _cellColumnsRender.Add(rendererText, (int)ColumnItems.transaction_id);
@@ -273,21 +289,36 @@ namespace Inventorifo.App
             _cellColumnsRender.Add(rendererText, (int)ColumnItems.unit_name);
             _treeView.InsertColumn(-1, "unit", rendererText, "text", (int)ColumnItems.unit_name);
 
+          
             rendererText = new CellRendererText();
             rendererText.Foreground = textForground;
-            _cellColumnsRender.Add(rendererText, (int)ColumnItems.purchase_price_id);
-            _treeView.InsertColumn(-1, "purchase_price_id", rendererText, "text", (int)ColumnItems.purchase_price_id);
+            _cellColumnsRender.Add(rendererText, (int)ColumnItems.item_price);
+            _treeView.InsertColumn(-1, "item_price", rendererText, "text", (int)ColumnItems.item_price);
 
-            
             rendererText = new CellRendererText();
             rendererText.Foreground = textForground;
-            _cellColumnsRender.Add(rendererText, (int)ColumnItems.purchase_item_price);
-            _treeView.InsertColumn(-1, "purchase_item_price", rendererText, "text", (int)ColumnItems.purchase_item_price);
-            
+            _cellColumnsRender.Add(rendererText, (int)ColumnItems.main_discount);
+            _treeView.InsertColumn(-1, "main_discount", rendererText, "text", (int)ColumnItems.main_discount);
+
             rendererText = new CellRendererText();
             rendererText.Foreground = textForground;
-            _cellColumnsRender.Add(rendererText, (int)ColumnItems.price);
-            _treeView.InsertColumn(-1, "price", rendererText, "text", (int)ColumnItems.price);
+            _cellColumnsRender.Add(rendererText, (int)ColumnItems.additional_discount);
+            _treeView.InsertColumn(-1, "additional_discount", rendererText, "text", (int)ColumnItems.additional_discount);
+
+            rendererText = new CellRendererText();
+            rendererText.Foreground = textForground;
+            _cellColumnsRender.Add(rendererText, (int)ColumnItems.deduction_amount);
+            _treeView.InsertColumn(-1, "deduction_amount", rendererText, "text", (int)ColumnItems.deduction_amount);
+
+            rendererText = new CellRendererText();
+            rendererText.Foreground = textForground;
+            _cellColumnsRender.Add(rendererText, (int)ColumnItems.final_price);
+            _treeView.InsertColumn(-1, "final_price", rendererText, "text", (int)ColumnItems.final_price);
+
+            rendererText = new CellRendererText();
+            rendererText.Foreground = textForground;
+            _cellColumnsRender.Add(rendererText, (int)ColumnItems.subtotal);
+            _treeView.InsertColumn(-1, "subtotal", rendererText, "text", (int)ColumnItems.subtotal);
 
             rendererText = new CellRendererText();
             rendererText.Foreground = textForground;

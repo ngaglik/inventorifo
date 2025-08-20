@@ -269,8 +269,9 @@ namespace Inventorifo.App
         {
             Gtk.Application.Invoke(delegate
             {
-                ClearMainBox();                
-                ReportTransactionSaleReturn refWidget = new ReportTransactionSaleReturn(this, "widget", "4");
+                ClearMainBox();
+                clTransaction filterTrans = new clTransaction {transaction_date = DateTime.Now.ToString("yyyy-MM-dd"), transaction_type_id="4"};
+                ReportTransactionSaleReturn refWidget = new ReportTransactionSaleReturn(this, "widget", filterTrans);
                 mainBox.PackStart(refWidget, true, true, 5);
                 refWidget.ShowAll();
             });
@@ -280,7 +281,8 @@ namespace Inventorifo.App
             Gtk.Application.Invoke(delegate
             {
                 ClearMainBox();
-                ReportTransactionPurchaseReturn refWidget = new ReportTransactionPurchaseReturn(this, "widget", "3");
+                clTransaction filterTrans = new clTransaction {transaction_date = DateTime.Now.ToString("yyyy-MM-dd"), transaction_type_id="3"};
+                ReportTransactionPurchaseReturn refWidget = new ReportTransactionPurchaseReturn(this, "widget", filterTrans);
                 mainBox.PackStart(refWidget, true, true, 5);
                 refWidget.ShowAll();
             });

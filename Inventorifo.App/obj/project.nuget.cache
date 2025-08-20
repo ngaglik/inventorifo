@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "DOOlGjZvVi8=",
+  "dgSpecHash": "hJ8d8ADq79s=",
   "success": true,
-  "projectFilePath": "/home/alisalatiga/Documents/DotnetProjects/Inventorifo/Inventorifo.App/Inventorifo.App.csproj",
+  "projectFilePath": "/home/alisalatiga/Documents/DotnetProjects/inventorifo/Inventorifo.App/Inventorifo.App.csproj",
   "expectedPackageFiles": [
     "/home/alisalatiga/.nuget/packages/atksharp/3.24.24.95/atksharp.3.24.24.95.nupkg.sha512",
     "/home/alisalatiga/.nuget/packages/bcrypt.net-next/4.0.3/bcrypt.net-next.4.0.3.nupkg.sha512",

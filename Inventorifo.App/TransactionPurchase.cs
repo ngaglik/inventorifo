@@ -48,6 +48,7 @@ namespace Inventorifo.App
         Button  btnNew;
         Button  btnPreviousPayment;
         Button btnProcessCheckout;
+        Button btnProcessCheckoutPrint;
         Button btnProduct;
         Button btnSupplier;
         Button btnDate;
@@ -66,6 +67,7 @@ namespace Inventorifo.App
         private TextView textViewProduct;
 
         DataTable dtTransSelected;
+        DataTable dtItems;
         DataTable dtItemSelected;
 
         Label lbTransactionId;
@@ -192,7 +194,9 @@ namespace Inventorifo.App
             
             
             btnProcessCheckout = (Button)builder.GetObject("BtnProcessCheckout");
-            btnProcessCheckout.Clicked += DoCheckout;
+            btnProcessCheckout.Clicked += DoCheckout;            
+            btnProcessCheckoutPrint = (Button)builder.GetObject("BtnProcessCheckoutPrint");
+            btnProcessCheckoutPrint.Clicked += btnProcessCheckoutPrintClicked;
 
             btnProduct = (Button)builder.GetObject("BtnProduct");
             popoverProduct = new Popover(btnProduct);    
@@ -711,8 +715,8 @@ namespace Inventorifo.App
                 clTransactionItem1 filterItem = new clTransactionItem1{                    
                     //product_short_name = entSearch.Text.Trim(),
                 };
-                DataTable dt = CoreCl.fillDtTransactionItem(this.filterTrans, filterItem);
-                foreach (DataRow dr in dt.Rows)
+                dtItems = CoreCl.fillDtTransactionItem(this.filterTrans, filterItem);
+                foreach (DataRow dr in dtItems.Rows)
                 {                   
                     item = new clTransactionItem1{
                         id=dr["id"].ToString(),
@@ -1566,6 +1570,12 @@ namespace Inventorifo.App
             }  
         }
 
+        private void btnProcessCheckoutPrintClicked(object sender, EventArgs e)
+        {
+            PrintingPurchaseInvoice clPrinting = new PrintingPurchaseInvoice(this, dtTransSelected, dtItems);
+            clPrinting.DoPrint(true);        
+        }
+        
         private void EditingStarted(object o, EditingStartedArgs args)
         {
            //((ComboBox)args.Editable).RowSeparatorFunc += SeparatorRow;

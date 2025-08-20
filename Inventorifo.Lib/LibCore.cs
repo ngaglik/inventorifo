@@ -466,7 +466,7 @@ namespace Inventorifo.Lib
             "left outer join condition co on st.condition=co.id "+
             "left outer join location lo on st.location=lo.id "+
             "where tr.id=ti.transaction_id and ti.product_id=pr.id and ti.stock_id=st.id and state.id=ti.state "+
-             whrid+whrstate+
+             whrid+whrstate+whrtype+whrdate+
             "ORDER by ti.id desc";
             //tekan kene
             Console.WriteLine(sql);            

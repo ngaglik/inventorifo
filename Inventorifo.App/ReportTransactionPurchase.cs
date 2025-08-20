@@ -74,10 +74,10 @@ namespace Inventorifo.App
             _treeView.KeyPressEvent += HandleTreeViewKeyPressEvent;
 
             AddColumns();
-            // _treeView.Columns[0].Visible = false;
-            // _treeView.Columns[3].Visible = false;
-            // _treeView.Columns[8].Visible = false;
-            // _treeView.Columns[10].Visible = false;
+            _treeView.Columns[0].Visible = false;
+             _treeView.Columns[2].Visible = false;
+             _treeView.Columns[5].Visible = false;
+             _treeView.Columns[8].Visible = false;
             // _treeView.Columns[14].Visible = false;
             // _treeView.Columns[16].Visible = false;
             // _treeView.Columns[18].Visible = false;
@@ -258,6 +258,11 @@ namespace Inventorifo.App
             rendererText = new CellRendererText();//3
             _cellColumnsRender.Add(rendererText, (int)ColumnItems.product_short_name);
             _treeView.InsertColumn(-1, "Short name", rendererText, "text", (int)ColumnItems.product_short_name);
+
+            rendererText = new CellRendererText();
+            rendererText.Foreground = textForground;
+            _cellColumnsRender.Add(rendererText, (int)ColumnItems.product_name);
+            _treeView.InsertColumn(-1, "name", rendererText, "text", (int)ColumnItems.product_name);
 
             rendererText = new CellRendererText();//4
             _cellColumnsRender.Add(rendererText, (int)ColumnItems.stock_id);
